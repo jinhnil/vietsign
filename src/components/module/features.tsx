@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { PlayCircle, BrainCircuit, Clock } from "lucide-react";
 import { FeatureCardProps } from "../../types";

@@ -28,3 +28,10 @@ export interface ChatMessage {
   text: string;
   isLoading?: boolean;
 }
+
+export interface HeroProps {
+  title: string;
+  subtitle?: string; 
+  imageUrl?: string;
+  onCtaClick?: () => void;
+}
