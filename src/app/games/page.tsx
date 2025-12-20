@@ -1,11 +1,11 @@
 import React from "react";
 import { Metadata } from "next";
 import { LearnLayout } from "@/src/components/layout/learnlayout";
-import { Learn } from "@/src/components/learn/index";
+import { Games } from "@/src/components/games";
 
 export const metadata: Metadata = {
-  title: "Learn - VietSign",
-  description: "Learn Vietnamese Sign Language",
+  title: "Trò Chơi - VietSign",
+  description: "Games for learning Vietnamese Sign Language",
   icons: {
     icon: [
       {
@@ -22,10 +22,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LearnPage() {
+export default function GamesPage() {
   return (
     <LearnLayout>
-      <Learn />
+      <Games />
     </LearnLayout>
   );
 }

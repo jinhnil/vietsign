@@ -20,18 +20,29 @@ export const Footer: React.FC = () => (
         <h4 className="text-white font-semibold mb-4">Learn</h4>
         <ul className="space-y-2 text-sm">
           <li>
-            <a href="#" className="hover:text-white transition-colors">
+            <a
+              href="/dictionary"
+              className="hover:text-white transition-colors"
+            >
               Dictionary
             </a>
           </li>
           <li>
-            <a href="#" className="hover:text-white transition-colors">
-              Courses
+            <a href="/study" className="hover:text-white transition-colors">
+              Study
             </a>
           </li>
           <li>
-            <a href="#" className="hover:text-white transition-colors">
+            <a href="/games" className="hover:text-white transition-colors">
               Games
+            </a>
+          </li>
+          <li>
+            <a
+              href="/daily-signs"
+              className="hover:text-white transition-colors"
+            >
+              Daily Signs
             </a>
           </li>
         </ul>

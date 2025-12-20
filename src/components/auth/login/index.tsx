@@ -42,8 +42,8 @@ export const Login: React.FC = () => {
     // Đăng nhập thành công
     login(userData);
 
-    // Chuyển hướng về Dashboard (được coi là Home sau khi đăng nhập)
-    router.push("/dashboard");
+    // Chuyển hướng về Home
+    router.push("/home");
   };
 
   return (

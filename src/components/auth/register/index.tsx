@@ -26,8 +26,8 @@ export const Register: React.FC = () => {
     // Đăng nhập tự động sau khi đăng ký
     login(userData);
 
-    // Chuyển hướng về Dashboard
-    router.push("/dashboard");
+    // Chuyển hướng về Home
+    router.push("/home");
   };
 
   return (

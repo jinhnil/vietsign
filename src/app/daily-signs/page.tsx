@@ -1,11 +1,11 @@
 import React from "react";
 import { Metadata } from "next";
 import { LearnLayout } from "@/src/components/layout/learnlayout";
-import { Learn } from "@/src/components/learn/index";
+import { DailySigns } from "@/src/components/daily-signs";
 
 export const metadata: Metadata = {
-  title: "Learn - VietSign",
-  description: "Learn Vietnamese Sign Language",
+  title: "Ký Hiệu Của Ngày - VietSign",
+  description: "Daily Sign of the Day",
   icons: {
     icon: [
       {
@@ -22,10 +22,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LearnPage() {
+export default function DailySignsPage() {
   return (
     <LearnLayout>
-      <Learn />
+      <DailySigns />
     </LearnLayout>
   );
 }

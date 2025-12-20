@@ -46,8 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = (userData: User) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
-    // SỬA LỖI Ở ĐÂY: Dùng router.push
-    router.push("/dashboard");
+    router.push("/home");
   };
 
   const logout = () => {

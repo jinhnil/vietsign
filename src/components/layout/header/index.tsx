@@ -16,12 +16,14 @@ export const Header: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-              VSS
-            </div>
-            <span className="font-bold text-xl text-gray-900 tracking-tight">
-              VietSign
-            </span>
+            <Link href="/" className="flex items-center gap-2 group mr-2">
+              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm group-hover:bg-primary-700 transition-colors">
+                A
+              </div>
+              <span className="font-bold text-lg text-gray-900 tracking-tight hidden sm:block">
+                ASL <span className="text-primary-600">Redefined</span>
+              </span>
+            </Link>
           </div>
 
           {/* Desktop Nav */}

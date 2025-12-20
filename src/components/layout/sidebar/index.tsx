@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
+  House,
   BookOpen,
   MessageSquare,
   Settings,
@@ -35,9 +35,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   // Định nghĩa tất cả các menu item và quyền truy cập
   const MENU_ITEMS: MenuItem[] = [
     {
-      icon: <LayoutDashboard size={22} />,
-      label: "Tổng quan",
-      path: "/dashboard",
+      icon: <House size={22} />,
+      label: "Trang chủ",
+      path: "/home",
       allowedRoles: ["Admin", "FacilityManager", "Teacher", "Student"],
     },
     // --- Dành cho Admin & Quản lý ---
@@ -75,8 +75,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     },
     {
       icon: <BookOpen size={22} />,
-      label: "Từ điển ASL",
-      path: "/dashboard/dictionary",
+      label: "Từ điển",
+      path: "/dictionary",
       allowedRoles: ["Teacher", "Student"],
     },
     {

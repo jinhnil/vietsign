@@ -24,7 +24,7 @@ export const Header: React.FC<DashboardHeaderProps> = ({ toggleSidebar }) => {
         </button>
 
         {/* Logo Area */}
-        <Link href="/dashboard" className="flex items-center gap-2 group mr-2">
+        <Link href="/home" className="flex items-center gap-2 group mr-2">
           <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm group-hover:bg-primary-700 transition-colors">
             A
           </div>
@@ -51,7 +51,7 @@ export const Header: React.FC<DashboardHeaderProps> = ({ toggleSidebar }) => {
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Nút chuyển đổi phiên bản */}
         <Link
-          href={pathname === "/learn" ? "/dashboard" : "/learn"}
+          href={pathname === "/learn" ? "/home" : "/learn"}
           className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-all text-xs font-medium shadow-sm hover:shadow-md"
         >
           <span>{pathname === "/learn" ? "Phiên bản 1" : "Phiên bản 2"}</span>
