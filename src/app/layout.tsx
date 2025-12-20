@@ -1,5 +1,6 @@
 //"use client"
 import "./globals.css";
+import { AuthProvider } from "../providers/auth-provider";
 
 export const metadata = {
   title: "VietSign App",
@@ -14,7 +15,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <AuthProvider>
+          <div className="font-sans antialiased selection:bg-primary-100 selection:text-primary-900">
+            {children}
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

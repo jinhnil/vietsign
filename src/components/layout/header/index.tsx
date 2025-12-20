@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X, Globe, User } from "lucide-react";
 
 export const Header: React.FC = () => {
@@ -26,14 +26,14 @@ export const Header: React.FC = () => {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex space-x-8">
-            <Link
+            {/* <Link
               href="/"
               className={`text-sm font-medium transition-colors hover:text-primary-600 ${
                 isActive("/") ? "text-primary-600" : "text-gray-600"
               }`}
             >
               Home
-            </Link>
+            </Link> */}
             {/* <Link
               href="/about"
               className="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors"
@@ -51,13 +51,13 @@ export const Header: React.FC = () => {
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             <Link href="/login">
-              <button className="text-sm font-medium text-gray-600 hover:text-gray-900 px-3 py-2">
-                Log In
+              <button className="text-sm font-medium text-gray-600 hover:text-primary-600 px-3 py-2">
+                Sign In
               </button>
             </Link>
             <Link href="/register">
               <button className="text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 px-4 py-2 rounded-full shadow-md transition-transform hover:scale-105">
-                Get Started
+                Sign Up
               </button>
             </Link>
           </div>
@@ -98,7 +98,7 @@ export const Header: React.FC = () => {
               href="/login"
               className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-primary-600 hover:bg-gray-50"
             >
-              Log In
+              Sign In
             </Link>
             <Link
               href="/register"

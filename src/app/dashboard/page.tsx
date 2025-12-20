@@ -1,10 +1,10 @@
 import { Metadata } from "next";
-import DefaultLayout from "@/src/components/layout/defaultlayout";
-import { Register } from "@/src/components/auth/register";
+import DashboardLayout from "@/src/components/layout/authlayout";
+import { Dashboard } from "@/src/components/dashboard";
 
 export const metadata: Metadata = {
-  title: "Register - VietSign",
-  description: "Register page for VietSign",
+  title: "Dashboard - VietSign",
+  description: "Dashboard page for VietSign",
   icons: {
     icon: [
       {
@@ -21,10 +21,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RegisterPage() {
+export default function DashboardPage() {
   return (
-    <DefaultLayout>
-      <Register />
-    </DefaultLayout>
+    <DashboardLayout>
+      <Dashboard />
+    </DashboardLayout>
   );
 }
