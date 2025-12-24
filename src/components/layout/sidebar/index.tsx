@@ -15,7 +15,8 @@ import {
   FileText,
   BarChart3,
 } from "lucide-react";
-import { useAuth } from "../../../providers/auth-provider";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "@/src/store/slices/adminSlice";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -30,7 +31,12 @@ interface MenuItem {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const pathname = usePathname();
-  const { logout, user } = useAuth();
+  const dispatch = useDispatch();
+  const user = useSelector((state: any) => state.admin.user);
+
+  const handleLogout = () => {
+    dispatch(logout());
+  };
 
   // Định nghĩa tất cả các menu item và quyền truy cập
   const MENU_ITEMS: MenuItem[] = [
@@ -132,25 +138,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
               href={item.path}
               className={`
                 flex items-center rounded-xl transition-colors duration-200 group
-                ${
-                  isOpen
-                    ? "flex-row px-3 py-2.5 gap-4 justify-start" // Expanded: horizontal
-                    : "flex-col justify-center items-center py-3 gap-0 h-20" // Collapsed: vertical, centered
+                ${isOpen
+                  ? "flex-row px-3 py-2.5 gap-4 justify-start" // Expanded: horizontal
+                  : "flex-col justify-center items-center py-3 gap-0 h-20" // Collapsed: vertical, centered
                 }
-                ${
-                  active
-                    ? "bg-primary-50 text-primary-700"
-                    : "text-gray-700 hover:bg-gray-100"
+                ${active
+                  ? "bg-primary-50 text-primary-700"
+                  : "text-gray-700 hover:bg-gray-100"
                 }
               `}
               title={!isOpen ? item.label : ""}
             >
               <div
-                className={`${
-                  active
-                    ? "text-primary-600"
-                    : "text-gray-500 group-hover:text-gray-900"
-                } flex-shrink-0`}
+                className={`${active
+                  ? "text-primary-600"
+                  : "text-gray-500 group-hover:text-gray-900"
+                  } flex-shrink-0`}
               >
                 {item.icon}
               </div>
@@ -158,11 +161,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
               <span
                 className={`
                 transition-all duration-200 leading-tight text-center
-                ${
-                  isOpen
+                ${isOpen
                     ? "text-sm font-medium w-auto whitespace-nowrap opacity-100" // Open: show text
                     : "text-xs font-medium opacity-100" // Closed: show text small
-                }
+                  }
               `}
               >
                 {item.label}
@@ -178,11 +180,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             href="/dashboard/settings"
             className={`
                 flex items-center rounded-xl transition-colors duration-200 group
-                ${
-                  isOpen
-                    ? "flex-row px-3 py-2.5 gap-4 justify-start"
-                    : "flex-col justify-center items-center py-3 gap-0 h-20"
-                }
+                ${isOpen
+                ? "flex-row px-3 py-2.5 gap-4 justify-start"
+                : "flex-col justify-center items-center py-3 gap-0 h-20"
+              }
                 text-gray-700 hover:bg-gray-100
               `}
             title={!isOpen ? "Cài đặt" : ""}
@@ -194,10 +195,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             <span
               className={`
                 transition-all duration-200 leading-tight text-center
-                ${
-                  isOpen
-                    ? "text-sm font-medium whitespace-nowrap"
-                    : "text-xs font-medium"
+                ${isOpen
+                  ? "text-sm font-medium whitespace-nowrap"
+                  : "text-xs font-medium"
                 }
               `}
             >
@@ -206,14 +206,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           </Link>
 
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className={`
                 w-full flex items-center rounded-xl transition-colors duration-200 group
-                ${
-                  isOpen
-                    ? "flex-row px-3 py-2.5 gap-4 justify-start"
-                    : "flex-col justify-center items-center py-3 gap-0 h-20"
-                }
+                ${isOpen
+                ? "flex-row px-3 py-2.5 gap-4 justify-start"
+                : "flex-col justify-center items-center py-3 gap-0 h-20"
+              }
                 text-gray-700 hover:bg-gray-100
               `}
             title={!isOpen ? "Đăng xuất" : ""}
@@ -225,10 +224,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             <span
               className={`
                 transition-all duration-200 leading-tight text-center
-                ${
-                  isOpen
-                    ? "text-sm font-medium whitespace-nowrap"
-                    : "text-xs font-medium"
+                ${isOpen
+                  ? "text-sm font-medium whitespace-nowrap"
+                  : "text-xs font-medium"
                 }
               `}
             >

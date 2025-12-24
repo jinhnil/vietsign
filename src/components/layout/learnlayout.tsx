@@ -2,7 +2,7 @@
 
 import React from "react";
 import { redirect } from "next/navigation";
-import { useAuth } from "@/src/providers/auth-provider";
+import { useSelector } from "react-redux";
 import { Header } from "./header-auth/index";
 
 interface LearnLayoutProps {
@@ -10,13 +10,13 @@ interface LearnLayoutProps {
 }
 
 export const LearnLayout: React.FC<LearnLayoutProps> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = useSelector((state: any) => state.admin.isAuthenticated);
 
   if (!isAuthenticated) {
     redirect("/login");
   }
 
-  const toggleSidebar = () => {};
+  const toggleSidebar = () => { };
 
   return (
     <div className="flex flex-col min-h-screen bg-white">

@@ -2,8 +2,8 @@ export const DEMO_ACCOUNTS = [
   {
     role: "Admin",
     label: "Quản trị viên Hệ thống",
-    email: "admin@wesign.com",
-    password: "password123",
+    email: "admin@gmail.com",
+    password: "iBMElab2024",
     color: "bg-red-100 text-red-800 border-red-200",
   },
   {

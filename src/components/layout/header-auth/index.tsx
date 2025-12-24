@@ -1,15 +1,16 @@
 import React from "react";
 import { Bell, Search, Menu } from "lucide-react";
-import { useAuth } from "../../../providers/auth-provider";
+import { useSelector } from "react-redux";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+// ... imports
 
 interface DashboardHeaderProps {
   toggleSidebar: () => void;
 }
 
 export const Header: React.FC<DashboardHeaderProps> = ({ toggleSidebar }) => {
-  const { user } = useAuth();
+  const user = useSelector((state: any) => state.admin.user); // Should use RootState type
   const pathname = usePathname();
 
   return (

@@ -4,14 +4,15 @@ import React, { useState } from "react";
 import { redirect } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header-auth/index";
-import { useAuth } from "../../providers/auth-provider";
+import { useSelector } from "react-redux";
+// ... imports
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = useSelector((state: any) => state.admin.isAuthenticated);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   if (!isAuthenticated) {
