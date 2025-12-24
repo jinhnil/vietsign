@@ -16,12 +16,13 @@ export interface UserRole {
 
 class UserModelClass extends Base {
     constructor() {
-        super("user-service/auth");
+        super("user-service");
     }
 
+    // Thông tin cá nhân
     getProfile = async (): Promise<any> => {
-        const response = await this.apiGet("/me");
-        return response;
+        const res = await this.apiGet("/users/me/v2");
+        return res.data;
     };
 }
 

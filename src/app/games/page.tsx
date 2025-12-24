@@ -4,7 +4,7 @@ import { LearnLayout } from "@/src/components/layout/learnlayout";
 import { Games } from "@/src/components/games";
 
 export const metadata: Metadata = {
-  title: "Trò Chơi - VietSign",
+  title: "Trò Chơi - VietSignSchool",
   description: "Games for learning Vietnamese Sign Language",
   icons: {
     icon: [

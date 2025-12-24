@@ -12,15 +12,15 @@ export const Learn: React.FC = () => {
       items: [
         {
           title: "Cơ bản",
-          subtitle: "Hội thoại ASL theo chủ đề",
+          subtitle: "Hội thoại ký hiệu theo chủ đề",
         },
         {
           title: "Độc thoại: Cấp độ 1",
-          subtitle: "Luyện tập hiểu ASL",
+          subtitle: "Luyện tập hiểu ký hiệu",
         },
         {
           title: "Độc thoại: Cấp độ 2",
-          subtitle: "Luyện tập ASL nâng cao",
+          subtitle: "Luyện tập ký hiệu nâng cao",
         },
       ],
     },
@@ -54,7 +54,15 @@ export const Learn: React.FC = () => {
         },
         {
           title: "Ký hiệu của ngày",
-          subtitle: "Đăng ký để học từ mới mỗi ngày",
+          subtitle: "Học từ mới mỗi ngày",
+        },
+        {
+          title: "Từ điển",
+          subtitle: "học nhũng từ mới mỗi ngày",
+        },
+        {
+          title: "Ôn tập ký hiệu",
+          subtitle: "Ôn tập những ký hiệu đã học",
         },
       ],
     },
@@ -62,14 +70,7 @@ export const Learn: React.FC = () => {
 
   return (
     <div className="animate-in fade-in duration-500">
-      {/* Top Controls */}
-      <div className="flex items-center mb-12">
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-gray-700 rounded text-gray-400 text-sm hover:text-white hover:border-gray-500 transition-all">
-          <ChevronLeft size={16} />
-          Chọn độ khó
-        </button>
-      </div>
-
+      
       {/* Main Title */}
       <div className="text-center mb-16 relative flex items-center justify-center">
         {/* Đường kẻ nằm dưới */}

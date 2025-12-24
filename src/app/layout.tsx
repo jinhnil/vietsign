@@ -4,7 +4,7 @@ import StoreProvider from "@/src/store/StoreProvider";
 import QueryProvider from "../providers/query-provider";
 
 export const metadata = {
-  title: "VietSign App",
+  title: "VietSignSchool App",
   description: "App cnv",
 };
 

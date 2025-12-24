@@ -3,8 +3,8 @@ import DefaultLayout from "@/src/components/layout/defaultlayout";
 import Login from "@/src/components/auth/login";
 
 export const metadata: Metadata = {
-  title: "Login - VietSign",
-  description: "Login page for VietSign",
+  title: "Login - VietSignSchool",
+  description: "Login page for VietSignSchool",
   icons: {
     icon: [
       {

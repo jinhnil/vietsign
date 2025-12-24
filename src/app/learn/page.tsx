@@ -4,7 +4,7 @@ import { LearnLayout } from "@/src/components/layout/learnlayout";
 import { Learn } from "@/src/components/learn/index";
 
 export const metadata: Metadata = {
-  title: "Learn - VietSign",
+  title: "Learn - VietSignSchool",
   description: "Learn Vietnamese Sign Language",
   icons: {
     icon: [

@@ -1,5 +1,5 @@
 import { Store } from "@reduxjs/toolkit";
-import axios, { InternalAxiosRequestConfig, AxiosResponse } from "axios";
+import axios from "axios";
 import { logout } from "../../store/slices/adminSlice";
 
 let store: Store;
@@ -8,33 +8,29 @@ export const injectStore = (_store: Store) => {
   store = _store;
 };
 
-export const defaultHttp = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_ROOT,
-});
-
-const http = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_ROOT_NODE,
-});
+export const defaultHttp = axios.create();
+const http = axios.create();
 
 http.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
+  (config) => {
     const apiToken = localStorage.getItem("access_token");
 
-    if (apiToken) {
+    // Only set Authorization header if token exists and is valid
+    if (apiToken && apiToken !== "undefined" && apiToken !== "null") {
       config.headers.Authorization = `Bearer ${apiToken}`;
     }
     return config;
   },
-  (error: any) => {
+  (error) => {
     return Promise.reject(error);
   },
 );
 
 http.interceptors.response.use(
-  (response: AxiosResponse) => {
+  (response) => {
     return response;
   },
-  (error: any) => {
+  (error) => {
     if (error?.response?.status === 401) {
       store.dispatch(logout());
     }
@@ -43,3 +39,4 @@ http.interceptors.response.use(
 );
 
 export default http;
+

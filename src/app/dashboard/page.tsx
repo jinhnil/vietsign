@@ -3,8 +3,8 @@ import DashboardLayout from "@/src/components/layout/authlayout";
 import { Dashboard } from "@/src/components/dashboard";
 
 export const metadata: Metadata = {
-  title: "Dashboard - VietSign",
-  description: "Dashboard page for VietSign",
+  title: "Dashboard - VietSignSchool",
+  description: "Dashboard page for VietSignSchool",
   icons: {
     icon: [
       {

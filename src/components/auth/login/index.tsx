@@ -23,16 +23,20 @@ const Login: React.FC = () => {
   const loginMutation = useMutation({
     mutationFn: Auth.login,
     onSuccess: async (res) => {
-      localStorage.setItem("access_token", res.accessToken);
+      localStorage.setItem("access_token", res.access_token);
       localStorage.setItem("refresh_token", res.refresh_token);
-      const response: any = await UserCode.getProfile();
-      dispatch(login(response.data));
-      localStorage.setItem("user", response.data);
+      const userProfile = await UserCode.getProfile();
+      dispatch(login(userProfile.data));
+      localStorage.setItem("user", JSON.stringify(userProfile.data));
       message.success("Đăng nhập thành công");
-      router.push("/");
+      router.push("/home");
     },
-    onError: (error: Error) => {
-      message.error("Sai tài khoản hoặc mật khẩu");
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message 
+        || error?.response?.data?.error 
+        || error?.message 
+        || "Đăng nhập thất bại. Vui lòng thử lại.";
+      message.error(errorMessage);
     },
   });
 
@@ -57,7 +61,7 @@ const Login: React.FC = () => {
       {/* Form Đăng nhập */}
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 m-5">
         <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
-          Đăng nhập VietSign
+          Đăng nhập VietSignSchool
         </h2>
 
         <Form

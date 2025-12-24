@@ -1,15 +1,16 @@
 import { Base } from "./base";
-import { User } from "./User";
 
 class AuthModelClass extends Base {
     constructor() {
         super("user-service");
     }
 
+    // Đăng nhập
     login = async (body?: any) => {
         const res = await this.apiPost("/auth/login", body);
         return res.data;
     };
+
     // Đăng ký
     register = async (body?: any) => {
         return await this.apiPost("/register/generate-otp", body);

@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { useAuth } from "../../providers/auth-provider";
+import { useSelector } from "react-redux";
 import { BookOpen, Gamepad2, Calendar } from "lucide-react";
 
 export const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const user = useSelector((state: any) => state.admin.user);
 
   return (
     <div className="space-y-8">

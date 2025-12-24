@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Globe, User } from "lucide-react";
+import { Menu, X, Hand } from "lucide-react";
 
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,50 +16,30 @@ export const Header: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-2 group mr-2">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm group-hover:bg-primary-700 transition-colors">
-                A
+            <Link href="/" className="flex items-center gap-3 group mr-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform">
+                <Hand size={22} />
               </div>
-              <span className="font-bold text-lg text-gray-900 tracking-tight hidden sm:block">
-                ASL <span className="text-primary-600">Redefined</span>
-              </span>
+              <div className="hidden sm:block">
+                <span className="font-bold text-xl text-gray-900 tracking-tight">
+                  VietSign<span className="text-primary-600">School</span>
+                </span>
+                <p className="text-xs text-gray-500 -mt-1">Ngôn ngữ ký hiệu</p>
+              </div>
             </Link>
           </div>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex space-x-8">
-            {/* <Link
-              href="/"
-              className={`text-sm font-medium transition-colors hover:text-primary-600 ${
-                isActive("/") ? "text-primary-600" : "text-gray-600"
-              }`}
-            >
-              Home
-            </Link> */}
-            {/* <Link
-              href="/about"
-              className="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors"
-            >
-              About
-            </Link>
-            <Link
-              href="/curriculum"
-              className="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors"
-            >
-              Curriculum
-            </Link> */}
-          </nav>
 
           {/* Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
             <Link href="/login">
-              <button className="text-sm font-medium text-gray-600 hover:text-primary-600 px-3 py-2">
-                Sign In
+              <button className="text-sm font-medium text-gray-600 hover:text-primary-600 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                Đăng nhập
               </button>
             </Link>
             <Link href="/register">
-              <button className="text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 px-4 py-2 rounded-full shadow-md transition-transform hover:scale-105">
-                Sign Up
+              <button className="text-sm font-semibold text-white bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                Đăng ký
               </button>
             </Link>
           </div>
@@ -68,7 +48,7 @@ export const Header: React.FC = () => {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none"
+              className="inline-flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none transition-colors"
             >
               {isMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -82,32 +62,45 @@ export const Header: React.FC = () => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
+          <div className="px-4 pt-3 pb-4 space-y-2">
             <Link
               href="/"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+              onClick={() => setIsMenuOpen(false)}
             >
-              Home
+              🏠 Trang chủ
             </Link>
             <Link
               href="/about"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+              onClick={() => setIsMenuOpen(false)}
             >
-              About
+              ℹ️ Giới thiệu
             </Link>
             <Link
-              href="/login"
-              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-primary-600 hover:bg-gray-50"
+              href="/dictionary"
+              className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+              onClick={() => setIsMenuOpen(false)}
             >
-              Sign In
+              📖 Từ điển
             </Link>
-            <Link
-              href="/register"
-              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-white bg-primary-600 mt-2"
-            >
-              Sign Up
-            </Link>
+            <div className="pt-3 border-t border-gray-100 space-y-2">
+              <Link
+                href="/login"
+                className="block w-full text-center px-4 py-3 rounded-xl text-base font-medium text-primary-600 hover:bg-primary-50 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Đăng nhập
+              </Link>
+              <Link
+                href="/register"
+                className="block w-full text-center px-4 py-3 rounded-xl text-base font-semibold text-white bg-gradient-to-r from-primary-500 to-primary-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Đăng ký miễn phí
+              </Link>
+            </div>
           </div>
         </div>
       )}

@@ -3,8 +3,8 @@ import HomeLayout from "@/src/components/layout/authlayout";
 import { Home } from "@/src/components/home";
 
 export const metadata: Metadata = {
-  title: "Home - VietSign",
-  description: "Home page for VietSign",
+  title: "Home - VietSignSchool",
+  description: "Home page for VietSignSchool",
   icons: {
     icon: [
       {
