@@ -49,10 +49,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push("/home");
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
     localStorage.removeItem("user");
-    router.push("/login");
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    router.push("/");
   };
 
   return (

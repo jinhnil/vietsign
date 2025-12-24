@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import {
   BookOpen,
   Calendar,
@@ -9,7 +9,6 @@ import {
   Smartphone,
 } from "lucide-react";
 import { LearningToolProps, DictionaryMode } from "../../types";
-    
 
 interface HeroProps {
   onOpenTool: (mode: DictionaryMode) => void;
@@ -36,17 +35,16 @@ const ToolCard: React.FC<LearningToolProps> = ({
 );
 
 export const Hero: React.FC<HeroProps> = ({ onOpenTool }) => {
-
   const router = useRouter();
 
-    const handleDesktopClick = () => {
-            router.push('/login'); 
-        }
-        const handleMobileClick = () => {
-        // Bấm iOS & Android: Chuyển sang trang Google Play (hoặc đường dẫn App Store)
-        // Dùng window.location.href để chuyển hướng ra ngoài ứng dụng (External Link)
-        window.location.href = 'https://play.google.com/store'; // Thay bằng đường dẫn thực tế
-    };
+  const handleDesktopClick = () => {
+    router.push("/login");
+  };
+  const handleMobileClick = () => {
+    // Bấm iOS & Android: Chuyển sang trang Google Play (hoặc đường dẫn App Store)
+    // Dùng window.location.href để chuyển hướng ra ngoài ứng dụng (External Link)
+    window.location.href = "https://play.google.com/store"; // Thay bằng đường dẫn thực tế
+  };
   return (
     <section className="relative pt-16 min-h-[600px] flex flex-col md:flex-row">
       {/* Left Side: Dark Green */}
@@ -55,7 +53,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenTool }) => {
         <div className="absolute top-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
 
         <h1 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-          VietSign <br />
+          VietSignSchool <br />
           <span className="text-green-200">VSS</span>
         </h1>
         <p className="text-green-100 mb-10 max-w-md text-lg">
@@ -63,15 +61,17 @@ export const Hero: React.FC<HeroProps> = ({ onOpenTool }) => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-12">
-          <button 
+          <button
             onClick={handleDesktopClick}
-            className="relative z-10 flex items-center justify-center gap-2 px-6 py-3 border border-white/30 rounded-full bg-transparent hover:bg-white/20 transition-all duration-300 ease-in-out">
+            className="relative z-10 flex items-center justify-center gap-2 px-6 py-3 border border-white/30 rounded-full bg-transparent hover:bg-white/20 transition-all duration-300 ease-in-out"
+          >
             <Monitor size={20} />
             <span>Desktop</span>
           </button>
-          <button 
+          <button
             onClick={handleMobileClick}
-            className="flex items-center justify-center gap-2 px-6 py-3 border border-white/30 rounded-full hover:bg-white/20 transition-colors">
+            className="flex items-center justify-center gap-2 px-6 py-3 border border-white/30 rounded-full hover:bg-white/20 transition-colors"
+          >
             <Smartphone size={20} />
             <span>iOS & Android</span>
           </button>
@@ -109,4 +109,4 @@ export const Hero: React.FC<HeroProps> = ({ onOpenTool }) => {
       </div>
     </section>
   );
-}
+};
