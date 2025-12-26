@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import { LearnLayout } from "@/src/components/layout/learnlayout";
+import DashboardLayout from "@/src/components/layout/authlayout";
 import { Learn } from "@/src/components/learn/index";
 
 export const metadata: Metadata = {
@@ -24,8 +24,8 @@ export const metadata: Metadata = {
 
 export default function LearnPage() {
   return (
-    <LearnLayout>
+    <DashboardLayout>
       <Learn />
-    </LearnLayout>
+    </DashboardLayout>
   );
 }

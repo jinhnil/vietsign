@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import { LearnLayout } from "@/src/components/layout/learnlayout";
+import DashboardLayout from "@/src/components/layout/authlayout";
 import { Games } from "@/src/components/games";
 
 export const metadata: Metadata = {
@@ -24,8 +24,8 @@ export const metadata: Metadata = {
 
 export default function GamesPage() {
   return (
-    <LearnLayout>
+    <DashboardLayout>
       <Games />
-    </LearnLayout>
+    </DashboardLayout>
   );
 }

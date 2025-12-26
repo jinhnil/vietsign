@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   House,
   BookOpen,
@@ -31,11 +31,14 @@ interface MenuItem {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const dispatch = useDispatch();
   const user = useSelector((state: any) => state.admin.user);
 
   const handleLogout = () => {
     dispatch(logout());
+    // Redirect về trang chủ sau khi đăng xuất
+    router.push("/");
   };
 
   // Định nghĩa tất cả các menu item và quyền truy cập

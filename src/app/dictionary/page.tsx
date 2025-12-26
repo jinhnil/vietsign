@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import { LearnLayout } from "@/src/components/layout/learnlayout";
+import DashboardLayout from "@/src/components/layout/authlayout";
 import { Dictionary } from "@/src/components/dictionary";
 
 export const metadata: Metadata = {
@@ -24,8 +24,8 @@ export const metadata: Metadata = {
 
 export default function DictionaryPage() {
   return (
-    <LearnLayout>
+    <DashboardLayout>
       <Dictionary />
-    </LearnLayout>
+    </DashboardLayout>
   );
 }

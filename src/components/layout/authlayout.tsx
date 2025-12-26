@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
-import { redirect } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, notFound } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header-auth/index";
 import { useSelector } from "react-redux";
-// ... imports
+import Loader from "@/src/components/UI/Loader";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -14,14 +14,50 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const isAuthenticated = useSelector((state: any) => state.admin.isAuthenticated);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthed, setIsAuthed] = useState(false);
+  const [shouldShow404, setShouldShow404] = useState(false);
+  const router = useRouter();
 
-  if (!isAuthenticated) {
-    redirect("/login");
-  }
+  useEffect(() => {
+    // Check localStorage directly for token
+    const accessToken = localStorage.getItem("access_token");
+    const user = localStorage.getItem("user");
+    
+    if (accessToken && user) {
+      setIsAuthed(true);
+      setIsLoading(false);
+    } else if (!isAuthenticated) {
+      // No token and not authenticated in Redux, show 404
+      setShouldShow404(true);
+      setIsLoading(false);
+    } else {
+      setIsAuthed(true);
+      setIsLoading(false);
+    }
+  }, [isAuthenticated, router]);
+
+  // Update isAuthed when Redux state changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      setIsAuthed(true);
+      setIsLoading(false);
+    }
+  }, [isAuthenticated]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  // Not authenticated, show 404 page
+  if (shouldShow404 || !isAuthed) {
+    notFound();
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

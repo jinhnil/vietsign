@@ -33,6 +33,10 @@ http.interceptors.response.use(
   (error) => {
     if (error?.response?.status === 401) {
       store.dispatch(logout());
+      // Redirect về trang chủ khi token hết hạn
+      if (typeof window !== 'undefined') {
+        window.location.href = "/";
+      }
     }
     return Promise.reject(error);
   },
