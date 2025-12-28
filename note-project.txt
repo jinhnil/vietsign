@@ -1,0 +1,5 @@
+admin: home, dashboard, quản lý người dùng, quản lý cơ sở, quản lý học tập, quản lý lớp học, thông báo, quản lý công cụ, quản lý kiểm tra, thống kê, quản lý từ điển, quản lý trò chơi
+quản trị viên cơ sở: home, dashboard, quản lý người dùng, quản lý học tập, quản lý lớp học, thông báo, quản lý công cụ, quản lý kiểm tra, thống kê, từ điển, quản lý trò chơi
+giáo viên: home, dashboard, thông báo, quản lý lớp học, quản lý học tập, thống kê, quản lý kiểm tra, chấm điểm,từ điển, trò chơi  
+học sinh: home, dashboard, thông báo, quản lý học tập, thống kê, làm bài kiểm tra, học tập, đăng ký lớp học, từ điển, trò chơi
+test: tất cả các quyền

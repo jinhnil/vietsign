@@ -16,15 +16,15 @@ export const DEMO_ACCOUNTS = [
   {
     role: "Teacher",
     label: "Giáo viên",
-    email: "giaovien@wesign.com",
-    password: "password123",
+    email: "giaovien@gmail.com",
+    password: "39hoangngan",
     color: "bg-blue-100 text-blue-800 border-blue-200",
   },
   {
     role: "Student",
     label: "Học sinh",
-    email: "hocsinh@wesign.com",
-    password: "password123",
+    email: "vunhatlinh04092001@gmail.com",
+    password: "123456",
     color: "bg-green-100 text-green-800 border-green-200",
   },
 ];

@@ -4,16 +4,24 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   House,
   BookOpen,
-  MessageSquare,
   Settings,
   LogOut,
   Users,
-  Video,
   GraduationCap,
-  Shield,
   Building,
-  FileText,
   BarChart3,
+  Bell,
+  Wrench,
+  ClipboardCheck,
+  Gamepad2,
+  BookOpenCheck,
+  PenLine,
+  FileEdit,
+  UserPlus,
+  LayoutDashboard,
+  Library,
+  Calendar,
+  Lightbulb,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "@/src/store/slices/adminSlice";
@@ -42,78 +50,145 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   };
 
   // Định nghĩa tất cả các menu item và quyền truy cập
-  // Note: Roles từ API dùng UPPERCASE: ADMIN, TEACHER, STUDENT, FACILITY_MANAGER
+  // Note: Roles từ API dùng UPPERCASE: ADMIN, TEACHER, STUDENT, FACILITY_MANAGER, TEST
+  // Admin: home, dashboard, quản lý người dùng, quản lý cơ sở, quản lý học tập, quản lý lớp học, thông báo, quản lý công cụ, quản lý kiểm tra, thống kê, quản lý từ điển, quản lý trò chơi
+  // FACILITY_MANAGER: home, dashboard, quản lý người dùng, quản lý học tập, quản lý lớp học, thông báo, quản lý công cụ, quản lý kiểm tra, thống kê, từ điển, quản lý trò chơi
+  // TEACHER: home, dashboard, thông báo, quản lý lớp học, quản lý học tập, thống kê, quản lý kiểm tra, chấm điểm, từ điển, trò chơi
+  // STUDENT: home, dashboard, thông báo, quản lý học tập, thống kê, làm bài kiểm tra, học tập, đăng ký lớp học, từ điển, trò chơi
+  // TEST: Truy cập tất cả các trang
   const MENU_ITEMS: MenuItem[] = [
+    // === CHUNG CHO TẤT CẢ ===
     {
       icon: <House size={22} />,
       label: "Trang chủ",
       path: "/home",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
     },
-    // --- Dành cho Admin & Quản lý ---
     {
-      icon: <Shield size={22} />,
-      label: "Quản trị hệ thống",
-      path: "/dashboard/admin",
-      allowedRoles: ["ADMIN"],
+      icon: <LayoutDashboard size={22} />,
+      label: "Dashboard",
+      path: "/dashboard",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+    },
+    
+    // === QUẢN LÝ (ADMIN & FACILITY_MANAGER) ===
+    {
+      icon: <Users size={22} />,
+      label: "Quản lý người dùng",
+      path: "/users",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEST"],
     },
     {
       icon: <Building size={22} />,
       label: "Quản lý cơ sở",
-      path: "/dashboard/facilities",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER"],
+      path: "/facilities",
+      allowedRoles: ["ADMIN", "TEST"],
     },
     {
-      icon: <Users size={22} />,
-      label: "Người dùng",
-      path: "/dashboard/users",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER"],
-    },
-
-    // --- Dành cho Giáo viên & Học sinh ---
-    {
-      icon: <Video size={22} />,
-      label: "Lớp học",
-      path: "/dashboard/classes",
-      allowedRoles: ["FACILITY_MANAGER", "TEACHER", "STUDENT"],
+      icon: <GraduationCap size={22} />,
+      label: "Quản lý học tập",
+      path: "/learning",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
     },
     {
-      icon: <FileText size={22} />,
-      label: "Bài tập & Chấm điểm",
-      path: "/dashboard/assignments",
-      allowedRoles: ["TEACHER"],
+      icon: <BookOpenCheck size={22} />,
+      label: "Quản lý lớp học",
+      path: "/classes",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "TEST"],
     },
+    {
+      icon: <Bell size={22} />,
+      label: "Thông báo",
+      path: "/notifications",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+    },
+    {
+      icon: <Wrench size={22} />,
+      label: "Quản lý công cụ",
+      path: "/tools",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEST"],
+    },
+    {
+      icon: <ClipboardCheck size={22} />,
+      label: "Quản lý kiểm tra",
+      path: "/exams",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "TEST"],
+    },
+    {
+      icon: <BarChart3 size={22} />,
+      label: "Thống kê",
+      path: "/statistics",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+    },
+    {
+      icon: <Library size={22} />,
+      label: "Quản lý từ điển",
+      path: "/dictionary-management",
+      allowedRoles: ["ADMIN", "TEST"],
+    },
+    {
+      icon: <Gamepad2 size={22} />,
+      label: "Quản lý trò chơi",
+      path: "/games-management",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEST"],
+    },
+    
+    // === CHỈ FACILITY_MANAGER, TEACHER, STUDENT ===
     {
       icon: <BookOpen size={22} />,
       label: "Từ điển",
       path: "/dictionary",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT"],
+      allowedRoles: ["FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+    },
+    
+    // === CHỈ TEACHER & STUDENT ===
+    {
+      icon: <Gamepad2 size={22} />,
+      label: "Trò chơi",
+      path: "/games",
+      allowedRoles: ["TEACHER", "STUDENT", "TEST"],
+    },
+    
+    // === CHỈ TEACHER ===
+    {
+      icon: <PenLine size={22} />,
+      label: "Chấm điểm",
+      path: "/grading",
+      allowedRoles: ["TEACHER", "TEST"],
+    },
+    
+    // === CHỈ STUDENT ===
+    {
+      icon: <FileEdit size={22} />,
+      label: "Làm bài kiểm tra",
+      path: "/take-exam",
+      allowedRoles: ["STUDENT", "TEST"],
     },
     {
-      icon: <GraduationCap size={22} />,
-      label: "Tiến độ học tập",
-      path: "/dashboard/progress",
-      allowedRoles: ["STUDENT"],
+      icon: <BookOpenCheck size={22} />,
+      label: "Học tập",
+      path: "/study",
+      allowedRoles: ["STUDENT", "TEST"],
     },
     {
-      icon: <BarChart3 size={22} />,
-      label: "Báo cáo thống kê",
-      path: "/dashboard/reports",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER"],
+      icon: <UserPlus size={22} />,
+      label: "Đăng ký lớp học",
+      path: "/class-registration",
+      allowedRoles: ["STUDENT", "TEST"],
     },
-
-    // --- Chung ---
+    
+    // === TRANG BỔ SUNG ===
     {
-      icon: <MessageSquare size={22} />,
-      label: "Tin nhắn",
-      path: "/dashboard/messages",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT"],
+      icon: <Lightbulb size={22} />,
+      label: "Học ngôn ngữ",
+      path: "/learn",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
     },
     {
-      icon: <Users size={22} />,
-      label: "Cộng đồng",
-      path: "/dashboard/community",
-      allowedRoles: ["TEACHER", "STUDENT"],
+      icon: <Calendar size={22} />,
+      label: "Ký hiệu mỗi ngày",
+      path: "/daily-signs",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
     },
   ];
 
