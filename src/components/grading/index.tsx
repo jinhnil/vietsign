@@ -2,18 +2,8 @@
 
 import { PenLine, Filter, CheckCircle, Clock, FileText, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { mockSubmissions, submissionStatusConfig } from "@/src/data";
 
-const mockSubmissions = [
-  { id: 1, student: "Nguyễn Văn A", exam: "Kiểm tra giữa kỳ", submittedAt: "15/01/2025 10:30", status: "pending", score: null },
-  { id: 2, student: "Trần Thị B", exam: "Kiểm tra giữa kỳ", submittedAt: "15/01/2025 10:45", status: "pending", score: null },
-  { id: 3, student: "Lê Văn C", exam: "Kiểm tra định kỳ", submittedAt: "10/01/2025 09:30", status: "graded", score: 8.5 },
-  { id: 4, student: "Phạm Thị D", exam: "Kiểm tra định kỳ", submittedAt: "10/01/2025 09:20", status: "graded", score: 9.0 },
-];
-
-const statusConfig: Record<string, { label: string; color: string }> = {
-  pending: { label: "Chờ chấm", color: "bg-amber-100 text-amber-800" },
-  graded: { label: "Đã chấm", color: "bg-green-100 text-green-800" },
-};
 
 export function GradingManagement() {
   const [filterStatus, setFilterStatus] = useState("all");
@@ -68,7 +58,7 @@ export function GradingManagement() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-gray-900">{sub.student}</h3>
-                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig[sub.status].color}`}>{statusConfig[sub.status].label}</span>
+                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${submissionStatusConfig[sub.status].color}`}>{submissionStatusConfig[sub.status].label}</span>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
                     <div className="flex items-center gap-1.5"><FileText size={16} className="text-gray-400" />{sub.exam}</div>

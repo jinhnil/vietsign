@@ -64,27 +64,6 @@ export const Header: React.FC = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
           <div className="px-4 pt-3 pb-4 space-y-2">
-            <Link
-              href="/"
-              className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              🏠 Trang chủ
-            </Link>
-            <Link
-              href="/about"
-              className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              ℹ️ Giới thiệu
-            </Link>
-            <Link
-              href="/dictionary"
-              className="block px-4 py-3 rounded-xl text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              📖 Từ điển
-            </Link>
             <div className="pt-3 border-t border-gray-100 space-y-2">
               <Link
                 href="/login"

@@ -2,33 +2,16 @@
 
 import React from "react";
 import { ChevronLeft, Info, Calendar } from "lucide-react";
+import { dailySigns, previousSigns, difficultyColors } from "@/src/data";
 
 export const DailySigns: React.FC = () => {
+  // Get today's sign based on current date
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const todaySign = dailySigns.find(sign => sign.date === todayStr) || dailySigns[0];
+
   return (
     <div className="animate-in fade-in duration-500">
-      {/* Top Controls */}
-      <div className="flex items-center gap-4 mb-12">
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-gray-700 rounded text-gray-400 text-sm hover:text-white hover:border-gray-500 transition-all">
-          <ChevronLeft size={16} />
-          Quay lại
-        </button>
-        <button className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded text-sm hover:bg-primary-600 transition-all">
-          <Calendar size={16} />
-          Hôm nay
-        </button>
-      </div>
-
-      {/* Main Title */}
-      <div className="text-center mb-16 relative flex items-center justify-center">
-        <div className="absolute left-0 w-full h-[1px] bg-gray-800"></div>
-        <h1 className="relative z-10 text-4xl font-light text-gray-200 inline-flex items-center gap-2 bg-white px-6">
-          Ký Hiệu Của Ngày
-          <Info
-            size={18}
-            className="text-gray-600 cursor-pointer hover:text-gray-400 transition-colors"
-          />
-        </h1>
-      </div>
 
       {/* Daily Sign Card */}
       <div className="max-w-2xl mx-auto">
@@ -39,13 +22,22 @@ export const DailySigns: React.FC = () => {
               Hôm nay
             </p>
             <p className="text-2xl font-semibold text-gray-800 mt-2">
-              {new Date().toLocaleDateString("vi-VN", {
+              {today.toLocaleDateString("vi-VN", {
                 weekday: "long",
                 year: "numeric",
                 month: "long",
                 day: "numeric",
               })}
             </p>
+          </div>
+
+          {/* Word Display */}
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold text-primary-600 mb-2">{todaySign.word}</h2>
+            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${difficultyColors[todaySign.difficulty] || 'bg-gray-100 text-gray-600'}`}>
+              {todaySign.difficulty}
+            </span>
+            <p className="text-gray-500 mt-2">{todaySign.category}</p>
           </div>
 
           {/* Video Placeholder */}
@@ -59,27 +51,41 @@ export const DailySigns: React.FC = () => {
           {/* Sign Details */}
           <div className="border-t border-gray-200 pt-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Ký hiệu hôm nay
+              {todaySign.word}
             </h2>
             <div className="space-y-4">
               <div>
                 <h3 className="font-semibold text-gray-700">Định nghĩa</h3>
                 <p className="text-gray-600 mt-2">
-                  Nội dung định nghĩa sẽ được hiển thị ở đây
+                  {todaySign.definition}
                 </p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-700">Ví dụ</h3>
-                <p className="text-gray-600 mt-2">
-                  Các ví dụ sử dụng sẽ được hiển thị ở đây
-                </p>
+                <ul className="text-gray-600 mt-2 list-disc list-inside">
+                  {todaySign.examples.map((example, idx) => (
+                    <li key={idx}>{example}</li>
+                  ))}
+                </ul>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-700">Mẹo</h3>
                 <p className="text-gray-600 mt-2">
-                  Các mẹo để ghi nhớ ký hiệu này
+                  {todaySign.tips}
                 </p>
               </div>
+              {todaySign.relatedWords && todaySign.relatedWords.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-gray-700">Từ liên quan</h3>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {todaySign.relatedWords.map((word, idx) => (
+                      <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+                        {word}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -100,15 +106,18 @@ export const DailySigns: React.FC = () => {
             Ký hiệu trước đó
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map((item) => (
+            {previousSigns.slice(0, 4).map((sign) => (
               <div
-                key={item}
+                key={sign.id}
                 className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
               >
-                <p className="text-gray-500 text-sm">Ngày trước</p>
+                <p className="text-gray-500 text-sm">{sign.date}</p>
                 <p className="text-gray-900 font-medium mt-1">
-                  Ký hiệu #{item}
+                  {sign.word}
                 </p>
+                <span className={`inline-block mt-2 px-2 py-0.5 rounded-full text-xs ${difficultyColors[sign.difficulty] || 'bg-gray-100 text-gray-600'}`}>
+                  {sign.difficulty}
+                </span>
               </div>
             ))}
           </div>

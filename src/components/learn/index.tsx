@@ -2,72 +2,9 @@
 
 import React from "react";
 import { ChevronLeft, Info, Hand } from "lucide-react";
+import { learnCategories } from "@/src/data";
 
 export const Learn: React.FC = () => {
-  const categories = [
-    {
-      title: "Chủ đề",
-      colorClass: "bg-red-500",
-      textClass: "text-red-500",
-      items: [
-        {
-          title: "Cơ bản",
-          subtitle: "Hội thoại ký hiệu theo chủ đề",
-        },
-        {
-          title: "Độc thoại: Cấp độ 1",
-          subtitle: "Luyện tập hiểu ký hiệu",
-        },
-        {
-          title: "Độc thoại: Cấp độ 2",
-          subtitle: "Luyện tập ký hiệu nâng cao",
-        },
-      ],
-    },
-    {
-      title: "Ngữ pháp",
-      colorClass: "bg-purple-600",
-      textClass: "text-purple-600",
-      items: [
-        {
-          title: "Biểu cảm: Cấp độ 1",
-          subtitle: "Cách khuôn mặt hoạt động với câu",
-        },
-        {
-          title: "Biểu cảm: Cấp độ 2",
-          subtitle: "Học các loại câu và biểu cảm nâng cao",
-        },
-      ],
-    },
-    {
-      title: "Công cụ",
-      colorClass: "bg-blue-500",
-      textClass: "text-blue-500",
-      items: [
-        {
-          title: "Học tên của tôi",
-          subtitle: "Học cách giới thiệu bản thân",
-        },
-        {
-          title: "Trò chơi đánh vần",
-          subtitle: "Cải thiện kỹ năng ngón tay",
-        },
-        {
-          title: "Ký hiệu của ngày",
-          subtitle: "Học từ mới mỗi ngày",
-        },
-        {
-          title: "Từ điển",
-          subtitle: "học nhũng từ mới mỗi ngày",
-        },
-        {
-          title: "Ôn tập ký hiệu",
-          subtitle: "Ôn tập những ký hiệu đã học",
-        },
-      ],
-    },
-  ];
-
   return (
     <div className="animate-in fade-in duration-500">
       
@@ -88,7 +25,7 @@ export const Learn: React.FC = () => {
 
       {/* Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {categories.map((category, idx) => (
+        {learnCategories.map((category, idx) => (
           <div key={idx} className="flex flex-col gap-6">
             {/* Column Header */}
             <div

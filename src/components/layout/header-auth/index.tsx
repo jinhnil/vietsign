@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, Menu, Hand } from "lucide-react";
 import { useSelector } from "react-redux";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -36,13 +36,16 @@ export const Header: React.FC<DashboardHeaderProps> = ({ toggleSidebar }) => {
         </button>
 
         {/* Logo Area */}
-        <Link href="/home" className="flex items-center gap-2 group mr-2">
-          <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm group-hover:bg-primary-700 transition-colors">
-            A
+        <Link href="/" className="flex items-center gap-3 group mr-2">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform">
+            <Hand size={22} />
           </div>
-          <span className="font-bold text-lg text-gray-900 tracking-tight hidden sm:block">
-            ASL <span className="text-primary-600">Redefined</span>
-          </span>
+          <div className="hidden sm:block">
+            <span className="font-bold text-xl text-gray-900 tracking-tight">
+              VietSign<span className="text-primary-600">School</span>
+            </span>
+            <p className="text-xs text-gray-500 -mt-1">Ngôn ngữ ký hiệu</p>
+          </div>
         </Link>
       </div>
 
@@ -61,14 +64,6 @@ export const Header: React.FC<DashboardHeaderProps> = ({ toggleSidebar }) => {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3 relative z-50">
-        {/* Nút chuyển đổi phiên bản */}
-        <Link
-          href={pathname === "/learn" ? "/home" : "/learn"}
-          className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-all text-xs font-medium shadow-sm hover:shadow-md"
-        >
-          <span>{pathname === "/learn" ? "Phiên bản 1" : "Phiên bản 2"}</span>
-        </Link>
-
         {/* Search Mobile Button */}
         <button className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full">
           <Search size={22} />

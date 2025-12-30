@@ -2,19 +2,8 @@
 
 import { BookOpenCheck, Search, Plus, Users, Calendar, Clock, User, ChevronRight, Filter } from "lucide-react";
 import { useState } from "react";
+import { mockClasses, statusConfig } from "@/src/data";
 
-const mockClasses = [
-  { id: 1, name: "Lớp Ký hiệu cơ bản A1", teacher: "Trần Thị Lan", students: 25, maxStudents: 30, schedule: "Thứ 2, 4, 6 - 9:00", startDate: "15/01/2025", endDate: "15/04/2025", status: "ongoing", facility: "Cơ sở Hà Nội" },
-  { id: 2, name: "Lớp Ký hiệu nâng cao B2", teacher: "Nguyễn Văn Minh", students: 18, maxStudents: 20, schedule: "Thứ 3, 5 - 14:00", startDate: "01/02/2025", endDate: "01/05/2025", status: "ongoing", facility: "Cơ sở HCM" },
-  { id: 3, name: "Lớp Ký hiệu giao tiếp C1", teacher: "Lê Thị Hương", students: 0, maxStudents: 25, schedule: "Thứ 2, 4 - 18:00", startDate: "01/03/2025", endDate: "01/06/2025", status: "upcoming", facility: "Cơ sở Đà Nẵng" },
-  { id: 4, name: "Lớp Ký hiệu cơ bản A2", teacher: "Phạm Văn Đức", students: 28, maxStudents: 30, schedule: "Thứ 3, 5, 7 - 10:00", startDate: "01/10/2024", endDate: "01/01/2025", status: "completed", facility: "Cơ sở Hà Nội" },
-];
-
-const statusConfig: Record<string, { label: string; color: string }> = {
-  ongoing: { label: "Đang diễn ra", color: "bg-green-100 text-green-800" },
-  upcoming: { label: "Sắp diễn ra", color: "bg-blue-100 text-blue-800" },
-  completed: { label: "Đã hoàn thành", color: "bg-gray-100 text-gray-600" },
-};
 
 export function ClassesManagement() {
   const [searchQuery, setSearchQuery] = useState("");

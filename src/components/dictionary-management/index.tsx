@@ -2,20 +2,14 @@
 
 import { Library, Search, Plus, Edit, Trash2, Video, Eye, Filter } from "lucide-react";
 import { useState } from "react";
+import { dictionaryItems } from "@/src/data";
 
-const mockWords = [
-  { id: 1, word: "Xin chào", category: "Chào hỏi", videoUrl: "/videos/xinchao.mp4", views: 1520, status: "published" },
-  { id: 2, word: "Cảm ơn", category: "Chào hỏi", videoUrl: "/videos/camon.mp4", views: 1350, status: "published" },
-  { id: 3, word: "Tạm biệt", category: "Chào hỏi", videoUrl: "/videos/tambiet.mp4", views: 980, status: "published" },
-  { id: 4, word: "Trường học", category: "Giáo dục", videoUrl: "/videos/truonghoc.mp4", views: 750, status: "draft" },
-  { id: 5, word: "Giáo viên", category: "Giáo dục", videoUrl: "/videos/giaovien.mp4", views: 620, status: "published" },
-];
 
 export function DictionaryManagementComponent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
 
-  const filteredWords = mockWords.filter(word => {
+  const filteredWords = dictionaryItems.filter(word => {
     const matchesSearch = word.word.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = filterCategory === "all" || word.category === filterCategory;
     return matchesSearch && matchesCategory;

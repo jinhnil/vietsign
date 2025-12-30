@@ -3,3 +3,7 @@ quản trị viên cơ sở: home, dashboard, quản lý người dùng, quản 
 giáo viên: home, dashboard, thông báo, quản lý lớp học, quản lý học tập, thống kê, quản lý kiểm tra, chấm điểm,từ điển, trò chơi  
 học sinh: home, dashboard, thông báo, quản lý học tập, thống kê, làm bài kiểm tra, học tập, đăng ký lớp học, từ điển, trò chơi
 test: tất cả các quyền
+
+
+trò chơi:
+- 

@@ -28,6 +28,7 @@ import { logout } from "@/src/store/slices/adminSlice";
 
 interface SidebarProps {
   isOpen: boolean;
+  isSmallScreen?: boolean;
 }
 
 interface MenuItem {
@@ -37,7 +38,7 @@ interface MenuItem {
   allowedRoles: string[]; // Danh sách các role được phép truy cập
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false }) => {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch();
@@ -200,24 +201,44 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
   const isActive = (path: string) => pathname === path;
 
+  // On small screens: sidebar slides in/out from left
+  // On large screens: sidebar collapses/expands in place
+  const getSidebarClasses = () => {
+    if (isSmallScreen) {
+      // Mobile/small screen behavior: slide in/out
+      return isOpen
+        ? "w-60 px-3 translate-x-0"
+        : "w-60 px-3 -translate-x-full";
+    } else {
+      // Desktop behavior: collapse/expand
+      return isOpen
+        ? "w-60 px-3 translate-x-0"
+        : "w-24 px-2 translate-x-0";
+    }
+  };
+
   return (
     <aside
       className={`
         fixed left-0 top-16 bottom-0 z-40 bg-white border-r border-gray-200
-        transition-all duration-300 ease-in-out pb-4
-        ${isOpen ? "w-60 px-3 overflow-y-auto" : "w-24 px-2 overflow-y-auto"} 
+        transition-all duration-300 ease-in-out pb-4 overflow-y-auto
+        ${getSidebarClasses()}
       `}
     >
       <nav className="flex flex-col py-3 space-y-1 h-full">
         {filteredMenuItems.map((item) => {
           const active = isActive(item.path);
+          // On small screens, always show expanded style (sidebar slides in as drawer)
+          // On large screens, show collapsed/expanded based on isOpen
+          const showExpanded = isSmallScreen || isOpen;
+          
           return (
             <Link
               key={item.path}
               href={item.path}
               className={`
                 flex items-center rounded-xl transition-colors duration-200 group
-                ${isOpen
+                ${showExpanded
                   ? "flex-row px-3 py-2.5 gap-4 justify-start" // Expanded: horizontal
                   : "flex-col justify-center items-center py-3 gap-0 h-20" // Collapsed: vertical, centered
                 }
@@ -226,7 +247,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                   : "text-gray-700 hover:bg-gray-100"
                 }
               `}
-              title={!isOpen ? item.label : ""}
+              title={!showExpanded ? item.label : ""}
             >
               <div
                 className={`${active
@@ -240,7 +261,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
               <span
                 className={`
                 transition-all duration-200 leading-tight text-center
-                ${isOpen
+                ${showExpanded
                     ? "text-sm font-medium w-auto whitespace-nowrap opacity-100" // Open: show text
                     : "text-xs font-medium opacity-100" // Closed: show text small
                   }

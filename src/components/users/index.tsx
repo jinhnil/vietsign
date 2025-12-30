@@ -2,29 +2,8 @@
 
 import { Users, Search, Plus, Filter, Edit, Trash2, UserCheck, UserX } from "lucide-react";
 import { useState } from "react";
+import { mockUsers, roleLabels, roleColors } from "@/src/data";
 
-// Mock data cho users
-const mockUsers = [
-  { id: 1, name: "Nguyễn Văn A", email: "nguyenvana@example.com", role: "STUDENT", status: "active", facility: "Cơ sở Hà Nội" },
-  { id: 2, name: "Trần Thị B", email: "tranthib@example.com", role: "TEACHER", status: "active", facility: "Cơ sở Hà Nội" },
-  { id: 3, name: "Lê Văn C", email: "levanc@example.com", role: "STUDENT", status: "inactive", facility: "Cơ sở HCM" },
-  { id: 4, name: "Phạm Thị D", email: "phamthid@example.com", role: "FACILITY_MANAGER", status: "active", facility: "Cơ sở Đà Nẵng" },
-  { id: 5, name: "Hoàng Văn E", email: "hoangvane@example.com", role: "TEACHER", status: "active", facility: "Cơ sở HCM" },
-];
-
-const roleLabels: Record<string, string> = {
-  ADMIN: "Quản trị viên",
-  FACILITY_MANAGER: "Quản trị viên cơ sở",
-  TEACHER: "Giáo viên",
-  STUDENT: "Học sinh",
-};
-
-const roleColors: Record<string, string> = {
-  ADMIN: "bg-purple-100 text-purple-800",
-  FACILITY_MANAGER: "bg-blue-100 text-blue-800",
-  TEACHER: "bg-green-100 text-green-800",
-  STUDENT: "bg-amber-100 text-amber-800",
-};
 
 export function UsersManagement() {
   const [searchQuery, setSearchQuery] = useState("");

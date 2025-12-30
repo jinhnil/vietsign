@@ -2,13 +2,7 @@
 
 import { Building, Search, Plus, MapPin, Users, Phone, Mail, Edit, Trash2, MoreVertical } from "lucide-react";
 import { useState } from "react";
-
-const mockFacilities = [
-  { id: 1, name: "Cơ sở Hà Nội", address: "123 Đường Láng, Đống Đa, Hà Nội", phone: "024 1234 5678", email: "hanoi@vietsign.edu.vn", manager: "Nguyễn Văn Quản", studentCount: 150, teacherCount: 12, status: "active" },
-  { id: 2, name: "Cơ sở Hồ Chí Minh", address: "456 Nguyễn Văn Linh, Quận 7, TP.HCM", phone: "028 8765 4321", email: "hcm@vietsign.edu.vn", manager: "Trần Thị Lan", studentCount: 200, teacherCount: 18, status: "active" },
-  { id: 3, name: "Cơ sở Đà Nẵng", address: "789 Nguyễn Văn Linh, Hải Châu, Đà Nẵng", phone: "0236 123 4567", email: "danang@vietsign.edu.vn", manager: "Lê Minh Tuấn", studentCount: 80, teacherCount: 8, status: "active" },
-  { id: 4, name: "Cơ sở Cần Thơ", address: "321 Đường 3/2, Ninh Kiều, Cần Thơ", phone: "0292 987 6543", email: "cantho@vietsign.edu.vn", manager: "Phạm Văn Hùng", studentCount: 45, teacherCount: 5, status: "inactive" },
-];
+import { mockFacilities, facilityStatusConfig } from "@/src/data";
 
 export function FacilitiesManagement() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,38 +33,41 @@ export function FacilitiesManagement() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredFacilities.map((facility) => (
-          <div key={facility.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{facility.name}</h3>
-                  <span className={`inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full mt-1 ${facility.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}>
-                    {facility.status === "active" ? "Đang hoạt động" : "Tạm ngưng"}
-                  </span>
+        {filteredFacilities.map((facility) => {
+          const statusInfo = facilityStatusConfig[facility.status] || facilityStatusConfig.inactive;
+          return (
+            <div key={facility.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">{facility.name}</h3>
+                    <span className={`inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full mt-1 ${statusInfo.color}`}>
+                      {statusInfo.label}
+                    </span>
+                  </div>
+                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"><MoreVertical size={20} /></button>
                 </div>
-                <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"><MoreVertical size={20} /></button>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-start gap-3 text-gray-600"><MapPin size={18} className="text-gray-400 flex-shrink-0 mt-0.5" /><span>{facility.address}</span></div>
+                  <div className="flex items-center gap-3 text-gray-600"><Phone size={18} className="text-gray-400" /><span>{facility.phone}</span></div>
+                  <div className="flex items-center gap-3 text-gray-600"><Mail size={18} className="text-gray-400" /><span>{facility.email}</span></div>
+                </div>
+                <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-100">
+                  <div className="flex items-center gap-2"><Users size={18} className="text-primary-500" /><span className="text-sm"><span className="font-semibold text-gray-900">{facility.studentCount}</span><span className="text-gray-500"> học sinh</span></span></div>
+                  <div className="flex items-center gap-2"><Users size={18} className="text-green-500" /><span className="text-sm"><span className="font-semibold text-gray-900">{facility.teacherCount}</span><span className="text-gray-500"> giáo viên</span></span></div>
+                </div>
+                <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-100">
+                  <span className="text-sm text-gray-500">Quản lý:</span>
+                  <span className="text-sm font-medium text-gray-900">{facility.manager}</span>
+                </div>
               </div>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-start gap-3 text-gray-600"><MapPin size={18} className="text-gray-400 flex-shrink-0 mt-0.5" /><span>{facility.address}</span></div>
-                <div className="flex items-center gap-3 text-gray-600"><Phone size={18} className="text-gray-400" /><span>{facility.phone}</span></div>
-                <div className="flex items-center gap-3 text-gray-600"><Mail size={18} className="text-gray-400" /><span>{facility.email}</span></div>
-              </div>
-              <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-2"><Users size={18} className="text-primary-500" /><span className="text-sm"><span className="font-semibold text-gray-900">{facility.studentCount}</span><span className="text-gray-500"> học sinh</span></span></div>
-                <div className="flex items-center gap-2"><Users size={18} className="text-green-500" /><span className="text-sm"><span className="font-semibold text-gray-900">{facility.teacherCount}</span><span className="text-gray-500"> giáo viên</span></span></div>
-              </div>
-              <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-100">
-                <span className="text-sm text-gray-500">Quản lý:</span>
-                <span className="text-sm font-medium text-gray-900">{facility.manager}</span>
+              <div className="px-6 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-2">
+                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg"><Edit size={16} />Chỉnh sửa</button>
+                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={16} />Xóa</button>
               </div>
             </div>
-            <div className="px-6 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-2">
-              <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg"><Edit size={16} />Chỉnh sửa</button>
-              <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={16} />Xóa</button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {filteredFacilities.length === 0 && (

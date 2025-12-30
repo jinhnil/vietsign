@@ -2,23 +2,17 @@
 
 import { Bell, Check, CheckCheck, Trash2, Filter, Info, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
+import { mockNotifications as initialNotifications, notificationTypeConfig, NotificationItem } from "@/src/data";
 
-const mockNotifications = [
-  { id: 1, title: "Lớp học mới đã được tạo", message: "Lớp A3 đã được tạo.", type: "info", isRead: false, createdAt: "5 phút trước", sender: "Hệ thống" },
-  { id: 2, title: "Bài kiểm tra sắp diễn ra", message: "Kiểm tra cuối kỳ lớp B2 ngày 15/01.", type: "warning", isRead: false, createdAt: "1 giờ trước", sender: "Admin" },
-  { id: 3, title: "Hoàn thành khóa học", message: "Chúc mừng! Bạn đã hoàn thành khóa học.", type: "success", isRead: true, createdAt: "Hôm qua", sender: "Hệ thống" },
-  { id: 4, title: "Lịch học thay đổi", message: "Lớp A1 nghỉ học ngày 20/01.", type: "error", isRead: true, createdAt: "2 ngày trước", sender: "GV Trần Lan" },
-];
-
-const typeConfig: Record<string, { icon: React.ReactNode; bgColor: string; iconColor: string }> = {
-  info: { icon: <Info size={20} />, bgColor: "bg-blue-100", iconColor: "text-blue-600" },
-  warning: { icon: <AlertTriangle size={20} />, bgColor: "bg-amber-100", iconColor: "text-amber-600" },
-  success: { icon: <CheckCircle size={20} />, bgColor: "bg-green-100", iconColor: "text-green-600" },
-  error: { icon: <XCircle size={20} />, bgColor: "bg-red-100", iconColor: "text-red-600" },
+const iconMap: Record<string, React.ReactNode> = {
+  Info: <Info size={20} />,
+  AlertTriangle: <AlertTriangle size={20} />,
+  CheckCircle: <CheckCircle size={20} />,
+  XCircle: <XCircle size={20} />,
 };
 
 export function NotificationsManagement() {
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
   const [filterType, setFilterType] = useState("all");
 
   const filteredNotifications = notifications.filter(notif => filterType === "all" || (filterType === "unread" ? !notif.isRead : notif.type === filterType));
@@ -53,17 +47,21 @@ export function NotificationsManagement() {
             <option value="unread">Chưa đọc</option>
             <option value="info">Thông tin</option>
             <option value="warning">Cảnh báo</option>
+            <option value="success">Thành công</option>
+            <option value="error">Lỗi</option>
           </select>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y divide-gray-100">
         {filteredNotifications.map((notif) => {
-          const config = typeConfig[notif.type];
+          const config = notificationTypeConfig[notif.type];
           return (
             <div key={notif.id} className={`p-5 hover:bg-gray-50 ${!notif.isRead ? 'bg-primary-50/30' : ''}`}>
               <div className="flex items-start gap-4">
-                <div className={`w-10 h-10 rounded-xl ${config.bgColor} flex items-center justify-center ${config.iconColor}`}>{config.icon}</div>
+                <div className={`w-10 h-10 rounded-xl ${config.bgColor} flex items-center justify-center ${config.iconColor}`}>
+                  {iconMap[config.iconName]}
+                </div>
                 <div className="flex-1">
                   <h3 className={`font-medium ${!notif.isRead ? 'text-gray-900' : 'text-gray-700'}`}>
                     {notif.title} {!notif.isRead && <span className="inline-block w-2 h-2 bg-primary-500 rounded-full ml-2"></span>}
