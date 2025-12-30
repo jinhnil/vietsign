@@ -1,14 +1,38 @@
 "use client";
 
-import { PenLine, Filter, CheckCircle, Clock, FileText, ChevronRight } from "lucide-react";
+import { PenLine, Filter, CheckCircle, Clock, FileText, ChevronRight, BookOpen } from "lucide-react";
 import { useState } from "react";
 import { mockSubmissions, submissionStatusConfig } from "@/src/data";
+import { getUserById } from "@/src/data/usersData";
+import { getExamById } from "@/src/data/examsData";
+import { getClassById } from "@/src/data/classesData";
+import { Pagination, usePagination } from "@/src/components/common/Pagination";
 
+const ITEMS_PER_PAGE = 6;
 
 export function GradingManagement() {
   const [filterStatus, setFilterStatus] = useState("all");
+
+  // Helper functions để lấy tên từ ID
+  const getStudentName = (studentId: number): string => {
+    const student = getUserById(studentId);
+    return student?.name || 'Không xác định';
+  };
+
+  const getExamTitle = (examId: number): string => {
+    const exam = getExamById(examId);
+    return exam?.title || 'Không xác định';
+  };
+
+  const getClassName = (classId: number): string => {
+    const classItem = getClassById(classId);
+    return classItem?.name || 'Không xác định';
+  };
+
   const filteredSubmissions = mockSubmissions.filter(sub => filterStatus === "all" || sub.status === filterStatus);
   const pendingCount = mockSubmissions.filter(s => s.status === "pending").length;
+  
+  const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filteredSubmissions, ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -50,32 +74,74 @@ export function GradingManagement() {
       </div>
 
       <div className="space-y-4">
-        {filteredSubmissions.map((sub) => (
-          <div key={sub.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
-            <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold">{sub.student.charAt(0)}</div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-gray-900">{sub.student}</h3>
-                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${submissionStatusConfig[sub.status].color}`}>{submissionStatusConfig[sub.status].label}</span>
+        {paginatedItems.map((sub) => {
+          const studentName = getStudentName(sub.studentId);
+          const examTitle = getExamTitle(sub.examId);
+          const className = getClassName(sub.classId);
+          
+          return (
+            <div key={sub.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
+              <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold">
+                    {studentName.charAt(0)}
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1.5"><FileText size={16} className="text-gray-400" />{sub.exam}</div>
-                    <div className="flex items-center gap-1.5"><Clock size={16} className="text-gray-400" />{sub.submittedAt}</div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-gray-900">{studentName}</h3>
+                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${submissionStatusConfig[sub.status].color}`}>
+                        {submissionStatusConfig[sub.status].label}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-1.5">
+                        <FileText size={16} className="text-gray-400" />
+                        <span>{examTitle}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <BookOpen size={16} className="text-gray-400" />
+                        <span>{className}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Clock size={16} className="text-gray-400" />
+                        <span>{sub.submittedAt}</span>
+                      </div>
+                      {sub.duration && (
+                        <span className="text-gray-400">({sub.duration})</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                {sub.score !== null && <div className="text-center"><p className="text-2xl font-bold text-primary-600">{sub.score}</p><p className="text-xs text-gray-500">Điểm</p></div>}
-                <button className="inline-flex items-center gap-1 px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-xl hover:bg-primary-100">
-                  {sub.status === "pending" ? "Chấm điểm" : "Xem chi tiết"} <ChevronRight size={16} />
-                </button>
+                <div className="flex items-center gap-4">
+                  {sub.score !== null && (
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-primary-600">{sub.score}</p>
+                      <p className="text-xs text-gray-500">Điểm</p>
+                    </div>
+                  )}
+                  <button className="inline-flex items-center gap-1 px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-xl hover:bg-primary-100">
+                    {sub.status === "pending" ? "Chấm điểm" : "Xem chi tiết"} <ChevronRight size={16} />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      {filteredSubmissions.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            itemsPerPage={ITEMS_PER_PAGE}
+            totalItems={mockSubmissions.length}
+            filteredItems={filteredSubmissions.length}
+            itemName="bài nộp"
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
     </div>
   );
 }

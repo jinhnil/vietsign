@@ -1,387 +1,268 @@
-export interface DailySign {
-  id: number;
-  date: string;
-  word: string;
-  category: string;
-  videoUrl: string;
-  definition: string;
-  examples: string[];
-  tips: string;
-  difficulty: string;
-  relatedWords?: string[];
+// Daily Signs data - Chỉ lưu ID từ điển cho mỗi ngày
+// Thông tin chi tiết của từ được lấy từ dictionaryData
+// Lịch từ: 01/12/2025 - 31/03/2026
+
+import { dictionaryItems, type DictionaryItem } from './dictionaryData';
+
+// Interface đơn giản - chỉ lưu ngày và ID từ điển
+export interface DailySignEntry {
+  date: string;           // Format: YYYY-MM-DD
+  dictionaryItemId: number;  // ID của từ trong từ điển
 }
 
-export const dailySigns: DailySign[] = [
-  {
-    id: 1,
-    date: "2025-01-01",
-    word: "Năm mới",
-    category: "Ngày lễ",
-    videoUrl: "/videos/nammoi.mp4",
-    definition: "Ngày đầu tiên của năm mới theo lịch dương, thường được chào đón bằng các lễ hội và sự kiện.",
-    examples: ["Chúc mừng năm mới!", "Năm mới đã đến rồi.", "Bạn có kế hoạch gì cho năm mới?"],
-    tips: "Ký hiệu này kết hợp giữa ký hiệu 'năm' và 'mới'. Thực hiện bằng cách xoay tay theo chiều kim đồng hồ.",
-    difficulty: "Dễ",
-    relatedWords: ["Tết", "Lễ hội", "Chúc mừng"]
-  },
-  {
-    id: 2,
-    date: "2025-01-02",
-    word: "Gia đình",
-    category: "Gia đình",
-    videoUrl: "/videos/giadinh.mp4",
-    definition: "Nhóm người có quan hệ huyết thống hoặc hôn nhân sống chung với nhau.",
-    examples: ["Gia đình tôi có 4 người.", "Gia đình rất quan trọng.", "Tôi yêu gia đình tôi."],
-    tips: "Dùng hai bàn tay tạo thành hình vòng tròn, tượng trưng cho sự gắn kết của gia đình.",
-    difficulty: "Dễ",
-    relatedWords: ["Bố", "Mẹ", "Anh chị em"]
-  },
-  {
-    id: 3,
-    date: "2025-01-03",
-    word: "Học",
-    category: "Giáo dục",
-    videoUrl: "/videos/hoc.mp4",
-    definition: "Quá trình tiếp thu kiến thức, kỹ năng thông qua nghiên cứu, thực hành.",
-    examples: ["Tôi đang học tiếng ký hiệu.", "Học là điều quan trọng.", "Bạn học ở đâu?"],
-    tips: "Ký hiệu mô phỏng động tác lấy kiến thức từ sách vào đầu.",
-    difficulty: "Dễ",
-    relatedWords: ["Trường học", "Giáo viên", "Học sinh"]
-  },
-  {
-    id: 4,
-    date: "2025-01-04",
-    word: "Yêu",
-    category: "Cảm xúc",
-    videoUrl: "/videos/yeu.mp4",
-    definition: "Cảm xúc mạnh mẽ của sự quan tâm và gắn bó sâu sắc với ai đó.",
-    examples: ["Tôi yêu bạn.", "Yêu thương là điều tuyệt vời.", "Họ rất yêu nhau."],
-    tips: "Đặt hai tay chéo lên ngực, biểu thị tình cảm đến từ trái tim.",
-    difficulty: "Dễ",
-    relatedWords: ["Thương", "Thích", "Quan tâm"]
-  },
-  {
-    id: 5,
-    date: "2025-01-05",
-    word: "Cảm ơn",
-    category: "Chào hỏi",
-    videoUrl: "/videos/camon.mp4",
-    definition: "Lời nói thể hiện sự biết ơn, trân trọng khi nhận được sự giúp đỡ hoặc quà tặng.",
-    examples: ["Cảm ơn bạn rất nhiều!", "Tôi muốn cảm ơn mọi người.", "Cảm ơn vì đã giúp đỡ."],
-    tips: "Đưa bàn tay từ môi ra phía trước, như đang gửi lời cảm ơn đến người khác.",
-    difficulty: "Dễ",
-    relatedWords: ["Xin lỗi", "Không có gì", "Làm ơn"]
-  },
-  {
-    id: 6,
-    date: "2025-01-06",
-    word: "Bạn",
-    category: "Quan hệ",
-    videoUrl: "/videos/ban.mp4",
-    definition: "Người có mối quan hệ thân thiết, gắn bó qua tình bạn.",
-    examples: ["Đây là bạn tôi.", "Bạn có khỏe không?", "Chúng tôi là bạn thân."],
-    tips: "Móc hai ngón trỏ vào nhau, tượng trưng cho sự kết nối giữa hai người bạn.",
-    difficulty: "Dễ",
-    relatedWords: ["Bạn thân", "Đồng nghiệp", "Người quen"]
-  },
-  {
-    id: 7,
-    date: "2025-01-07",
-    word: "Thời tiết",
-    category: "Thời tiết",
-    videoUrl: "/videos/thoitiet.mp4",
-    definition: "Trạng thái của khí quyển tại một nơi và thời điểm cụ thể.",
-    examples: ["Thời tiết hôm nay thế nào?", "Thời tiết đẹp quá!", "Thời tiết xấu, không đi được."],
-    tips: "Hai bàn tay đặt song song, di chuyển lên xuống tượng trưng cho sự thay đổi thời tiết.",
-    difficulty: "Trung bình",
-    relatedWords: ["Nắng", "Mưa", "Gió"]
-  },
-  {
-    id: 8,
-    date: "2025-01-08",
-    word: "Ăn",
-    category: "Đời sống",
-    videoUrl: "/videos/an.mp4",
-    definition: "Đưa thức ăn vào miệng, nhai và nuốt để cung cấp dinh dưỡng cho cơ thể.",
-    examples: ["Bạn đã ăn chưa?", "Tôi muốn ăn phở.", "Chúng ta đi ăn nhé!"],
-    tips: "Mô phỏng động tác đưa thức ăn vào miệng bằng tay phải.",
-    difficulty: "Dễ",
-    relatedWords: ["Uống", "Đói", "Thức ăn"]
-  },
-  {
-    id: 9,
-    date: "2025-01-09",
-    word: "Đi",
-    category: "Đời sống",
-    videoUrl: "/videos/di.mp4",
-    definition: "Di chuyển từ nơi này sang nơi khác bằng chân hoặc phương tiện.",
-    examples: ["Tôi đi làm.", "Bạn đi đâu vậy?", "Chúng ta đi thôi!"],
-    tips: "Hai ngón tay trỏ và giữa di chuyển xen kẽ, mô phỏng bước đi.",
-    difficulty: "Dễ",
-    relatedWords: ["Chạy", "Về", "Đến"]
-  },
-  {
-    id: 10,
-    date: "2025-01-10",
-    word: "Ngủ",
-    category: "Đời sống",
-    videoUrl: "/videos/ngu.mp4",
-    definition: "Trạng thái nghỉ ngơi của cơ thể và tâm trí, thường xảy ra vào ban đêm.",
-    examples: ["Tôi buồn ngủ quá.", "Ngủ ngon nhé!", "Bạn ngủ mấy tiếng?"],
-    tips: "Đặt bàn tay lên má, nghiêng đầu như đang ngủ.",
-    difficulty: "Dễ",
-    relatedWords: ["Thức dậy", "Mơ", "Nghỉ ngơi"]
-  },
-  {
-    id: 11,
-    date: "2025-01-11",
-    word: "Làm việc",
-    category: "Đời sống",
-    videoUrl: "/videos/lamviec.mp4",
-    definition: "Thực hiện các hoạt động, nhiệm vụ để đạt được mục tiêu hoặc kiếm sống.",
-    examples: ["Tôi đang làm việc.", "Làm việc chăm chỉ.", "Bạn làm việc ở đâu?"],
-    tips: "Hai nắm tay đập vào nhau lần lượt, mô phỏng động tác làm việc.",
-    difficulty: "Trung bình",
-    relatedWords: ["Công việc", "Nghề nghiệp", "Văn phòng"]
-  },
-  {
-    id: 12,
-    date: "2025-01-12",
-    word: "Vui",
-    category: "Cảm xúc",
-    videoUrl: "/videos/vui.mp4",
-    definition: "Trạng thái cảm xúc tích cực, hạnh phúc, phấn khởi.",
-    examples: ["Tôi rất vui!", "Chúc bạn vui vẻ!", "Hôm nay là ngày vui."],
-    tips: "Đặt hai tay lên ngực và vuốt lên trên, thể hiện niềm vui dâng trào.",
-    difficulty: "Dễ",
-    relatedWords: ["Hạnh phúc", "Phấn khởi", "Cười"]
-  },
-  {
-    id: 13,
-    date: "2025-01-13",
-    word: "Buồn",
-    category: "Cảm xúc",
-    videoUrl: "/videos/buon.mp4",
-    definition: "Trạng thái cảm xúc tiêu cực, không vui, đau khổ.",
-    examples: ["Tôi cảm thấy buồn.", "Đừng buồn nữa.", "Tại sao bạn buồn?"],
-    tips: "Hai tay đặt trên mặt, vuốt xuống dưới biểu thị sự buồn bã.",
-    difficulty: "Dễ",
-    relatedWords: ["Khóc", "Đau khổ", "Thất vọng"]
-  },
-  {
-    id: 14,
-    date: "2025-01-14",
-    word: "Nước",
-    category: "Đời sống",
-    videoUrl: "/videos/nuoc.mp4",
-    definition: "Chất lỏng không màu, không mùi, cần thiết cho sự sống.",
-    examples: ["Tôi muốn uống nước.", "Nước rất quan trọng.", "Cho tôi cốc nước."],
-    tips: "Ngón tay tạo hình chữ W, đưa lên miệng như đang uống.",
-    difficulty: "Dễ",
-    relatedWords: ["Uống", "Khát", "Đồ uống"]
-  },
-  {
-    id: 15,
-    date: "2025-01-15",
-    word: "Thời gian",
-    category: "Thời gian",
-    videoUrl: "/videos/thoigian.mp4",
-    definition: "Đơn vị đo lường sự liên tục của các sự kiện từ quá khứ đến tương lai.",
-    examples: ["Bây giờ là mấy giờ?", "Thời gian trôi nhanh quá!", "Tôi không có thời gian."],
-    tips: "Chỉ vào cổ tay nơi đeo đồng hồ.",
-    difficulty: "Trung bình",
-    relatedWords: ["Giờ", "Phút", "Ngày"]
-  },
-  {
-    id: 16,
-    date: "2025-01-16",
-    word: "Tiền",
-    category: "Đời sống",
-    videoUrl: "/videos/tien.mp4",
-    definition: "Phương tiện trao đổi, thanh toán được sử dụng rộng rãi.",
-    examples: ["Bao nhiêu tiền?", "Tôi không có tiền.", "Tiền rất quan trọng."],
-    tips: "Chà ngón cái với các ngón còn lại, mô phỏng động tác đếm tiền.",
-    difficulty: "Dễ",
-    relatedWords: ["Mua", "Bán", "Giá"]
-  },
-  {
-    id: 17,
-    date: "2025-01-17",
-    word: "Nhà",
-    category: "Địa điểm",
-    videoUrl: "/videos/nha.mp4",
-    definition: "Nơi ở, sinh sống của một người hoặc gia đình.",
-    examples: ["Tôi về nhà.", "Nhà bạn ở đâu?", "Đây là nhà tôi."],
-    tips: "Hai bàn tay tạo hình mái nhà tam giác.",
-    difficulty: "Dễ",
-    relatedWords: ["Gia đình", "Phòng", "Cửa"]
-  },
-  {
-    id: 18,
-    date: "2025-01-18",
-    word: "Xe",
-    category: "Giao thông",
-    videoUrl: "/videos/xe.mp4",
-    definition: "Phương tiện di chuyển trên đường, có bánh xe.",
-    examples: ["Tôi đi xe máy.", "Xe này đẹp quá!", "Bạn có xe không?"],
-    tips: "Hai tay nắm như đang cầm vô lăng và xoay.",
-    difficulty: "Dễ",
-    relatedWords: ["Xe máy", "Ô tô", "Xe đạp"]
-  },
-  {
-    id: 19,
-    date: "2025-01-19",
-    word: "Điện thoại",
-    category: "Công nghệ",
-    videoUrl: "/videos/dienthoai.mp4",
-    definition: "Thiết bị điện tử dùng để liên lạc, giao tiếp từ xa.",
-    examples: ["Cho tôi số điện thoại.", "Điện thoại tôi hết pin.", "Gọi điện thoại cho tôi nhé!"],
-    tips: "Mô phỏng động tác cầm điện thoại lên tai.",
-    difficulty: "Dễ",
-    relatedWords: ["Gọi điện", "Nhắn tin", "Liên lạc"]
-  },
-  {
-    id: 20,
-    date: "2025-01-20",
-    word: "Máy tính",
-    category: "Công nghệ",
-    videoUrl: "/videos/maytinh.mp4",
-    definition: "Thiết bị điện tử xử lý thông tin, dữ liệu.",
-    examples: ["Tôi làm việc trên máy tính.", "Máy tính này nhanh.", "Bạn có máy tính không?"],
-    tips: "Giả vờ gõ bàn phím với hai tay.",
-    difficulty: "Trung bình",
-    relatedWords: ["Laptop", "Internet", "Phần mềm"]
-  },
-  {
-    id: 21,
-    date: "2025-01-21",
-    word: "Đẹp",
-    category: "Tính từ",
-    videoUrl: "/videos/dep.mp4",
-    definition: "Có hình thức, vẻ ngoài ưa nhìn, hấp dẫn.",
-    examples: ["Bạn rất đẹp!", "Cảnh đẹp quá!", "Đây là nơi đẹp nhất."],
-    tips: "Xoay bàn tay trước mặt theo hình tròn.",
-    difficulty: "Dễ",
-    relatedWords: ["Xinh", "Tuyệt vời", "Ấn tượng"]
-  },
-  {
-    id: 22,
-    date: "2025-01-22",
-    word: "Lớn",
-    category: "Tính từ",
-    videoUrl: "/videos/lon.mp4",
-    definition: "Có kích thước, số lượng vượt mức trung bình.",
-    examples: ["Cái này lớn quá!", "Anh ấy lớn hơn tôi.", "Đây là thành phố lớn."],
-    tips: "Hai tay mở rộng ra hai bên, thể hiện kích thước lớn.",
-    difficulty: "Dễ",
-    relatedWords: ["To", "Khổng lồ", "Rộng"]
-  },
-  {
-    id: 23,
-    date: "2025-01-23",
-    word: "Nhỏ",
-    category: "Tính từ",
-    videoUrl: "/videos/nho.mp4",
-    definition: "Có kích thước, số lượng dưới mức trung bình.",
-    examples: ["Cái này nhỏ quá!", "Em ấy còn nhỏ.", "Nhà tôi nhỏ thôi."],
-    tips: "Hai tay đưa lại gần nhau, thể hiện kích thước nhỏ.",
-    difficulty: "Dễ",
-    relatedWords: ["Bé", "Tí", "Chật"]
-  },
-  {
-    id: 24,
-    date: "2025-01-24",
-    word: "Nhanh",
-    category: "Tính từ",
-    videoUrl: "/videos/nhanh.mp4",
-    definition: "Di chuyển hoặc thực hiện với tốc độ cao.",
-    examples: ["Chạy nhanh lên!", "Anh ấy làm việc rất nhanh.", "Thời gian trôi nhanh quá!"],
-    tips: "Hai tay nắm lại, ngón cái bật ra ngoài nhanh chóng.",
-    difficulty: "Trung bình",
-    relatedWords: ["Tốc độ", "Vội", "Gấp"]
-  },
-  {
-    id: 25,
-    date: "2025-01-25",
-    word: "Chậm",
-    category: "Tính từ",
-    videoUrl: "/videos/cham.mp4",
-    definition: "Di chuyển hoặc thực hiện với tốc độ thấp.",
-    examples: ["Đi chậm thôi!", "Anh ấy nói chậm.", "Đồng hồ chạy chậm."],
-    tips: "Một tay vuốt nhẹ lên cánh tay kia với tốc độ chậm rãi.",
-    difficulty: "Trung bình",
-    relatedWords: ["Từ từ", "Thong thả", "Chậm rãi"]
-  },
-  {
-    id: 26,
-    date: "2025-01-26",
-    word: "Mới",
-    category: "Tính từ",
-    videoUrl: "/videos/moi.mp4",
-    definition: "Vừa được tạo ra, mua hoặc bắt đầu gần đây.",
-    examples: ["Đây là xe mới.", "Năm mới đến rồi!", "Bạn mới đến à?"],
-    tips: "Bàn tay phải vuốt lên lòng bàn tay trái, tượng trưng cho sự mới mẻ.",
-    difficulty: "Dễ",
-    relatedWords: ["Tươi mới", "Hiện đại", "Gần đây"]
-  },
-  {
-    id: 27,
-    date: "2025-01-27",
-    word: "Cũ",
-    category: "Tính từ",
-    videoUrl: "/videos/cu.mp4",
-    definition: "Đã tồn tại hoặc được sử dụng từ lâu.",
-    examples: ["Đây là nhà cũ.", "Quần áo cũ rồi.", "Bạn cũ của tôi."],
-    tips: "Nắm tay đưa xuống dưới cằm như vuốt râu già.",
-    difficulty: "Trung bình",
-    relatedWords: ["Xưa", "Lâu năm", "Cổ"]
-  },
-  {
-    id: 28,
-    date: "2025-01-28",
-    word: "Đúng",
-    category: "Tính từ",
-    videoUrl: "/videos/dung.mp4",
-    definition: "Phù hợp với sự thật, chính xác.",
-    examples: ["Bạn nói đúng!", "Đáp án này đúng.", "Đúng rồi!"],
-    tips: "Ngón trỏ đặt lên môi rồi hướng ra ngoài.",
-    difficulty: "Dễ",
-    relatedWords: ["Chính xác", "Đồng ý", "Phải"]
-  },
-  {
-    id: 29,
-    date: "2025-01-29",
-    word: "Sai",
-    category: "Tính từ",
-    videoUrl: "/videos/sai.mp4",
-    definition: "Không đúng, không phù hợp với sự thật.",
-    examples: ["Câu trả lời sai.", "Bạn làm sai rồi!", "Đừng hiểu sai ý tôi."],
-    tips: "Ngón trỏ lắc qua lắc lại trước mặt.",
-    difficulty: "Dễ",
-    relatedWords: ["Lỗi", "Nhầm", "Không đúng"]
-  },
-  {
-    id: 30,
-    date: "2025-01-30",
-    word: "Hiểu",
-    category: "Giao tiếp",
-    videoUrl: "/videos/hieu.mp4",
-    definition: "Nắm bắt được ý nghĩa, nội dung của điều gì đó.",
-    examples: ["Tôi hiểu rồi!", "Bạn hiểu không?", "Khó hiểu quá!"],
-    tips: "Đưa ngón trỏ từ thái dương ra ngoài, như ý tưởng vỡ lẽ.",
-    difficulty: "Trung bình",
-    relatedWords: ["Biết", "Nhận ra", "Nắm được"]
-  },
+// Lịch từ vựng hàng ngày - từ 01/12/2025 đến 31/03/2026
+export const dailySignSchedule: DailySignEntry[] = [
+  // Tháng 12/2025 - Chào hỏi & Gia đình
+  { date: "2025-12-01", dictionaryItemId: 1 },   // Xin chào
+  { date: "2025-12-02", dictionaryItemId: 2 },   // Cảm ơn
+  { date: "2025-12-03", dictionaryItemId: 3 },   // Tạm biệt
+  { date: "2025-12-04", dictionaryItemId: 4 },   // Xin lỗi
+  { date: "2025-12-05", dictionaryItemId: 5 },   // Không có gì
+  { date: "2025-12-06", dictionaryItemId: 6 },   // Chào buổi sáng
+  { date: "2025-12-07", dictionaryItemId: 7 },   // Chào buổi tối
+  { date: "2025-12-08", dictionaryItemId: 8 },   // Hẹn gặp lại
+  { date: "2025-12-09", dictionaryItemId: 9 },   // Rất vui được gặp
+  { date: "2025-12-10", dictionaryItemId: 10 },  // Bạn khỏe không
+  { date: "2025-12-11", dictionaryItemId: 11 },  // Tôi khỏe
+  { date: "2025-12-12", dictionaryItemId: 12 },  // Làm ơn
+  { date: "2025-12-13", dictionaryItemId: 14 },  // Chúc mừng
+  { date: "2025-12-14", dictionaryItemId: 16 },  // Tên bạn là gì
+  { date: "2025-12-15", dictionaryItemId: 17 },  // Tôi tên là
+  { date: "2025-12-16", dictionaryItemId: 21 },  // Gia đình
+  { date: "2025-12-17", dictionaryItemId: 22 },  // Bố
+  { date: "2025-12-18", dictionaryItemId: 23 },  // Mẹ
+  { date: "2025-12-19", dictionaryItemId: 24 },  // Anh trai
+  { date: "2025-12-20", dictionaryItemId: 25 },  // Chị gái
+  { date: "2025-12-21", dictionaryItemId: 26 },  // Em trai
+  { date: "2025-12-22", dictionaryItemId: 27 },  // Em gái
+  { date: "2025-12-23", dictionaryItemId: 28 },  // Ông
+  { date: "2025-12-24", dictionaryItemId: 29 },  // Bà
+  { date: "2025-12-25", dictionaryItemId: 30 },  // Con trai
+  { date: "2025-12-26", dictionaryItemId: 31 },  // Con gái
+  { date: "2025-12-27", dictionaryItemId: 38 },  // Vợ
+  { date: "2025-12-28", dictionaryItemId: 39 },  // Chồng
+  { date: "2025-12-29", dictionaryItemId: 40 },  // Con
+  { date: "2025-12-30", dictionaryItemId: 41 },  // Bố mẹ
+  { date: "2025-12-31", dictionaryItemId: 45 },  // Ông bà
+
+  // Tháng 1/2026 - Giáo dục & Số đếm
+  { date: "2026-01-01", dictionaryItemId: 51 },  // Trường học
+  { date: "2026-01-02", dictionaryItemId: 52 },  // Giáo viên
+  { date: "2026-01-03", dictionaryItemId: 53 },  // Học sinh
+  { date: "2026-01-04", dictionaryItemId: 54 },  // Sinh viên
+  { date: "2026-01-05", dictionaryItemId: 55 },  // Lớp học
+  { date: "2026-01-06", dictionaryItemId: 56 },  // Bài học
+  { date: "2026-01-07", dictionaryItemId: 57 },  // Bài tập
+  { date: "2026-01-08", dictionaryItemId: 58 },  // Sách
+  { date: "2026-01-09", dictionaryItemId: 60 },  // Bút
+  { date: "2026-01-10", dictionaryItemId: 63 },  // Thi
+  { date: "2026-01-11", dictionaryItemId: 64 },  // Điểm
+  { date: "2026-01-12", dictionaryItemId: 67 },  // Học
+  { date: "2026-01-13", dictionaryItemId: 68 },  // Đọc
+  { date: "2026-01-14", dictionaryItemId: 69 },  // Viết
+  { date: "2026-01-15", dictionaryItemId: 70 },  // Nghe
+  { date: "2026-01-16", dictionaryItemId: 71 },  // Nói
+  { date: "2026-01-17", dictionaryItemId: 72 },  // Hiểu
+  { date: "2026-01-18", dictionaryItemId: 84 },  // Đại học
+  { date: "2026-01-19", dictionaryItemId: 86 },  // Tốt nghiệp
+  { date: "2026-01-20", dictionaryItemId: 92 },  // Một
+  { date: "2026-01-21", dictionaryItemId: 93 },  // Hai
+  { date: "2026-01-22", dictionaryItemId: 94 },  // Ba
+  { date: "2026-01-23", dictionaryItemId: 95 },  // Bốn
+  { date: "2026-01-24", dictionaryItemId: 96 },  // Năm
+  { date: "2026-01-25", dictionaryItemId: 97 },  // Sáu
+  { date: "2026-01-26", dictionaryItemId: 98 },  // Bảy
+  { date: "2026-01-27", dictionaryItemId: 99 },  // Tám
+  { date: "2026-01-28", dictionaryItemId: 100 }, // Chín
+  { date: "2026-01-29", dictionaryItemId: 101 }, // Mười
+  { date: "2026-01-30", dictionaryItemId: 108 }, // Một trăm
+  { date: "2026-01-31", dictionaryItemId: 109 }, // Một nghìn
+
+  // Tháng 2/2026 - Đời sống & Thời gian
+  { date: "2026-02-01", dictionaryItemId: 147 }, // Ăn
+  { date: "2026-02-02", dictionaryItemId: 148 }, // Uống
+  { date: "2026-02-03", dictionaryItemId: 149 }, // Ngủ
+  { date: "2026-02-04", dictionaryItemId: 150 }, // Đi
+  { date: "2026-02-05", dictionaryItemId: 151 }, // Chạy
+  { date: "2026-02-06", dictionaryItemId: 154 }, // Làm việc
+  { date: "2026-02-07", dictionaryItemId: 155 }, // Nghỉ ngơi
+  { date: "2026-02-08", dictionaryItemId: 156 }, // Chơi
+  { date: "2026-02-09", dictionaryItemId: 157 }, // Xem
+  { date: "2026-02-10", dictionaryItemId: 158 }, // Mua
+  { date: "2026-02-11", dictionaryItemId: 160 }, // Nấu ăn
+  { date: "2026-02-12", dictionaryItemId: 163 }, // Tắm
+  { date: "2026-02-13", dictionaryItemId: 166 }, // Đi làm
+  { date: "2026-02-14", dictionaryItemId: 167 }, // Về nhà
+  { date: "2026-02-15", dictionaryItemId: 171 }, // Gọi điện
+  { date: "2026-02-16", dictionaryItemId: 172 }, // Nhắn tin
+  { date: "2026-02-17", dictionaryItemId: 181 }, // Thức dậy
+  { date: "2026-02-18", dictionaryItemId: 182 }, // Đi ngủ
+  { date: "2026-02-19", dictionaryItemId: 183 }, // Ăn sáng
+  { date: "2026-02-20", dictionaryItemId: 184 }, // Ăn trưa
+  { date: "2026-02-21", dictionaryItemId: 185 }, // Ăn tối
+  { date: "2026-02-22", dictionaryItemId: 201 }, // Hôm nay
+  { date: "2026-02-23", dictionaryItemId: 202 }, // Hôm qua
+  { date: "2026-02-24", dictionaryItemId: 203 }, // Ngày mai
+  { date: "2026-02-25", dictionaryItemId: 209 }, // Buổi sáng
+  { date: "2026-02-26", dictionaryItemId: 211 }, // Buổi chiều
+  { date: "2026-02-27", dictionaryItemId: 212 }, // Buổi tối
+  { date: "2026-02-28", dictionaryItemId: 221 }, // Giờ
+
+  // Tháng 3/2026 - Cảm xúc & Địa điểm
+  { date: "2026-03-01", dictionaryItemId: 231 }, // Vui
+  { date: "2026-03-02", dictionaryItemId: 232 }, // Buồn
+  { date: "2026-03-03", dictionaryItemId: 233 }, // Giận
+  { date: "2026-03-04", dictionaryItemId: 234 }, // Sợ
+  { date: "2026-03-05", dictionaryItemId: 235 }, // Yêu
+  { date: "2026-03-06", dictionaryItemId: 237 }, // Thích
+  { date: "2026-03-07", dictionaryItemId: 239 }, // Hạnh phúc
+  { date: "2026-03-08", dictionaryItemId: 241 }, // Lo lắng
+  { date: "2026-03-09", dictionaryItemId: 244 }, // Ngạc nhiên
+  { date: "2026-03-10", dictionaryItemId: 246 }, // Hy vọng
+  { date: "2026-03-11", dictionaryItemId: 247 }, // Tự tin
+  { date: "2026-03-12", dictionaryItemId: 252 }, // Mệt
+  { date: "2026-03-13", dictionaryItemId: 253 }, // Khỏe
+  { date: "2026-03-14", dictionaryItemId: 254 }, // Đói
+  { date: "2026-03-15", dictionaryItemId: 256 }, // Khát
+  { date: "2026-03-16", dictionaryItemId: 261 }, // Nhà
+  { date: "2026-03-17", dictionaryItemId: 262 }, // Trường
+  { date: "2026-03-18", dictionaryItemId: 263 }, // Bệnh viện
+  { date: "2026-03-19", dictionaryItemId: 264 }, // Chợ
+  { date: "2026-03-20", dictionaryItemId: 265 }, // Siêu thị
+  { date: "2026-03-21", dictionaryItemId: 268 }, // Công viên
+  { date: "2026-03-22", dictionaryItemId: 269 }, // Nhà hàng
+  { date: "2026-03-23", dictionaryItemId: 270 }, // Quán cafe
+  { date: "2026-03-24", dictionaryItemId: 271 }, // Rạp phim
+  { date: "2026-03-25", dictionaryItemId: 275 }, // Khách sạn
+  { date: "2026-03-26", dictionaryItemId: 283 }, // Biển
+  { date: "2026-03-27", dictionaryItemId: 284 }, // Núi
+  { date: "2026-03-28", dictionaryItemId: 291 }, // Văn phòng
+  { date: "2026-03-29", dictionaryItemId: 292 }, // Công ty
+  { date: "2026-03-30", dictionaryItemId: 294 }, // Cửa hàng
+  { date: "2026-03-31", dictionaryItemId: 121 }, // A (Chữ cái)
 ];
 
-export const previousSigns = dailySigns.slice(0, 10).map((sign, index) => ({
-  ...sign,
-  date: new Date(Date.now() - (index + 1) * 24 * 60 * 60 * 1000).toLocaleDateString("vi-VN"),
-}));
+// ========== Helper Functions ==========
 
+// Lấy thông tin từ điển theo ID
+export function getDictionaryItemById(id: number): DictionaryItem | undefined {
+  return dictionaryItems.find(item => item.id === id);
+}
+
+// Lấy từ vựng theo ngày cụ thể
+export function getDailySignByDate(date: string): DictionaryItem | undefined {
+  const entry = dailySignSchedule.find(e => e.date === date);
+  if (!entry) return undefined;
+  return getDictionaryItemById(entry.dictionaryItemId);
+}
+
+// Lấy từ vựng hôm nay
+export function getTodaySign(): DictionaryItem | undefined {
+  const today = new Date().toISOString().split('T')[0];
+  return getDailySignByDate(today);
+}
+
+// Lấy từ vựng hôm nay hoặc từ đầu tiên nếu không tìm thấy
+export function getTodaySignOrDefault(): DictionaryItem {
+  const todaySign = getTodaySign();
+  if (todaySign) return todaySign;
+  
+  // Fallback: lấy từ theo ngày gần nhất trong schedule
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  
+  // Tìm ngày gần nhất
+  let closestEntry = dailySignSchedule[0];
+  let minDiff = Infinity;
+  
+  for (const entry of dailySignSchedule) {
+    const entryDate = new Date(entry.date);
+    const diff = Math.abs(today.getTime() - entryDate.getTime());
+    if (diff < minDiff) {
+      minDiff = diff;
+      closestEntry = entry;
+    }
+  }
+  
+  return getDictionaryItemById(closestEntry.dictionaryItemId) || dictionaryItems[0];
+}
+
+// Lấy danh sách từ vựng gần đây (n ngày trước)
+export function getRecentSigns(days: number = 7): DictionaryItem[] {
+  const today = new Date();
+  const results: DictionaryItem[] = [];
+  
+  for (let i = 1; i <= days; i++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+    const sign = getDailySignByDate(dateStr);
+    if (sign) {
+      results.push(sign);
+    }
+  }
+  
+  return results;
+}
+
+// Lấy từ vựng sắp tới (n ngày sau)
+export function getUpcomingSigns(days: number = 7): DictionaryItem[] {
+  const today = new Date();
+  const results: DictionaryItem[] = [];
+  
+  for (let i = 1; i <= days; i++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() + i);
+    const dateStr = date.toISOString().split('T')[0];
+    const sign = getDailySignByDate(dateStr);
+    if (sign) {
+      results.push(sign);
+    }
+  }
+  
+  return results;
+}
+
+// Lấy các từ liên quan (cùng category)
+export function getRelatedWords(dictionaryItemId: number, limit: number = 3): DictionaryItem[] {
+  const item = getDictionaryItemById(dictionaryItemId);
+  if (!item) return [];
+  
+  return dictionaryItems
+    .filter(i => i.category === item.category && i.id !== dictionaryItemId)
+    .slice(0, limit);
+}
+
+// Lấy từ ngẫu nhiên từ từ điển
+export function getRandomDictionaryItem(): DictionaryItem {
+  const randomIndex = Math.floor(Math.random() * dictionaryItems.length);
+  return dictionaryItems[randomIndex];
+}
+
+// Màu sắc theo độ khó (để hiển thị)
 export const difficultyColors: Record<string, string> = {
   "Dễ": "bg-green-100 text-green-700",
   "Trung bình": "bg-yellow-100 text-yellow-700",
   "Khó": "bg-orange-100 text-orange-700",
   "Rất khó": "bg-red-100 text-red-700",
 };
+
+// Thống kê
+export function getDailySignsStats() {
+  const categoryCounts: Record<string, number> = {};
+  
+  dailySignSchedule.forEach(entry => {
+    const item = getDictionaryItemById(entry.dictionaryItemId);
+    if (item) {
+      categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
+    }
+  });
+  
+  return {
+    totalScheduled: dailySignSchedule.length,
+    startDate: dailySignSchedule[0]?.date,
+    endDate: dailySignSchedule[dailySignSchedule.length - 1]?.date,
+    categoryCounts,
+    totalCategories: Object.keys(categoryCounts).length,
+  };
+}

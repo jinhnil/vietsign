@@ -2,8 +2,10 @@
 
 import { Users, Search, Plus, Filter, Edit, Trash2, UserCheck, UserX } from "lucide-react";
 import { useState } from "react";
-import { mockUsers, roleLabels, roleColors } from "@/src/data";
+import { mockUsers, roleLabels, roleColors, getFacilityById } from "@/src/data";
+import { Pagination, usePagination } from "@/src/components/common/Pagination";
 
+const ITEMS_PER_PAGE = 8;
 
 export function UsersManagement() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,6 +17,8 @@ export function UsersManagement() {
     const matchesRole = filterRole === "all" || user.role === filterRole;
     return matchesSearch && matchesRole;
   });
+
+  const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filteredUsers, ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -56,6 +60,7 @@ export function UsersManagement() {
               <option value="FACILITY_MANAGER">Quản trị viên cơ sở</option>
               <option value="TEACHER">Giáo viên</option>
               <option value="STUDENT">Học sinh</option>
+              <option value="USER">Người dùng</option>
             </select>
           </div>
         </div>
@@ -74,7 +79,7 @@ export function UsersManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredUsers.map((user) => (
+              {paginatedItems.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -92,7 +97,9 @@ export function UsersManagement() {
                       {roleLabels[user.role]}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{user.facility}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {user.facilityId ? getFacilityById(user.facilityId)?.name || `Cơ sở #${user.facilityId}` : 'Tất cả'}
+                  </td>
                   <td className="px-6 py-4">
                     {user.status === "active" ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -122,20 +129,15 @@ export function UsersManagement() {
           </table>
         </div>
         
-        <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
-          <p className="text-sm text-gray-600">
-            Hiển thị <span className="font-medium">{filteredUsers.length}</span> trong tổng số <span className="font-medium">{mockUsers.length}</span> người dùng
-          </p>
-          <div className="flex items-center gap-2">
-            <button className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50" disabled>
-              Trước
-            </button>
-            <button className="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg">1</button>
-            <button className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              Sau
-            </button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          itemsPerPage={ITEMS_PER_PAGE}
+          totalItems={mockUsers.length}
+          filteredItems={filteredUsers.length}
+          itemName="người dùng"
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

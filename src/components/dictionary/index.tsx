@@ -1,18 +1,31 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Filter, BookOpen, Mic, Video, Star, ArrowRight, Book } from "lucide-react";
+import { Search, Filter, BookOpen, Mic, Video, Star, ArrowRight, Book, ArrowUpAZ, ArrowDownAZ, X } from "lucide-react";
 import { dictionaryItems, categories } from "@/src/data";
+import { Pagination, usePagination } from "@/src/components/common/Pagination";
+
+const ITEMS_PER_PAGE = 12;
+
+// Hàm loại bỏ dấu tiếng Việt để tìm kiếm không phân biệt dấu
+function removeVietnameseTones(str: string): string {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase();
+}
 
 export const Dictionary: React.FC = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // Mặc định A-Z
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [filterCategory, setFilterCategory] = useState("all");
-
-
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -31,8 +44,9 @@ export const Dictionary: React.FC = () => {
     setSearchQuery(query);
 
     if (query.trim()) {
+      const normalizedQuery = removeVietnameseTones(query);
       const filteredSuggestions = dictionaryItems.filter(item =>
-        item.word.toLowerCase().includes(query.toLowerCase())
+        removeVietnameseTones(item.word).includes(normalizedQuery)
       );
       setSuggestions(filteredSuggestions);
       setShowSuggestions(true);
@@ -47,24 +61,39 @@ export const Dictionary: React.FC = () => {
     setShowSuggestions(false);
   };
 
-  const filteredItems = dictionaryItems.filter(item => {
-    const categoryMap: { [key: string]: string } = {
-      alphabet: "Chữ cái",
-      numbers: "Số đếm",
-      greetings: "Chào hỏi",
-      family: "Gia đình",
-      education: "Giáo dục",
-      daily: "Đời sống",
-      time: "Thời gian",
-      emotion: "Cảm xúc",
-      location: "Địa điểm",
-    };
-    
-    const matchesCategory = activeTab === "all" || item.category === categoryMap[activeTab];
-    const matchesSearch = item.word.toLowerCase().includes(searchQuery.toLowerCase());
+  // Lọc và sắp xếp
+  const filteredItems = dictionaryItems
+    .filter(item => {
+      const categoryMap: { [key: string]: string } = {
+        alphabet: "Chữ cái",
+        numbers: "Số đếm",
+        greetings: "Chào hỏi",
+        family: "Gia đình",
+        education: "Giáo dục",
+        daily: "Đời sống",
+        time: "Thời gian",
+        emotion: "Cảm xúc",
+        location: "Địa điểm",
+      };
+      
+      const matchesCategory = activeTab === "all" || item.category === categoryMap[activeTab];
+      const normalizedQuery = removeVietnameseTones(searchQuery);
+      const normalizedWord = removeVietnameseTones(item.word);
+      const matchesSearch = normalizedWord.includes(normalizedQuery);
 
-    return matchesCategory && matchesSearch;
-  });
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => {
+      const wordA = removeVietnameseTones(a.word);
+      const wordB = removeVietnameseTones(b.word);
+      if (sortOrder === 'asc') {
+        return wordA.localeCompare(wordB);
+      } else {
+        return wordB.localeCompare(wordA);
+      }
+    });
+
+  const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filteredItems, ITEMS_PER_PAGE);
 
   const HighlightedText = ({ text, highlight }: { text: string, highlight: string }) => {
     if (!highlight.trim()) {
@@ -90,7 +119,7 @@ export const Dictionary: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input type="text" placeholder="Tìm kiếm từ..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none" />
+            <input type="text" placeholder="Tìm kiếm từ (không cần dấu)..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
         </div>
       </div>
@@ -100,7 +129,7 @@ export const Dictionary: React.FC = () => {
         {categories.map((cat) => (
           <button
             key={cat.id}
-            onClick={() => setActiveTab(cat.id)}
+            onClick={() => { setActiveTab(cat.id); setCurrentPage(1); }}
             className={`
                     px-5 py-2.5 rounded-xl font-medium transition-all duration-200 border
                     ${activeTab === cat.id
@@ -112,43 +141,106 @@ export const Dictionary: React.FC = () => {
             {cat.label}
           </button>
         ))}
-        <button className="ml-auto px-5 py-2.5 rounded-xl font-medium bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 flex items-center gap-2">
+        <button 
+          onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
+          className={`ml-auto px-5 py-2.5 rounded-xl font-medium border flex items-center gap-2 transition-all ${
+            showAdvancedFilter 
+              ? 'bg-blue-600 text-white border-blue-600' 
+              : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+          }`}
+        >
           <Filter size={18} />
           Bộ lọc nâng cao
         </button>
       </div>
 
-      {/* Dictionary Grid */}
-      {filteredItems.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredItems.map((item) => (
-            <div key={item.id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden relative">
-              {/* Content */}
-              <div className="p-5">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider mb-1">
-                      {item.category}
-                    </p>
-                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                      {item.word}
-                    </h3>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <Book size={20} className="text-gray-300 mb-1" />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between mt-4 text-gray-500 text-sm">
-                  <span>{item.views} lượt xem</span>
-                  <span className="flex items-center gap-1 text-blue-600 font-medium group-hover:gap-2 transition-all">
-                    Xem chi tiết <ArrowRight size={16} />
-                  </span>
-                </div>
+      {/* Advanced Filter Panel */}
+      {showAdvancedFilter && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-gray-900">Bộ lọc nâng cao</h3>
+            <button 
+              onClick={() => setShowAdvancedFilter(false)}
+              className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Sắp xếp:</span>
+              <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+                <button
+                  onClick={() => setSortOrder('asc')}
+                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all ${
+                    sortOrder === 'asc'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <ArrowUpAZ size={16} />
+                  A → Z
+                </button>
+                <button
+                  onClick={() => setSortOrder('desc')}
+                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all border-l border-gray-200 ${
+                    sortOrder === 'desc'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <ArrowDownAZ size={16} />
+                  Z → A
+                </button>
               </div>
             </div>
-          ))}
+          </div>
         </div>
+      )}
+
+      {/* Dictionary Grid */}
+      {filteredItems.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {paginatedItems.map((item) => (
+              <div key={item.id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden relative">
+                {/* Content */}
+                <div className="p-5">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider mb-1">
+                        {item.category}
+                      </p>
+                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        {item.word}
+                      </h3>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <Book size={20} className="text-gray-300 mb-1" />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-4 text-gray-500 text-sm">
+                    <span>{item.views} lượt xem</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={ITEMS_PER_PAGE}
+              totalItems={dictionaryItems.length}
+              filteredItems={filteredItems.length}
+              itemName="từ vựng"
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        </>
       ) : (
         <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-300">
           <p className="text-gray-500 text-lg">Không tìm thấy kết quả nào cho "{searchQuery}"</p>

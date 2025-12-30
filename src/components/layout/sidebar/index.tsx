@@ -51,11 +51,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
   };
 
   // Định nghĩa tất cả các menu item và quyền truy cập
-  // Note: Roles từ API dùng UPPERCASE: ADMIN, TEACHER, STUDENT, FACILITY_MANAGER, TEST
+  // Note: Roles từ API dùng UPPERCASE: ADMIN, TEACHER, STUDENT, FACILITY_MANAGER, USER, TEST
   // Admin: home, dashboard, quản lý người dùng, quản lý cơ sở, quản lý học tập, quản lý lớp học, thông báo, quản lý công cụ, quản lý kiểm tra, thống kê, quản lý từ điển, quản lý trò chơi
   // FACILITY_MANAGER: home, dashboard, quản lý người dùng, quản lý học tập, quản lý lớp học, thông báo, quản lý công cụ, quản lý kiểm tra, thống kê, từ điển, quản lý trò chơi
   // TEACHER: home, dashboard, thông báo, quản lý lớp học, quản lý học tập, thống kê, quản lý kiểm tra, chấm điểm, từ điển, trò chơi
-  // STUDENT: home, dashboard, thông báo, quản lý học tập, thống kê, làm bài kiểm tra, học tập, đăng ký lớp học, từ điển, trò chơi
+  // STUDENT & USER: home, dashboard, thông báo, quản lý học tập, thống kê, làm bài kiểm tra, học tập, đăng ký lớp học, từ điển, trò chơi
   // TEST: Truy cập tất cả các trang
   const MENU_ITEMS: MenuItem[] = [
     // === CHUNG CHO TẤT CẢ ===
@@ -63,13 +63,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       icon: <House size={22} />,
       label: "Trang chủ",
       path: "/home",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
     },
     {
       icon: <LayoutDashboard size={22} />,
       label: "Dashboard",
       path: "/dashboard",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
     },
 
     // === QUẢN LÝ (ADMIN & FACILITY_MANAGER) ===
@@ -89,7 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       icon: <GraduationCap size={22} />,
       label: "Quản lý học tập",
       path: "/learning",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
     },
     {
       icon: <BookOpenCheck size={22} />,
@@ -101,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       icon: <Bell size={22} />,
       label: "Thông báo",
       path: "/notifications",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
     },
     {
       icon: <Wrench size={22} />,
@@ -119,7 +119,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       icon: <BarChart3 size={22} />,
       label: "Thống kê",
       path: "/statistics",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
     },
     {
       icon: <Library size={22} />,
@@ -134,20 +134,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEST"],
     },
 
-    // === CHỈ FACILITY_MANAGER, TEACHER, STUDENT ===
+    // === CHỈ FACILITY_MANAGER, TEACHER, STUDENT, USER ===
     {
       icon: <BookOpen size={22} />,
       label: "Từ điển",
       path: "/dictionary",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
     },
 
-    // === CHỈ TEACHER & STUDENT ===
+    // === CHỈ TEACHER, STUDENT & USER ===
     {
       icon: <Gamepad2 size={22} />,
       label: "Trò chơi",
       path: "/games",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
     },
 
     // === CHỈ TEACHER ===
@@ -158,24 +158,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       allowedRoles: ["TEACHER", "TEST"],
     },
 
-    // === CHỈ STUDENT ===
+    // === CHỈ STUDENT & USER ===
     {
       icon: <FileEdit size={22} />,
       label: "Làm bài kiểm tra",
       path: "/take-exam",
-      allowedRoles: ["STUDENT", "TEST"],
+      allowedRoles: ["STUDENT", "USER", "TEST"],
     },
     {
       icon: <BookOpenCheck size={22} />,
       label: "Học tập",
       path: "/study",
-      allowedRoles: ["STUDENT", "TEST"],
+      allowedRoles: ["STUDENT", "USER", "TEST"],
     },
     {
       icon: <UserPlus size={22} />,
       label: "Đăng ký lớp học",
       path: "/class-registration",
-      allowedRoles: ["STUDENT", "TEST"],
+      allowedRoles: ["STUDENT", "USER", "TEST"],
     },
 
     // === TRANG BỔ SUNG ===
@@ -183,13 +183,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       icon: <Lightbulb size={22} />,
       label: "Học ngôn ngữ",
       path: "/learn",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
     },
     {
       icon: <Calendar size={22} />,
       label: "Ký hiệu mỗi ngày",
       path: "/daily-signs",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
     },
   ];
 

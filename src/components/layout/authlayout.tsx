@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header-auth/index";
+import { Footer } from "./footer/index";
 import { useSelector } from "react-redux";
 import Loader from "@/src/components/UI/Loader";
 
@@ -117,6 +118,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         `}
       >
         <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto">{children}</div>
+        <div className="mt-[200px]">
+          <Footer />
+        </div>
       </main>
     </div>
   );
