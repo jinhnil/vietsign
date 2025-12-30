@@ -1,20 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import { Bell, Search, Menu } from "lucide-react";
 import { useSelector } from "react-redux";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-// ... imports
+import UserDropdown from "./components/UserDropdown";
+import NotificationDropdown from "./components/NotificationDropdown";
 
 interface DashboardHeaderProps {
   toggleSidebar: () => void;
 }
 
 export const Header: React.FC<DashboardHeaderProps> = ({ toggleSidebar }) => {
-  const user = useSelector((state: any) => state.admin.user); // Should use RootState type
+  const user = useSelector((state: any) => state.admin.user);
   const pathname = usePathname();
+  const [activeDropdown, setActiveDropdown] = useState<'notifications' | 'user' | null>(null);
 
   return (
     <header className="fixed top-0 left-0 w-full h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-50">
+
+      {/* Backdrop for closing dropdowns */}
+      {activeDropdown && (
+        <div
+          className="fixed inset-0 z-40 bg-transparent"
+          onClick={() => setActiveDropdown(null)}
+        ></div>
+      )}
+
       <div className="flex items-center gap-4">
         {/* Toggle Button - YouTube Style */}
         <button
@@ -49,7 +60,7 @@ export const Header: React.FC<DashboardHeaderProps> = ({ toggleSidebar }) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 relative z-50">
         {/* Nút chuyển đổi phiên bản */}
         <Link
           href={pathname === "/learn" ? "/home" : "/learn"}
@@ -64,14 +75,30 @@ export const Header: React.FC<DashboardHeaderProps> = ({ toggleSidebar }) => {
         </button>
 
         {/* Notification */}
-        <button className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors relative">
-          <Bell size={22} />
-          {/* <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span> */}
-        </button>
+        <div className="relative">
+          <button
+            className={`p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors relative ${activeDropdown === 'notifications' ? 'bg-gray-100' : ''}`}
+            onClick={() => setActiveDropdown(activeDropdown === 'notifications' ? null : 'notifications')}
+          >
+            <Bell size={22} />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+          </button>
+          {activeDropdown === 'notifications' && (
+            <NotificationDropdown onClose={() => setActiveDropdown(null)} />
+          )}
+        </div>
 
         {/* User Profile */}
-        <div className="ml-2 w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-2 ring-white cursor-pointer hover:scale-105 transition-transform">
-          {user?.name?.charAt(0).toUpperCase() || "U"}
+        <div className="relative ml-2">
+          <div
+            className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-2 ring-white cursor-pointer hover:scale-105 transition-transform select-none"
+            onClick={() => setActiveDropdown(activeDropdown === 'user' ? null : 'user')}
+          >
+            {user?.name?.charAt(0).toUpperCase() || "U"}
+          </div>
+          {activeDropdown === 'user' && (
+            <UserDropdown user={user} onClose={() => setActiveDropdown(null)} />
+          )}
         </div>
       </div>
     </header>

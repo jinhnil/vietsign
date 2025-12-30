@@ -16,24 +16,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthed, setIsAuthed] = useState(false);
-  const [shouldShow404, setShouldShow404] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     // Check localStorage directly for token
     const accessToken = localStorage.getItem("access_token");
     const user = localStorage.getItem("user");
-    
+
     if (accessToken && user) {
       setIsAuthed(true);
       setIsLoading(false);
-    } else if (!isAuthenticated) {
-      // No token and not authenticated in Redux, show 404
-      setShouldShow404(true);
-      setIsLoading(false);
     } else {
-      setIsAuthed(true);
-      setIsLoading(false);
+      // No token and not authenticated in Redux, redirect to home
+      router.push("/");
     }
   }, [isAuthenticated, router]);
 
@@ -50,13 +45,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   // Show loading while checking auth
-  if (isLoading) {
+  if (isLoading || !isAuthed) {
     return <Loader />;
-  }
-
-  // Not authenticated, show 404 page
-  if (shouldShow404 || !isAuthed) {
-    notFound();
   }
 
   return (

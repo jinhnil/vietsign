@@ -70,7 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       path: "/dashboard",
       allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
     },
-    
+
     // === QUẢN LÝ (ADMIN & FACILITY_MANAGER) ===
     {
       icon: <Users size={22} />,
@@ -124,7 +124,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       icon: <Library size={22} />,
       label: "Quản lý từ điển",
       path: "/dictionary-management",
-      allowedRoles: ["ADMIN", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEST"],
     },
     {
       icon: <Gamepad2 size={22} />,
@@ -132,23 +132,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       path: "/games-management",
       allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEST"],
     },
-    
+
     // === CHỈ FACILITY_MANAGER, TEACHER, STUDENT ===
     {
       icon: <BookOpen size={22} />,
       label: "Từ điển",
       path: "/dictionary",
-      allowedRoles: ["FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
     },
-    
+
     // === CHỈ TEACHER & STUDENT ===
     {
       icon: <Gamepad2 size={22} />,
       label: "Trò chơi",
       path: "/games",
-      allowedRoles: ["TEACHER", "STUDENT", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "TEST"],
     },
-    
+
     // === CHỈ TEACHER ===
     {
       icon: <PenLine size={22} />,
@@ -156,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       path: "/grading",
       allowedRoles: ["TEACHER", "TEST"],
     },
-    
+
     // === CHỈ STUDENT ===
     {
       icon: <FileEdit size={22} />,
@@ -176,7 +176,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       path: "/class-registration",
       allowedRoles: ["STUDENT", "TEST"],
     },
-    
+
     // === TRANG BỔ SUNG ===
     {
       icon: <Lightbulb size={22} />,
@@ -251,68 +251,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             </Link>
           );
         })}
-
-        <div className="flex-grow"></div>
-
-        <div className={`border-t border-gray-100 mt-2 pt-2`}>
-          <Link
-            href="/dashboard/settings"
-            className={`
-                flex items-center rounded-xl transition-colors duration-200 group
-                ${isOpen
-                ? "flex-row px-3 py-2.5 gap-4 justify-start"
-                : "flex-col justify-center items-center py-3 gap-0 h-20"
-              }
-                text-gray-700 hover:bg-gray-100
-              `}
-            title={!isOpen ? "Cài đặt" : ""}
-          >
-            <Settings
-              size={22}
-              className="text-gray-500 group-hover:text-gray-900 flex-shrink-0"
-            />
-            <span
-              className={`
-                transition-all duration-200 leading-tight text-center
-                ${isOpen
-                  ? "text-sm font-medium whitespace-nowrap"
-                  : "text-xs font-medium"
-                }
-              `}
-            >
-              Cài đặt
-            </span>
-          </Link>
-
-          <button
-            onClick={handleLogout}
-            className={`
-                w-full flex items-center rounded-xl transition-colors duration-200 group
-                ${isOpen
-                ? "flex-row px-3 py-2.5 gap-4 justify-start"
-                : "flex-col justify-center items-center py-3 gap-0 h-20"
-              }
-                text-gray-700 hover:bg-gray-100
-              `}
-            title={!isOpen ? "Đăng xuất" : ""}
-          >
-            <LogOut
-              size={22}
-              className="text-gray-500 group-hover:text-red-600 flex-shrink-0"
-            />
-            <span
-              className={`
-                transition-all duration-200 leading-tight text-center
-                ${isOpen
-                  ? "text-sm font-medium whitespace-nowrap"
-                  : "text-xs font-medium"
-                }
-              `}
-            >
-              Đăng xuất
-            </span>
-          </button>
-        </div>
       </nav>
     </aside>
   );

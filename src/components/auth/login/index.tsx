@@ -32,9 +32,9 @@ const Login: React.FC = () => {
       router.push("/home");
     },
     onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message 
-        || error?.response?.data?.error 
-        || error?.message 
+      const errorMessage = error?.response?.data?.message
+        || error?.response?.data?.error
+        || error?.message
         || "Đăng nhập thất bại. Vui lòng thử lại.";
       message.error(errorMessage);
     },
