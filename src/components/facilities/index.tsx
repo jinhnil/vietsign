@@ -6,6 +6,7 @@ import { mockFacilities, facilityStatusConfig, getFacilitiesStats, getUniqueProv
 import { fetchProvinces, fetchProvinceById, type Province } from "@/src/services/vietnamLocationsApi";
 import { getUserById } from "@/src/data/usersData";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
+import { Modal } from "@/src/components/common/Modal";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -21,6 +22,7 @@ export function FacilitiesManagement() {
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [loadingProvinces, setLoadingProvinces] = useState(true);
   const [locationNames, setLocationNames] = useState<LocationNames>({ provinces: {}, wards: {} });
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Lấy danh sách tỉnh/thành phố từ API
   useEffect(() => {
@@ -113,7 +115,7 @@ export function FacilitiesManagement() {
   const stats = getFacilitiesStats();
 
   // Pagination
-  const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filteredFacilities, ITEMS_PER_PAGE);
+  const { currentPage, totalPages, paginatedItems, paddedItems, setCurrentPage } = usePagination(filteredFacilities, ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -125,7 +127,10 @@ export function FacilitiesManagement() {
           </h1>
           <p className="text-gray-600 mt-1">Quản lý các cơ sở đào tạo trong hệ thống</p>
         </div>
-        <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm"
+        >
           <Plus size={20} /> Thêm cơ sở mới
         </button>
       </div>
@@ -189,7 +194,11 @@ export function FacilitiesManagement() {
 
       {/* Danh sách cơ sở */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {paginatedItems.map((facility) => {
+        {paddedItems.map((facility, index) => {
+          if (!facility) return (
+            <div key={`empty-${index}`} className="h-[350px]" aria-hidden="true" />
+          );
+
           const statusInfo = facilityStatusConfig[facility.status] || facilityStatusConfig.inactive;
           const fullAddress = getFullAddress(facility);
           const provinceName = getProvinceName(facility.provinceCode);
@@ -286,6 +295,50 @@ export function FacilitiesManagement() {
           />
         </div>
       )}
+
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title="Thêm cơ sở mới"
+      >
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-semibold text-gray-700">Tên cơ sở</label>
+              <input type="text" placeholder="Nhập tên cơ sở" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-semibold text-gray-700">Địa chỉ chi tiết</label>
+              <input type="text" placeholder="Số nhà, tên đường..." className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Tỉnh / Thành phố</label>
+              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
+                <option value="">Chọn tỉnh/TP</option>
+                {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Phường / Xã</label>
+              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
+                <option value="">Chọn phường/xã</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Số điện thoại</label>
+              <input type="tel" placeholder="024..." className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Email</label>
+              <input type="email" placeholder="facility@vietsign.edu.vn" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+            </div>
+          </div>
+          <div className="flex gap-3 mt-6">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium">Hủy</button>
+            <button type="submit" className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm">Lưu cơ sở</button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

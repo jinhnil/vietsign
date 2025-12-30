@@ -116,6 +116,14 @@ export function usePagination<T>(items: T[], itemsPerPage: number = 10) {
   const endIndex = startIndex + itemsPerPage;
   const paginatedItems = items.slice(startIndex, endIndex);
   
+  // Tạo mảng với độ dài cố định để tránh nhảy layout
+  const paddedItems = [...paginatedItems];
+  if (items.length > 0) {
+    while (paddedItems.length < itemsPerPage) {
+      paddedItems.push(null as any);
+    }
+  }
+  
   // Reset về trang 1 khi items thay đổi
   React.useEffect(() => {
     setCurrentPage(1);
@@ -125,6 +133,7 @@ export function usePagination<T>(items: T[], itemsPerPage: number = 10) {
     currentPage,
     totalPages,
     paginatedItems,
+    paddedItems, // Trả về mảng đã được fill null
     setCurrentPage,
     itemsPerPage,
     totalItems: items.length,

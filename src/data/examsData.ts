@@ -40,6 +40,29 @@ export const mockExams: ExamItem[] = [
   { id: 18, title: "Kiểm tra chuyên ngành - Lớp L1", classId: 18, date: "20/04/2025", time: "18:00", duration: "120 phút", questions: 40, students: 8, status: "upcoming", type: "Chuyên ngành", passingScore: 75, description: "Bài kiểm tra ký hiệu pháp luật" },
   { id: 19, title: "Kiểm tra cuối kỳ - Lớp B1", classId: 16, date: "30/01/2025", time: "16:00", duration: "90 phút", questions: 50, students: 14, status: "completed", type: "Cuối kỳ", passingScore: 65, description: "Bài kiểm tra cuối kỳ nâng cao" },
   { id: 20, title: "Kiểm tra định kỳ - Lớp A1", classId: 1, date: "05/02/2025", time: "09:00", duration: "45 phút", questions: 20, students: 25, status: "upcoming", type: "Định kỳ", passingScore: 50, description: "Bài kiểm tra định kỳ tháng 2" },
+  ...Array.from({ length: 50 }, (_, i) => {
+    const id = i + 21;
+    const classId = (i % 20) + 1;
+    const examTypes = ["Giữa kỳ", "Cuối kỳ", "Định kỳ", "Thực hành", "Kiểm tra nhanh"];
+    const type = examTypes[i % examTypes.length];
+    const statuses = ["upcoming", "completed", "upcoming", "ongoing"];
+    const status = statuses[i % statuses.length] as "upcoming" | "completed" | "ongoing";
+    
+    return {
+      id,
+      title: `Bài kiểm tra ${type} #${id} - Lớp ${classId}`,
+      classId,
+      date: `${(i % 28 + 1).toString().padStart(2, '0')}/03/2025`,
+      time: `${8 + (i % 10)}:00`,
+      duration: `${30 + (i % 3) * 30} phút`,
+      questions: 10 + (i % 5) * 10,
+      students: 10 + (i % 20),
+      status,
+      type,
+      passingScore: 50 + (i % 5) * 5,
+      description: `Mô tả cho bài kiểm tra ${type} số ${id}. Đây là bài kiểm tra định kỳ nhằm đánh giá năng lực của học sinh.`
+    };
+  })
 ];
 
 export const examStatusConfig: Record<string, { label: string; color: string }> = {

@@ -27,4 +27,11 @@ export const DEMO_ACCOUNTS = [
     password: "123456",
     color: "bg-green-100 text-green-800 border-green-200",
   },
+  {
+    role: "User",
+    label: "Người dùng",
+    email: "user@gmail.com",
+    password: "123456",
+    color: "bg-gray-100 text-gray-800 border-gray-200",
+  },
 ];

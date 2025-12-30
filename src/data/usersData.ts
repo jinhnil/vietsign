@@ -26,6 +26,31 @@ export const mockUsers: UserItem[] = [
   { id: 10, name: "Phạm Văn Hùng", email: "hung@vietsign.edu.vn", role: "FACILITY_MANAGER", status: "active", phone: "0292987654", createdAt: "01/09/2023", facilityId: 4 },
   { id: 11, name: "Nguyễn Thị Hằng", email: "hang@vietsign.edu.vn", role: "FACILITY_MANAGER", status: "active", phone: "0225111222", createdAt: "15/01/2024", facilityId: 5 },
   { id: 12, name: "Trần Văn Minh", email: "minh@vietsign.edu.vn", role: "FACILITY_MANAGER", status: "active", phone: "0234555666", createdAt: "01/03/2024", facilityId: 6 },
+  { id: 13, name: "Lê Thị Hồng", email: "hong@vietsign.edu.vn", role: "FACILITY_MANAGER", status: "active", phone: "0987654321", createdAt: "10/03/2024", facilityId: 7 },
+  { id: 14, name: "Phạm Minh Hoàng", email: "hoang@vietsign.edu.vn", role: "FACILITY_MANAGER", status: "active", phone: "0922334455", createdAt: "12/03/2024", facilityId: 8 },
+  { id: 15, name: "Vũ Nam Anh", email: "namanh@vietsign.edu.vn", role: "FACILITY_MANAGER", status: "active", phone: "0911223344", createdAt: "15/03/2024", facilityId: 9 },
+  { id: 16, name: "Đặng Thu Hà", email: "thuha@vietsign.edu.vn", role: "FACILITY_MANAGER", status: "active", phone: "0933445566", createdAt: "18/03/2024", facilityId: 10 },
+  { id: 17, name: "Ngô Quốc Bảo", email: "quocbao@vietsign.edu.vn", role: "FACILITY_MANAGER", status: "active", phone: "0944556677", createdAt: "20/03/2024" },
+  ...Array.from({ length: 200 }, (_, i) => {
+    const id = i + 18;
+    const roles = ["STUDENT", "TEACHER", "USER", "STUDENT", "STUDENT"];
+    const role = roles[i % roles.length];
+    const facilityId = (i % 16) + 1;
+    const surnames = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Phan", "Vũ", "Võ", "Đặng"];
+    const middles = ["Văn", "Thị", "Minh", "Đức", "Hồng", "Gia", "Bảo"];
+    const names = ["Anh", "Bình", "Chi", "Dũng", "Giang", "Hương", "Khánh", "Linh", "Minh", "Nam", "Phúc", "Quân", "Sơn", "Trang", "Tuấn", "Việt"];
+    const name = `${surnames[i % 10]} ${middles[i % 7]} ${names[i % 16]}`;
+    return {
+      id,
+      name,
+      email: `user${id}@vietsign.edu.vn`,
+      role,
+      status: i % 20 === 0 ? "inactive" : "active",
+      phone: `09${Math.floor(Math.random() * 90000000 + 10000000)}`,
+      createdAt: `${Math.floor(Math.random() * 28 + 1).toString().padStart(2, '0')}/05/2024`,
+      facilityId: role === "USER" ? undefined : facilityId
+    };
+  })
 ];
 
 export const roleLabels: Record<string, string> = {

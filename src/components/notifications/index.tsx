@@ -22,7 +22,7 @@ export function NotificationsManagement() {
     filterType === "all" || (filterType === "unread" ? !notif.isRead : notif.type === filterType)
   );
 
-  const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filteredNotifications, ITEMS_PER_PAGE);
+  const { currentPage, totalPages, paginatedItems, paddedItems, setCurrentPage } = usePagination(filteredNotifications, ITEMS_PER_PAGE);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
   
@@ -83,7 +83,11 @@ export function NotificationsManagement() {
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="divide-y divide-gray-100">
-          {paginatedItems.map((notif) => {
+          {paddedItems.map((notif, index) => {
+            if (!notif) return (
+              <div key={`empty-${index}`} className="h-[110px]" aria-hidden="true" />
+            );
+            
             const config = notificationTypeConfig[notif.type];
             return (
               <div key={notif.id} className={`p-5 hover:bg-gray-50 transition-colors ${!notif.isRead ? 'bg-primary-50/20' : ''}`}>

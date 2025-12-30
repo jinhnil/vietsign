@@ -9,6 +9,7 @@ export interface GameItem {
   players?: number;
   rating?: number;
   category?: string;
+  isActive: boolean; // Trạng thái bật/tắt game
 }
 
 export interface GameSection {
@@ -22,33 +23,33 @@ export const gameSections: GameSection[] = [
     title: "Trò chơi phổ biến",
     iconName: "Flame",
     games: [
-      { id: 1, name: "Đoán Ký Hiệu", description: "Xem video và chọn từ vựng tương ứng.", colorClass: "bg-orange-500", level: "Dễ", players: 15420, rating: 4.8, category: "Từ vựng" },
-      { id: 2, name: "Vua Tốc Độ", description: "Thử thách phản xạ với chuỗi ký hiệu.", colorClass: "bg-blue-500", level: "Khó", players: 8930, rating: 4.6, category: "Phản xạ" },
-      { id: 3, name: "Ký Hiệu Hàng Ngày", description: "Thử thách mới mỗi ngày.", colorClass: "bg-yellow-500", level: "Dễ", players: 25680, rating: 4.9, category: "Hàng ngày" },
+      { id: 1, name: "Đoán Ký Hiệu", description: "Xem video và chọn từ vựng tương ứng.", colorClass: "bg-orange-500", level: "Dễ", players: 15420, rating: 4.8, category: "Từ vựng", isActive: true },
+      { id: 2, name: "Vua Tốc Độ", description: "Thử thách phản xạ với chuỗi ký hiệu.", colorClass: "bg-blue-500", level: "Khó", players: 8930, rating: 4.6, category: "Phản xạ", isActive: true },
+      { id: 3, name: "Ký Hiệu Hàng Ngày", description: "Thử thách mới mỗi ngày.", colorClass: "bg-yellow-500", level: "Dễ", players: 25680, rating: 4.9, category: "Hàng ngày", isActive: true },
     ]
   },
   {
     title: "Rèn luyện trí não",
     iconName: "Brain",
     games: [
-      { id: 4, name: "Xếp Hình Ký Hiệu", description: "Ghép các mảnh ghép tạo thành ký hiệu.", colorClass: "bg-purple-500", level: "Trung bình", players: 7820, rating: 4.5, category: "Puzzle" },
-      { id: 5, name: "Nhớ Cặp Đôi", description: "Tìm các cặp hình ảnh và ký hiệu.", colorClass: "bg-green-500", level: "Dễ", players: 11250, rating: 4.7, category: "Trí nhớ" },
+      { id: 4, name: "Xếp Hình Ký Hiệu", description: "Ghép các mảnh ghép tạo thành ký hiệu.", colorClass: "bg-purple-500", level: "Trung bình", players: 7820, rating: 4.5, category: "Puzzle", isActive: true },
+      { id: 5, name: "Nhớ Cặp Đôi", description: "Tìm các cặp hình ảnh và ký hiệu.", colorClass: "bg-green-500", level: "Dễ", players: 11250, rating: 4.7, category: "Trí nhớ", isActive: true },
     ]
   },
   {
     title: "Học qua chơi",
     iconName: "BookOpen",
     games: [
-      { id: 6, name: "Câu Chuyện Ký Hiệu", description: "Học ký hiệu qua các câu chuyện thú vị.", colorClass: "bg-teal-500", level: "Dễ", players: 18950, rating: 4.8, category: "Câu chuyện" },
-      { id: 7, name: "Đố Vui Ký Hiệu", description: "Trả lời các câu đố về ký hiệu.", colorClass: "bg-amber-500", level: "Dễ", players: 14320, rating: 4.7, category: "Đố vui" },
+      { id: 6, name: "Câu Chuyện Ký Hiệu", description: "Học ký hiệu qua các câu chuyện thú vị.", colorClass: "bg-teal-500", level: "Dễ", players: 18950, rating: 4.8, category: "Câu chuyện", isActive: true },
+      { id: 7, name: "Đố Vui Ký Hiệu", description: "Trả lời các câu đố về ký hiệu.", colorClass: "bg-amber-500", level: "Dễ", players: 14320, rating: 4.7, category: "Đố vui", isActive: false },
     ]
   },
   {
     title: "Trò chơi cho trẻ em",
     iconName: "Sparkles",
     games: [
-      { id: 8, name: "Bé Học Ký Hiệu", description: "Trò chơi đơn giản cho bé 4-6 tuổi.", colorClass: "bg-lime-500", level: "Rất dễ", players: 21450, rating: 4.9, category: "Trẻ em" },
-      { id: 9, name: "Động Vật Ký Hiệu", description: "Học ký hiệu các con vật qua trò chơi.", colorClass: "bg-orange-400", level: "Rất dễ", players: 19320, rating: 4.9, category: "Động vật" },
+      { id: 8, name: "Bé Học Ký Hiệu", description: "Trò chơi đơn giản cho bé 4-6 tuổi.", colorClass: "bg-lime-500", level: "Rất dễ", players: 21450, rating: 4.9, category: "Trẻ em", isActive: true },
+      { id: 9, name: "Động Vật Ký Hiệu", description: "Học ký hiệu các con vật qua trò chơi.", colorClass: "bg-orange-400", level: "Rất dễ", players: 19320, rating: 4.9, category: "Động vật", isActive: true },
     ]
   },
 ];

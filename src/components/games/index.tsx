@@ -62,7 +62,10 @@ export const Games: React.FC = () => {
       {/* Game Sections */}
       {gameSections.map((section, idx) => {
         const IconComponent = iconMap[section.iconName];
+        const activeGames = section.games.filter(g => g.isActive);
         
+        if (activeGames.length === 0) return null;
+
         return (
           <div key={idx}>
             <div className="flex items-center gap-3 mb-4">
@@ -70,11 +73,11 @@ export const Games: React.FC = () => {
                 {IconComponent && <IconComponent className="text-primary-600" size={24} />}
               </div>
               <h2 className="text-xl font-bold text-gray-900">{section.title}</h2>
-              <span className="text-sm text-gray-500">({section.games.length})</span>
+              <span className="text-sm text-gray-500">({activeGames.length})</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {section.games.map((game) => (
+              {activeGames.map((game) => (
                 <div key={game.id} className="group bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer hover:-translate-y-1">
                   <div className="flex items-start justify-between mb-4">
                     <div className={`w-12 h-12 rounded-xl ${game.colorClass} flex items-center justify-center shadow-sm`}>
@@ -85,7 +88,7 @@ export const Games: React.FC = () => {
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">{game.name}</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors uppercase">{game.name}</h3>
                   <p className="text-gray-500 text-sm mb-3 line-clamp-2">
                     {game.description}
                   </p>

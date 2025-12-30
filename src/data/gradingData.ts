@@ -28,6 +28,35 @@ export const mockSubmissions: SubmissionItem[] = [
   { id: 6, studentId: 4, examId: 10, classId: 4, submittedAt: "20/01/2025 14:15", status: "pending", score: null, duration: "52 phút" },
   { id: 7, studentId: 5, examId: 4, classId: 5, submittedAt: "12/01/2025 11:00", status: "graded", score: 7.5, duration: "25 phút", gradedById: 6, gradedAt: "12/01/2025 14:00" },
   { id: 8, studentId: 7, examId: 4, classId: 5, submittedAt: "12/01/2025 11:10", status: "graded", score: 8.0, duration: "22 phút", gradedById: 6, gradedAt: "12/01/2025 14:30" },
+  ...Array.from({ length: 50 }, (_, i) => {
+    const id = i + 9;
+    const studentIds = [4, 7, 5, 18, 21, 22, 23, 26, 27, 28, 31, 32, 33];
+    const studentId = studentIds[i % studentIds.length];
+    const examRange = [1, 2, 3, 4, 5, 10, 19, 20]; // Các bài kiểm tra tiêu biểu
+    const examId = examRange[i % examRange.length];
+    
+    // Ánh xạ examId sang classId từ mockExams
+    const examToClassMap: Record<number, number> = {
+      1: 1, 2: 2, 3: 1, 4: 5, 5: 2, 10: 4, 19: 16, 20: 1
+    };
+    const classId = examToClassMap[examId];
+    
+    const isGraded = i % 3 !== 0; // 2/3 đã chấm, 1/3 chưa chấm
+    const score = isGraded ? (Math.floor(Math.random() * 5) + 5) + (Math.random() > 0.5 ? 0.5 : 0) : null;
+    
+    return {
+      id,
+      studentId,
+      examId,
+      classId,
+      submittedAt: `${(i % 28 + 1).toString().padStart(2, '0')}/01/2025 ${10 + (i % 8)}:${(i * 7) % 60}`,
+      status: (isGraded ? "graded" : "pending") as "graded" | "pending",
+      score,
+      duration: `${30 + (i % 30)} phút`,
+      gradedById: isGraded ? (i % 2 === 0 ? 3 : 6) : undefined,
+      gradedAt: isGraded ? `${(i % 28 + 1).toString().padStart(2, '0')}/01/2025 16:00` : undefined
+    };
+  })
 ];
 
 export const submissionStatusConfig: Record<string, { label: string; color: string }> = {

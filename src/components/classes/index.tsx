@@ -6,12 +6,14 @@ import { mockClasses, statusConfig } from "@/src/data";
 import { getUserById } from "@/src/data/usersData";
 import { getFacilityById } from "@/src/data/facilitiesData";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
+import { Modal } from "@/src/components/common/Modal";
 
 const ITEMS_PER_PAGE = 6;
 
 export function ClassesManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Helper functions để lấy tên từ ID
   const getTeacherName = (teacherId: number): string => {
@@ -35,7 +37,7 @@ export function ClassesManagement() {
     return matchesSearch && matchesStatus;
   });
 
-  const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filteredClasses, ITEMS_PER_PAGE);
+  const { currentPage, totalPages, paginatedItems, paddedItems, setCurrentPage } = usePagination(filteredClasses, ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -47,7 +49,10 @@ export function ClassesManagement() {
           </h1>
           <p className="text-gray-600 mt-1">Quản lý các lớp học trong hệ thống</p>
         </div>
-        <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm"
+        >
           <Plus size={20} /> Tạo lớp học mới
         </button>
       </div>
@@ -71,7 +76,12 @@ export function ClassesManagement() {
       </div>
 
       <div className="space-y-4">
-        {paginatedItems.map((cls) => {
+        {/* ... (phần render list giữ nguyên) */}
+        {paddedItems.map((cls, index) => {
+          if (!cls) return (
+            <div key={`empty-${index}`} className="h-[162px]" aria-hidden="true" />
+          );
+
           const teacherName = getTeacherName(cls.teacherId);
           const facilityName = getFacilityName(cls.facilityId);
           
@@ -143,6 +153,56 @@ export function ClassesManagement() {
           />
         </div>
       )}
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Tạo lớp học mới">
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-semibold text-gray-700">Tên lớp học</label>
+              <input type="text" placeholder="Nhập tên lớp học" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Giáo viên phụ trách</label>
+              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
+                <option value="">Chọn giáo viên</option>
+                <option value="3">Lê Văn Giáo Viên</option>
+                <option value="6">Vũ Thị Hoa</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Cấp độ</label>
+              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
+                <option value="Cơ bản">Cơ bản</option>
+                <option value="Nâng cao">Nâng cao</option>
+                <option value="Chuyên sâu">Chuyên sâu</option>
+                <option value="Chuyên ngành">Chuyên ngành</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Sĩ số tối đa</label>
+              <input type="number" placeholder="30" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Cơ sở đào tạo</label>
+              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
+                <option value="">Chọn cơ sở</option>
+                <option value="online">Học Online</option>
+                <option value="1">Cơ sở Hà Nội</option>
+                <option value="2">Cơ sở Hồ Chí Minh</option>
+              </select>
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-semibold text-gray-700">Lịch học</label>
+              <input type="text" placeholder="Ví dụ: Thứ 2, 4, 6 - 18:00" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+            </div>
+          </div>
+          <div className="flex gap-3 mt-6">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium">Hủy</button>
+            <button type="submit" className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm">Tạo lớp học</button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
+

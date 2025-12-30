@@ -5,11 +5,13 @@ import { useState } from "react";
 import { mockExams, examStatusConfig } from "@/src/data";
 import { getClassById } from "@/src/data/classesData";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
+import { Modal } from "@/src/components/common/Modal";
 
 const ITEMS_PER_PAGE = 8;
 
 export function ExamsManagement() {
   const [filterStatus, setFilterStatus] = useState("all");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Helper function để lấy tên lớp từ classId
   const getClassName = (classId: number): string => {
@@ -18,7 +20,7 @@ export function ExamsManagement() {
   };
 
   const filteredExams = mockExams.filter(exam => filterStatus === "all" || exam.status === filterStatus);
-  const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filteredExams, ITEMS_PER_PAGE);
+  const { currentPage, totalPages, paginatedItems, paddedItems, setCurrentPage } = usePagination(filteredExams, ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -30,7 +32,10 @@ export function ExamsManagement() {
           </h1>
           <p className="text-gray-600 mt-1">Tạo và quản lý các bài kiểm tra</p>
         </div>
-        <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-medium shadow-sm">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-medium shadow-sm"
+        >
           <Plus size={20} /> Tạo bài kiểm tra
         </button>
       </div>
@@ -41,13 +46,18 @@ export function ExamsManagement() {
           <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="px-4 py-2.5 border border-gray-200 rounded-xl outline-none bg-white">
             <option value="all">Tất cả</option>
             <option value="upcoming">Sắp diễn ra</option>
+            <option value="ongoing">Đang diễn ra</option>
             <option value="completed">Đã hoàn thành</option>
           </select>
         </div>
       </div>
 
       <div className="space-y-4">
-        {paginatedItems.map((exam) => {
+        {paddedItems.map((exam, index) => {
+          if (!exam) return (
+            <div key={`empty-${index}`} className="h-[130px]" aria-hidden="true" />
+          );
+          
           const className = getClassName(exam.classId);
           
           return (
@@ -102,6 +112,59 @@ export function ExamsManagement() {
           />
         </div>
       )}
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Tạo bài kiểm tra mới">
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-semibold text-gray-700">Tên bài kiểm tra</label>
+              <input type="text" placeholder="Ví dụ: Kiểm tra cuối kỳ" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Lớp học</label>
+              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
+                <option value="">Chọn lớp học</option>
+                <option value="1">Lớp V001 (Cơ bản)</option>
+                <option value="2">Lớp V002 (Nâng cao)</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Loại bài thi</label>
+              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
+                <option value="Định kỳ">Định kỳ</option>
+                <option value="Giữa kỳ">Giữa kỳ</option>
+                <option value="Cuối kỳ">Cuối kỳ</option>
+                <option value="Thực hành">Thực hành</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Ngày thi</label>
+              <input type="date" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Giờ thi</label>
+              <input type="time" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Thời lượng (phút)</label>
+              <input type="number" placeholder="45" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Số lượng câu hỏi</label>
+              <input type="number" placeholder="20" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-semibold text-gray-700">Mô tả bài thi</label>
+              <textarea placeholder="Nhập mô tả hoặc yêu cầu cho bài thi..." rows={3} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all resize-none"></textarea>
+            </div>
+          </div>
+          <div className="flex gap-3 mt-6">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium">Hủy</button>
+            <button type="submit" className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm">Tạo đề thi</button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
+

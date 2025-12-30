@@ -32,7 +32,7 @@ export function GradingManagement() {
   const filteredSubmissions = mockSubmissions.filter(sub => filterStatus === "all" || sub.status === filterStatus);
   const pendingCount = mockSubmissions.filter(s => s.status === "pending").length;
   
-  const { currentPage, totalPages, paginatedItems, setCurrentPage } = usePagination(filteredSubmissions, ITEMS_PER_PAGE);
+  const { currentPage, totalPages, paginatedItems, paddedItems, setCurrentPage } = usePagination(filteredSubmissions, ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -74,7 +74,11 @@ export function GradingManagement() {
       </div>
 
       <div className="space-y-4">
-        {paginatedItems.map((sub) => {
+        {paddedItems.map((sub, index) => {
+          if (!sub) return (
+            <div key={`empty-${index}`} className="h-[110px]" aria-hidden="true" />
+          );
+
           const studentName = getStudentName(sub.studentId);
           const examTitle = getExamTitle(sub.examId);
           const className = getClassName(sub.classId);
