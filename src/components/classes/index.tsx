@@ -10,10 +10,18 @@ import { Modal } from "@/src/components/common/Modal";
 
 const ITEMS_PER_PAGE = 6;
 
+import { removeVietnameseTones } from "@/src/utils/text";
+
+import { mockUsers } from "@/src/data/usersData";
+import { mockFacilities } from "@/src/data/facilitiesData";
+
 export function ClassesManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Lấy danh sách giáo viên
+  const teachers = mockUsers.filter(user => user.role === 'TEACHER');
 
   // Helper functions để lấy tên từ ID
   const getTeacherName = (teacherId: number): string => {
@@ -30,9 +38,10 @@ export function ClassesManagement() {
   const filteredClasses = mockClasses.filter(cls => {
     const teacherName = getTeacherName(cls.teacherId);
     const facilityName = getFacilityName(cls.facilityId);
-    const matchesSearch = cls.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          teacherName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          facilityName.toLowerCase().includes(searchQuery.toLowerCase());
+    const normalizedQuery = removeVietnameseTones(searchQuery);
+    const matchesSearch = removeVietnameseTones(cls.name).includes(normalizedQuery) || 
+                          removeVietnameseTones(teacherName).includes(normalizedQuery) ||
+                          removeVietnameseTones(facilityName).includes(normalizedQuery);
     const matchesStatus = filterStatus === "all" || cls.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -158,19 +167,20 @@ export function ClassesManagement() {
         <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-semibold text-gray-700">Tên lớp học</label>
+              <label className="text-sm font-semibold text-gray-700">Tên lớp học <span className="text-red-500">*</span></label>
               <input type="text" placeholder="Nhập tên lớp học" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Giáo viên phụ trách</label>
+              <label className="text-sm font-semibold text-gray-700">Giáo viên phụ trách <span className="text-red-500">*</span></label>
               <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
                 <option value="">Chọn giáo viên</option>
-                <option value="3">Lê Văn Giáo Viên</option>
-                <option value="6">Vũ Thị Hoa</option>
+                {teachers.map(teacher => (
+                  <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
+                ))}
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Cấp độ</label>
+              <label className="text-sm font-semibold text-gray-700">Cấp độ <span className="text-red-500">*</span></label>
               <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
                 <option value="Cơ bản">Cơ bản</option>
                 <option value="Nâng cao">Nâng cao</option>
@@ -179,20 +189,20 @@ export function ClassesManagement() {
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Sĩ số tối đa</label>
+              <label className="text-sm font-semibold text-gray-700">Sĩ số tối đa <span className="text-red-500">*</span></label>
               <input type="number" placeholder="30" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Cơ sở đào tạo</label>
+              <label className="text-sm font-semibold text-gray-700">Cơ sở đào tạo <span className="text-red-500">*</span></label>
               <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
-                <option value="">Chọn cơ sở</option>
-                <option value="online">Học Online</option>
-                <option value="1">Cơ sở Hà Nội</option>
-                <option value="2">Cơ sở Hồ Chí Minh</option>
+                <option value="">Học Online</option>
+                {mockFacilities.map(facility => (
+                  <option key={facility.id} value={facility.id}>{facility.name}</option>
+                ))}
               </select>
             </div>
             <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-semibold text-gray-700">Lịch học</label>
+              <label className="text-sm font-semibold text-gray-700">Lịch học <span className="text-red-500">*</span></label>
               <input type="text" placeholder="Ví dụ: Thứ 2, 4, 6 - 18:00" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
           </div>

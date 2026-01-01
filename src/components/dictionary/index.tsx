@@ -1,21 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Library, Search, Plus, Filter, BookOpen, Mic, Video, Star, ArrowRight, Book, ArrowUpAZ, ArrowDownAZ, X } from "lucide-react";
+import { BookOpen, Search, Plus, Filter, Mic, Video, Star, ArrowRight, Book, ArrowUpAZ, ArrowDownAZ, X } from "lucide-react";
 import { dictionaryItems, categories } from "@/src/data";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
+import Link from "next/link";
 
 const ITEMS_PER_PAGE = 12;
 
-// Hàm loại bỏ dấu tiếng Việt để tìm kiếm không phân biệt dấu
-function removeVietnameseTones(str: string): string {
-  return str
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLowerCase();
-}
+import { removeVietnameseTones } from "@/src/utils/text";
+
 
 export const Dictionary: React.FC = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -119,17 +113,11 @@ export const Dictionary: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-            <Library className="w-8 h-8 text-primary-600" />
-            Quản lý từ điển
+            <BookOpen className="w-8 h-8 text-primary-600" />
+            Từ điển
           </h1>
-          <p className="text-gray-600 mt-1">Quản lý các từ và video ký hiệu ({dictionaryItems.length} từ)</p>
+          <p className="text-gray-600 mt-1">Các từ và video ngôn ngữ ký hiệu ({dictionaryItems.length} từ)</p>
         </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-medium shadow-sm"
-        >
-          <Plus size={20} /> Thêm từ mới
-        </button>
       </div>
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
         <div className="flex flex-col md:flex-row gap-4">
@@ -221,7 +209,7 @@ export const Dictionary: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {paddedItems.map((item, index) => (
               item ? (
-                <div key={item.id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden relative">
+                <Link key={item.id} href={`/dictionary/${item.id}`} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden relative cursor-pointer">
                   {/* Content */}
                   <div className="p-5">
                     <div className="flex items-start justify-between mb-2">
@@ -240,9 +228,10 @@ export const Dictionary: React.FC = () => {
 
                     <div className="flex items-center justify-between mt-4 text-gray-500 text-sm">
                       <span>{item.views} lượt xem</span>
+                      <ArrowRight size={16} className="text-primary-600 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                     </div>
                   </div>
-                </div>
+                </Link>
               ) : (
                 <div key={`empty-${index}`} className="opacity-0 pointer-events-none h-[160px]" aria-hidden="true" />
               )

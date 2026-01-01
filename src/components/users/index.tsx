@@ -2,9 +2,11 @@
 
 import { Users, Search, Plus, Filter, Edit, Trash2, UserCheck, UserX } from "lucide-react";
 import { useState } from "react";
-import { mockUsers, roleLabels, roleColors, getFacilityById } from "@/src/data";
+import { mockUsers, roleLabels, roleColors, getFacilityById, mockFacilities } from "@/src/data";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
 import { Modal } from "@/src/components/common/Modal";
+
+import { removeVietnameseTones } from "@/src/utils/text";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -14,11 +16,13 @@ export function UsersManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filteredUsers = mockUsers.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          user.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const normalizedQuery = removeVietnameseTones(searchQuery);
+    const matchesSearch = removeVietnameseTones(user.name).includes(normalizedQuery) ||
+                          removeVietnameseTones(user.email).includes(normalizedQuery);
     const matchesRole = filterRole === "all" || user.role === filterRole;
     return matchesSearch && matchesRole;
   });
+
 
   const { currentPage, totalPages, paginatedItems, paddedItems, setCurrentPage } = usePagination(filteredUsers, ITEMS_PER_PAGE);
 
@@ -89,8 +93,12 @@ export function UsersManagement() {
                   <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold">
-                          {user.name.charAt(0)}
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold overflow-hidden border border-gray-100 shadow-sm">
+                          {user.avatar ? (
+                            <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                          ) : (
+                            user.name.charAt(0)
+                          )}
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">{user.name}</p>
@@ -159,33 +167,36 @@ export function UsersManagement() {
         <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Họ và tên</label>
+              <label className="text-sm font-semibold text-gray-700">Họ và tên <span className="text-red-500">*</span></label>
               <input type="text" placeholder="Nhập họ và tên" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Email</label>
+              <label className="text-sm font-semibold text-gray-700">Email <span className="text-red-500">*</span></label>
               <input type="email" placeholder="email@vietsign.edu.vn" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Vai trò</label>
-              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
-                <option value="STUDENT">Học sinh</option>
-                <option value="TEACHER">Giáo viên</option>
-                <option value="FACILITY_MANAGER">Quản lý cơ sở</option>
-                <option value="USER">Người dùng tự do</option>
-              </select>
+              <label className="text-sm font-semibold text-gray-700">Mật khẩu <span className="text-red-500">*</span></label>
+              <input type="password" placeholder="••••••••" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-gray-700">Số điện thoại</label>
               <input type="tel" placeholder="Nhập số điện thoại" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" />
             </div>
-            <div className="space-y-1.5 md:col-span-2">
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">Vai trò <span className="text-red-500">*</span></label>
+              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
+                {Object.entries(roleLabels).map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
               <label className="text-sm font-semibold text-gray-700">Cơ sở (nếu có)</label>
               <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white">
                 <option value="">Tất cả / Không có</option>
-                <option value="1">Cơ sở Hà Nội</option>
-                <option value="2">Cơ sở Hồ Chí Minh</option>
-                <option value="3">Cơ sở Đà Nẵng</option>
+                {mockFacilities.map(facility => (
+                  <option key={facility.id} value={facility.id}>{facility.name}</option>
+                ))}
               </select>
             </div>
           </div>

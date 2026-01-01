@@ -10,9 +10,13 @@ const mockTools = [
   { id: 4, name: "Backup dữ liệu", description: "Sao lưu dữ liệu hệ thống định kỳ", status: "inactive", type: "System" },
 ];
 
+import { removeVietnameseTones } from "@/src/utils/text";
+
 export function ToolsManagement() {
   const [searchQuery, setSearchQuery] = useState("");
-  const filteredTools = mockTools.filter(tool => tool.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredTools = mockTools.filter(tool => 
+    removeVietnameseTones(tool.name).includes(removeVietnameseTones(searchQuery))
+  );
 
   return (
     <div className="space-y-6">

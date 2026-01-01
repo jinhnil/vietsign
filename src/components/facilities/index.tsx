@@ -3,7 +3,7 @@
 import { Building, Search, Plus, MapPin, Users, Phone, Mail, Edit, Trash2, MoreVertical, Map, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { mockFacilities, facilityStatusConfig, getFacilitiesStats, getUniqueProvinceCodes } from "@/src/data";
-import { fetchProvinces, fetchProvinceById, type Province } from "@/src/services/vietnamLocationsApi";
+import { fetchProvinces, fetchProvinceById, type Province, type Commune } from "@/src/services/vietnamLocationsApi";
 import { getUserById } from "@/src/data/usersData";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
 import { Modal } from "@/src/components/common/Modal";
@@ -16,14 +16,21 @@ interface LocationNames {
   wards: Record<number, string>;
 }
 
+import { removeVietnameseTones } from "@/src/utils/text";
+
 export function FacilitiesManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterProvince, setFilterProvince] = useState<number | "all">("all");
+
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [loadingProvinces, setLoadingProvinces] = useState(true);
   const [locationNames, setLocationNames] = useState<LocationNames>({ provinces: {}, wards: {} });
-  const [isModalOpen, setIsModalOpen] = useState(false);
   
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedModalProvince, setSelectedModalProvince] = useState<number | "">("");
+  const [modalWards, setModalWards] = useState<Commune[]>([]);
+  const [loadingWards, setLoadingWards] = useState(false);
+
   // Lấy danh sách tỉnh/thành phố từ API
   useEffect(() => {
     async function loadProvinces() {
@@ -91,7 +98,7 @@ export function FacilitiesManagement() {
   };
 
   // Helper để tạo địa chỉ đầy đủ
-  const getFullAddress = (facility: typeof mockFacilities[0]): string => {
+  const getFullAddress = (facility: (typeof mockFacilities)[0]): string => {
     const wardName = getWardName(facility.wardCode);
     const provinceName = getProvinceName(facility.provinceCode);
     if (wardName) {
@@ -104,9 +111,10 @@ export function FacilitiesManagement() {
   const filteredFacilities = mockFacilities.filter(facility => {
     const provinceName = getProvinceName(facility.provinceCode);
     const fullAddress = getFullAddress(facility);
-    const matchesSearch = facility.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          fullAddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          provinceName.toLowerCase().includes(searchQuery.toLowerCase());
+    const normalizedQuery = removeVietnameseTones(searchQuery);
+    const matchesSearch = removeVietnameseTones(facility.name).includes(normalizedQuery) || 
+                          removeVietnameseTones(fullAddress).includes(normalizedQuery) ||
+                          removeVietnameseTones(provinceName).includes(normalizedQuery);
     const matchesProvince = filterProvince === "all" || facility.provinceCode === filterProvince;
     return matchesSearch && matchesProvince;
   });
@@ -116,6 +124,27 @@ export function FacilitiesManagement() {
 
   // Pagination
   const { currentPage, totalPages, paginatedItems, paddedItems, setCurrentPage } = usePagination(filteredFacilities, ITEMS_PER_PAGE);
+
+  // Xử lý khi chọn tỉnh trong modal
+  const handleProvinceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const provinceCode = e.target.value;
+    setSelectedModalProvince(provinceCode ? Number(provinceCode) : "");
+    setModalWards([]);
+    
+    if (provinceCode) {
+      setLoadingWards(true);
+      try {
+        const provinceDetail = await fetchProvinceById(Number(provinceCode));
+        if (provinceDetail && provinceDetail.communes) {
+          setModalWards(provinceDetail.communes);
+        }
+      } catch (error) {
+        console.error('Failed to load wards for modal:', error);
+      } finally {
+        setLoadingWards(false);
+      }
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -128,7 +157,11 @@ export function FacilitiesManagement() {
           <p className="text-gray-600 mt-1">Quản lý các cơ sở đào tạo trong hệ thống</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setIsModalOpen(true);
+            setSelectedModalProvince("");
+            setModalWards([]);
+          }}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm"
         >
           <Plus size={20} /> Thêm cơ sở mới
@@ -181,7 +214,6 @@ export function FacilitiesManagement() {
               disabled={loadingProvinces}
             >
               <option value="all">Tất cả tỉnh/TP</option>
-              {/* Hiển thị các tỉnh có cơ sở - lấy tên từ API */}
               {getUniqueProvinceCodes().map(code => (
                 <option key={code} value={code}>
                   {getProvinceName(code)}
@@ -304,32 +336,42 @@ export function FacilitiesManagement() {
         <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-semibold text-gray-700">Tên cơ sở</label>
+              <label className="text-sm font-semibold text-gray-700">Tên cơ sở <span className="text-red-500">*</span></label>
               <input type="text" placeholder="Nhập tên cơ sở" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
             <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-semibold text-gray-700">Địa chỉ chi tiết</label>
+              <label className="text-sm font-semibold text-gray-700">Địa chỉ chi tiết <span className="text-red-500">*</span></label>
               <input type="text" placeholder="Số nhà, tên đường..." className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Tỉnh / Thành phố</label>
-              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
+              <label className="text-sm font-semibold text-gray-700">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
+              <select 
+                value={selectedModalProvince}
+                onChange={handleProvinceChange}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" 
+                required
+              >
                 <option value="">Chọn tỉnh/TP</option>
                 {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Phường / Xã</label>
-              <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" required>
-                <option value="">Chọn phường/xã</option>
+              <label className="text-sm font-semibold text-gray-700">Phường / Xã <span className="text-red-500">*</span></label>
+              <select 
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" 
+                required
+                disabled={!selectedModalProvince || loadingWards}
+              >
+                <option value="">{loadingWards ? 'Đang tải...' : 'Chọn phường/xã'}</option>
+                {modalWards.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Số điện thoại</label>
+              <label className="text-sm font-semibold text-gray-700">Số điện thoại <span className="text-red-500">*</span></label>
               <input type="tel" placeholder="024..." className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Email</label>
+              <label className="text-sm font-semibold text-gray-700">Email <span className="text-red-500">*</span></label>
               <input type="email" placeholder="facility@vietsign.edu.vn" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
           </div>

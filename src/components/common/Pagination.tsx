@@ -33,23 +33,49 @@ export function Pagination({
   // Tạo danh sách các trang để hiển thị
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
-    
-    if (totalPages <= 5) {
+    const sideItems = 2; // Số trang hiển thị ở mỗi bên của trang hiện tại
+
+    if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, '...', totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1, '...', totalPages - 2, totalPages - 1, totalPages);
-      } else {
-        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      // Luôn hiển thị trang đầu
+      pages.push(1);
+
+      // Tính khoảng range xung quanh trang hiện tại
+      let startPage = Math.max(2, currentPage - sideItems);
+      let endPage = Math.min(totalPages - 1, currentPage + sideItems);
+
+      // Điều chỉnh để luôn hiển thị 5 số nếu có thể
+      if (currentPage <= sideItems + 1) {
+        endPage = sideItems * 2 + 1;
+      } else if (currentPage >= totalPages - sideItems) {
+        startPage = totalPages - sideItems * 2;
       }
+
+      // Thêm dấu ... nếu cần ở phía trước
+      if (startPage > 2) {
+        pages.push('...');
+      }
+
+      // Thêm các trang trong range
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+
+      // Thêm dấu ... nếu cần ở phía sau
+      if (endPage < totalPages - 1) {
+        pages.push('...');
+      }
+
+      // Luôn hiển thị trang cuối
+      pages.push(totalPages);
     }
     
     return pages;
   };
+
 
   if (filteredItems === 0) return null;
 

@@ -191,6 +191,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       path: "/daily-signs",
       allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
     },
+    {
+      icon: <Settings size={22} />,
+      label: "Cài đặt",
+      path: "/settings",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
+    },
   ];
 
   // Lọc menu dựa trên role của user hiện tại

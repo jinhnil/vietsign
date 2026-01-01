@@ -9,14 +9,17 @@ const mockClasses = [
   { id: 3, name: "Lớp Giao tiếp thực hành", teacher: "Lê Thị Hương", schedule: "Thứ 7 - 9:00", startDate: "01/03/2025", spots: 12, maxSpots: 25, facility: "Cơ sở Đà Nẵng", registered: true },
 ];
 
+import { removeVietnameseTones } from "@/src/utils/text";
+
 export function ClassRegistrationManagement() {
   const [classes, setClasses] = useState(mockClasses);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredClasses = classes.filter(cls => 
-    cls.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    cls.teacher.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredClasses = classes.filter(cls => {
+    const normalizedQuery = removeVietnameseTones(searchQuery);
+    return removeVietnameseTones(cls.name).includes(normalizedQuery) ||
+           removeVietnameseTones(cls.teacher).includes(normalizedQuery);
+  });
 
   const handleRegister = (id: number) => {
     setClasses(classes.map(cls => 

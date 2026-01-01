@@ -9,6 +9,8 @@ import { Pagination, usePagination } from "@/src/components/common/Pagination";
 
 const ITEMS_PER_PAGE = 8;
 
+import { removeVietnameseTones } from "@/src/utils/text";
+
 export function GamesManagementComponent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -19,8 +21,9 @@ export function GamesManagementComponent() {
 
   // Filter games
   const filteredGames = allGames.filter(game => {
-    const matchesSearch = game.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          game.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const normalizedQuery = removeVietnameseTones(searchQuery);
+    const matchesSearch = removeVietnameseTones(game.name).includes(normalizedQuery) ||
+                          removeVietnameseTones(game.description).includes(normalizedQuery);
     const matchesCategory = filterCategory === "all" || 
                             game.category?.toLowerCase().includes(filterCategory.toLowerCase());
     return matchesSearch && matchesCategory;

@@ -8,13 +8,16 @@ import { Modal } from "@/src/components/common/Modal";
 
 const ITEMS_PER_PAGE = 10;
 
+import { removeVietnameseTones } from "@/src/utils/text";
+
 export function DictionaryManagementComponent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filteredWords = dictionaryItems.filter(word => {
-    const matchesSearch = word.word.toLowerCase().includes(searchQuery.toLowerCase());
+    const normalizedQuery = removeVietnameseTones(searchQuery);
+    const matchesSearch = removeVietnameseTones(word.word).includes(normalizedQuery);
     const matchesCategory = filterCategory === "all" || word.category === filterCategory;
     return matchesSearch && matchesCategory;
   });

@@ -80,9 +80,11 @@ export function getAllGames(): GameItem[] {
   return gameSections.flatMap(s => s.games);
 }
 
+import { removeVietnameseTones } from "@/src/utils/text";
+
 export function getGamesByCategory(category: string): GameItem[] {
   return gameSections.flatMap(s => s.games).filter(
-    g => g.category?.toLowerCase().includes(category.toLowerCase())
+    g => removeVietnameseTones(g.category || "").includes(removeVietnameseTones(category))
   );
 }
 
