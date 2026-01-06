@@ -2,20 +2,30 @@
 
 import { Library, Search, Plus, Edit, Trash2, Video, Eye, Filter } from "lucide-react";
 import { useState } from "react";
-import { dictionaryItems } from "@/src/data";
+import { useRouter } from "next/navigation";
+import { dictionaryItems, DictionaryItem } from "@/src/data";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
 import { Modal } from "@/src/components/common/Modal";
+import { ConfirmModal } from "@/src/components/common/ConfirmModal";
 
 const ITEMS_PER_PAGE = 10;
 
 import { removeVietnameseTones } from "@/src/utils/text";
 
 export function DictionaryManagementComponent() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // State để quản lý dữ liệu (mock)
+  const [words, setWords] = useState<DictionaryItem[]>(dictionaryItems);
+  
+  // State cho modal xác nhận xóa
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [wordToDelete, setWordToDelete] = useState<DictionaryItem | null>(null);
 
-  const filteredWords = dictionaryItems.filter(word => {
+  const filteredWords = words.filter(word => {
     const normalizedQuery = removeVietnameseTones(searchQuery);
     const matchesSearch = removeVietnameseTones(word.word).includes(normalizedQuery);
     const matchesCategory = filterCategory === "all" || word.category === filterCategory;
@@ -23,6 +33,33 @@ export function DictionaryManagementComponent() {
   });
 
   const { currentPage, totalPages, paginatedItems, paddedItems, setCurrentPage } = usePagination(filteredWords, ITEMS_PER_PAGE);
+
+  // Mở trang chi tiết
+  const openDetailPage = (word: DictionaryItem) => {
+    router.push(`/dictionary-management/${word.id}`);
+  };
+
+  // Mở trang chi tiết ở chế độ sửa
+  const openEditPage = (word: DictionaryItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(`/dictionary-management/${word.id}`);
+  };
+
+  // Mở modal xác nhận xóa
+  const openDeleteModal = (word: DictionaryItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setWordToDelete(word);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Xử lý xóa
+  const handleDelete = () => {
+    if (wordToDelete) {
+      setWords(prev => prev.filter(w => w.id !== wordToDelete.id));
+      setIsDeleteModalOpen(false);
+      setWordToDelete(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -32,7 +69,7 @@ export function DictionaryManagementComponent() {
             <Library className="w-8 h-8 text-primary-600" />
             Quản lý từ điển
           </h1>
-          <p className="text-gray-600 mt-1">Quản lý các từ và video ký hiệu ({dictionaryItems.length} từ)</p>
+          <p className="text-gray-600 mt-1">Quản lý các từ và video ký hiệu ({words.length} từ)</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -43,7 +80,6 @@ export function DictionaryManagementComponent() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-        {/* ... (bộ lọc giữ nguyên) */}
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -63,7 +99,7 @@ export function DictionaryManagementComponent() {
               className="px-4 py-2.5 border border-gray-200 rounded-xl outline-none bg-white min-w-[160px] transition-all focus:ring-2 focus:ring-primary-500"
             >
               <option value="all">Tất cả danh mục</option>
-              {Array.from(new Set(dictionaryItems.map(w => w.category))).map(cat => (
+              {Array.from(new Set(words.map(w => w.category))).map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
@@ -86,7 +122,11 @@ export function DictionaryManagementComponent() {
             <tbody className="divide-y divide-gray-100">
               {paddedItems.map((word, index) => (
                 word ? (
-                  <tr key={word.id} className="hover:bg-gray-50 transition-colors">
+                  <tr 
+                    key={word.id} 
+                    className="hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => openDetailPage(word)}
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
@@ -108,11 +148,19 @@ export function DictionaryManagementComponent() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
+                      <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                        <button 
+                          className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                          onClick={(e) => openEditPage(word, e)}
+                          title="Chỉnh sửa"
+                        >
                           <Edit size={18} />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <button 
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          onClick={(e) => openDeleteModal(word, e)}
+                          title="Xóa"
+                        >
                           <Trash2 size={18} />
                         </button>
                       </div>
@@ -133,7 +181,7 @@ export function DictionaryManagementComponent() {
             currentPage={currentPage}
             totalPages={totalPages}
             itemsPerPage={ITEMS_PER_PAGE}
-            totalItems={dictionaryItems.length}
+            totalItems={words.length}
             filteredItems={filteredWords.length}
             itemName="từ"
             onPageChange={setCurrentPage}
@@ -147,6 +195,7 @@ export function DictionaryManagementComponent() {
         )}
       </div>
 
+      {/* Modal thêm từ mới */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Thêm từ mới vào từ điển">
         <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -186,7 +235,18 @@ export function DictionaryManagementComponent() {
           </div>
         </form>
       </Modal>
+
+      {/* Modal xác nhận xóa */}
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa"
+        message={`Bạn có chắc chắn muốn xóa từ "${wordToDelete?.word}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+      />
     </div>
   );
 }
-

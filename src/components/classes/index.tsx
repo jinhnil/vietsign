@@ -1,12 +1,14 @@
 "use client";
 
-import { BookOpenCheck, Search, Plus, Users, Calendar, Clock, User, ChevronRight, Filter, Building } from "lucide-react";
+import { BookOpenCheck, Search, Plus, Users, Calendar, Clock, User, ChevronRight, Filter, Building, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { mockClasses, statusConfig } from "@/src/data";
+import { useRouter } from "next/navigation";
+import { mockClasses, statusConfig, ClassItem } from "@/src/data";
 import { getUserById } from "@/src/data/usersData";
 import { getFacilityById } from "@/src/data/facilitiesData";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
 import { Modal } from "@/src/components/common/Modal";
+import { ConfirmModal } from "@/src/components/common/ConfirmModal";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -16,9 +18,17 @@ import { mockUsers } from "@/src/data/usersData";
 import { mockFacilities } from "@/src/data/facilitiesData";
 
 export function ClassesManagement() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // State để quản lý dữ liệu (mock)
+  const [classes, setClasses] = useState<ClassItem[]>(mockClasses);
+
+  // State cho modal xác nhận xóa
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [classToDelete, setClassToDelete] = useState<ClassItem | null>(null);
 
   // Lấy danh sách giáo viên
   const teachers = mockUsers.filter(user => user.role === 'TEACHER');
@@ -35,7 +45,7 @@ export function ClassesManagement() {
     return facility?.name || 'Không xác định';
   };
 
-  const filteredClasses = mockClasses.filter(cls => {
+  const filteredClasses = classes.filter(cls => {
     const teacherName = getTeacherName(cls.teacherId);
     const facilityName = getFacilityName(cls.facilityId);
     const normalizedQuery = removeVietnameseTones(searchQuery);
@@ -48,6 +58,33 @@ export function ClassesManagement() {
 
   const { currentPage, totalPages, paginatedItems, paddedItems, setCurrentPage } = usePagination(filteredClasses, ITEMS_PER_PAGE);
 
+  // Mở trang chi tiết
+  const openDetailPage = (cls: ClassItem) => {
+    router.push(`/classes/${cls.id}`);
+  };
+
+  // Mở trang chi tiết ở chế độ sửa
+  const openEditPage = (cls: ClassItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(`/classes/${cls.id}`);
+  };
+
+  // Mở modal xác nhận xóa
+  const openDeleteModal = (cls: ClassItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setClassToDelete(cls);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Xử lý xóa
+  const handleDelete = () => {
+    if (classToDelete) {
+      setClasses(prev => prev.filter(c => c.id !== classToDelete.id));
+      setIsDeleteModalOpen(false);
+      setClassToDelete(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -56,7 +93,7 @@ export function ClassesManagement() {
             <BookOpenCheck className="w-8 h-8 text-primary-600" />
             Quản lý lớp học
           </h1>
-          <p className="text-gray-600 mt-1">Quản lý các lớp học trong hệ thống</p>
+          <p className="text-gray-600 mt-1">Quản lý các lớp học trong hệ thống ({classes.length} lớp)</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -85,7 +122,6 @@ export function ClassesManagement() {
       </div>
 
       <div className="space-y-4">
-        {/* ... (phần render list giữ nguyên) */}
         {paddedItems.map((cls, index) => {
           if (!cls) return (
             <div key={`empty-${index}`} className="h-[162px]" aria-hidden="true" />
@@ -95,7 +131,11 @@ export function ClassesManagement() {
           const facilityName = getFacilityName(cls.facilityId);
           
           return (
-            <div key={cls.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+            <div 
+              key={cls.id} 
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => openDetailPage(cls)}
+            >
               <div className="flex flex-col md:flex-row md:items-center gap-4">
                 <div className="flex-1">
                   <div className="flex items-start gap-4">
@@ -124,7 +164,7 @@ export function ClassesManagement() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
                   <div className="text-center">
                     <div className="w-16 h-16 relative">
                       <svg className="w-full h-full transform -rotate-90">
@@ -135,7 +175,22 @@ export function ClassesManagement() {
                     </div>
                     <p className="text-xs text-gray-500 mt-1">Sĩ số</p>
                   </div>
-                  <button className="inline-flex items-center gap-1 px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-xl hover:bg-primary-100">Chi tiết <ChevronRight size={16} /></button>
+                  <div className="flex gap-1">
+                    <button 
+                      className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                      onClick={(e) => openEditPage(cls, e)}
+                      title="Chỉnh sửa"
+                    >
+                      <Edit size={18} />
+                    </button>
+                    <button 
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      onClick={(e) => openDeleteModal(cls, e)}
+                      title="Xóa"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -155,7 +210,7 @@ export function ClassesManagement() {
             currentPage={currentPage}
             totalPages={totalPages}
             itemsPerPage={ITEMS_PER_PAGE}
-            totalItems={mockClasses.length}
+            totalItems={classes.length}
             filteredItems={filteredClasses.length}
             itemName="lớp học"
             onPageChange={setCurrentPage}
@@ -212,7 +267,18 @@ export function ClassesManagement() {
           </div>
         </form>
       </Modal>
+
+      {/* Modal xác nhận xóa */}
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa"
+        message={`Bạn có chắc chắn muốn xóa lớp học "${classToDelete?.name}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+      />
     </div>
   );
 }
-

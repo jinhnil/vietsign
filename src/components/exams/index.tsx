@@ -1,17 +1,27 @@
 "use client";
 
-import { ClipboardCheck, Plus, Calendar, Clock, Users, FileText, ChevronRight, Filter, BookOpen } from "lucide-react";
+import { ClipboardCheck, Plus, Calendar, Clock, Users, FileText, ChevronRight, Filter, BookOpen, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { mockExams, examStatusConfig } from "@/src/data";
+import { useRouter } from "next/navigation";
+import { mockExams, examStatusConfig, ExamItem } from "@/src/data";
 import { getClassById } from "@/src/data/classesData";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
 import { Modal } from "@/src/components/common/Modal";
+import { ConfirmModal } from "@/src/components/common/ConfirmModal";
 
 const ITEMS_PER_PAGE = 8;
 
 export function ExamsManagement() {
+  const router = useRouter();
   const [filterStatus, setFilterStatus] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // State để quản lý dữ liệu (mock)
+  const [exams, setExams] = useState<ExamItem[]>(mockExams);
+
+  // State cho modal xác nhận xóa
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [examToDelete, setExamToDelete] = useState<ExamItem | null>(null);
 
   // Helper function để lấy tên lớp từ classId
   const getClassName = (classId: number): string => {
@@ -19,8 +29,35 @@ export function ExamsManagement() {
     return classItem?.name || 'Không xác định';
   };
 
-  const filteredExams = mockExams.filter(exam => filterStatus === "all" || exam.status === filterStatus);
+  const filteredExams = exams.filter(exam => filterStatus === "all" || exam.status === filterStatus);
   const { currentPage, totalPages, paginatedItems, paddedItems, setCurrentPage } = usePagination(filteredExams, ITEMS_PER_PAGE);
+
+  // Mở trang chi tiết
+  const openDetailPage = (exam: ExamItem) => {
+    router.push(`/exams/${exam.id}`);
+  };
+
+  // Mở trang chi tiết ở chế độ sửa
+  const openEditPage = (exam: ExamItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(`/exams/${exam.id}`);
+  };
+
+  // Mở modal xác nhận xóa
+  const openDeleteModal = (exam: ExamItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExamToDelete(exam);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Xử lý xóa
+  const handleDelete = () => {
+    if (examToDelete) {
+      setExams(prev => prev.filter(e => e.id !== examToDelete.id));
+      setIsDeleteModalOpen(false);
+      setExamToDelete(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -30,7 +67,7 @@ export function ExamsManagement() {
             <ClipboardCheck className="w-8 h-8 text-primary-600" />
             Quản lý kiểm tra
           </h1>
-          <p className="text-gray-600 mt-1">Tạo và quản lý các bài kiểm tra</p>
+          <p className="text-gray-600 mt-1">Tạo và quản lý các bài kiểm tra ({exams.length} bài)</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -61,7 +98,11 @@ export function ExamsManagement() {
           const className = getClassName(exam.classId);
           
           return (
-            <div key={exam.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+            <div 
+              key={exam.id} 
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => openDetailPage(exam)}
+            >
               <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
                 <div className="flex items-start gap-4">
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
@@ -90,26 +131,45 @@ export function ExamsManagement() {
                     </div>
                   </div>
                 </div>
-                <button className="inline-flex items-center gap-1 px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-xl hover:bg-primary-100">
-                  Chi tiết <ChevronRight size={16} />
-                </button>
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <button 
+                    className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                    onClick={(e) => openEditPage(exam, e)}
+                    title="Chỉnh sửa"
+                  >
+                    <Edit size={18} />
+                  </button>
+                  <button 
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    onClick={(e) => openDeleteModal(exam, e)}
+                    title="Xóa"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
 
-      {filteredExams.length > 0 && (
+      {filteredExams.length > 0 ? (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             itemsPerPage={ITEMS_PER_PAGE}
-            totalItems={mockExams.length}
+            totalItems={exams.length}
             filteredItems={filteredExams.length}
             itemName="bài kiểm tra"
             onPageChange={setCurrentPage}
           />
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+          <ClipboardCheck className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy bài kiểm tra</h3>
+          <p className="text-gray-500">Thử thay đổi bộ lọc trạng thái</p>
         </div>
       )}
 
@@ -164,7 +224,18 @@ export function ExamsManagement() {
           </div>
         </form>
       </Modal>
+
+      {/* Modal xác nhận xóa */}
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa"
+        message={`Bạn có chắc chắn muốn xóa bài kiểm tra "${examToDelete?.title}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+      />
     </div>
   );
 }
-

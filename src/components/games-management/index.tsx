@@ -1,23 +1,30 @@
 "use client";
 
-import { Gamepad2, Search, Edit, Trash2, Users, Star, Play, Filter, Flame, Brain, BookOpen, Trophy, Sparkles, ShieldAlert, CheckCircle2, XCircle } from "lucide-react";
+import { Gamepad2, Search, Edit, Trash2, Users, Star, Filter, ShieldAlert, CheckCircle2, XCircle } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
-import { gameSections, levelConfig, gameCategories } from "@/src/data";
+import { gameSections, levelConfig, gameCategories, GameItem } from "@/src/data";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
+import { ConfirmModal } from "@/src/components/common/ConfirmModal";
 
 const ITEMS_PER_PAGE = 8;
 
 import { removeVietnameseTones } from "@/src/utils/text";
 
 export function GamesManagementComponent() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const { user } = useSelector((state: RootState) => state.admin);
 
-  // Flatten all games for searching and pagination
-  const allGames = gameSections.flatMap(section => section.games);
+  // State để quản lý dữ liệu (mock)
+  const [allGames, setAllGames] = useState<GameItem[]>(gameSections.flatMap(section => section.games));
+
+  // State cho modal xác nhận xóa
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [gameToDelete, setGameToDelete] = useState<GameItem | null>(null);
 
   // Filter games
   const filteredGames = allGames.filter(game => {
@@ -37,8 +44,42 @@ export function GamesManagementComponent() {
   const avgRating = allGames.reduce((sum, g) => sum + (g.rating || 0), 0) / (allGames.length || 1);
 
   // Check Admin permission
-  // Chấp nhận cả "ADMIN" và "Admin" để an toàn
   const isAdmin = user?.role?.toUpperCase() === "ADMIN";
+
+  // Mở trang chi tiết
+  const openDetailPage = (game: GameItem) => {
+    router.push(`/games-management/${game.id}`);
+  };
+
+  // Mở trang chi tiết ở chế độ sửa
+  const openEditPage = (game: GameItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(`/games-management/${game.id}`);
+  };
+
+  // Mở modal xác nhận xóa
+  const openDeleteModal = (game: GameItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setGameToDelete(game);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Xử lý xóa
+  const handleDelete = () => {
+    if (gameToDelete) {
+      setAllGames(prev => prev.filter(g => g.id !== gameToDelete.id));
+      setIsDeleteModalOpen(false);
+      setGameToDelete(null);
+    }
+  };
+
+  // Toggle isActive
+  const toggleGameActive = (game: GameItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setAllGames(prev => prev.map(g => 
+      g.id === game.id ? { ...g, isActive: !g.isActive } : g
+    ));
+  };
 
   if (!isAdmin) {
     return (
@@ -123,7 +164,11 @@ export function GamesManagementComponent() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {paddedItems.map((game, index) => (
           game ? (
-            <div key={game.id} className={`bg-white rounded-2xl shadow-sm border ${!game.isActive ? 'opacity-75 grayscale-[0.5] border-dashed' : 'border-gray-100'} overflow-hidden hover:shadow-md transition-all group`}>
+            <div 
+              key={game.id} 
+              className={`bg-white rounded-2xl shadow-sm border ${!game.isActive ? 'opacity-75 grayscale-[0.5] border-dashed' : 'border-gray-100'} overflow-hidden hover:shadow-md transition-all group cursor-pointer`}
+              onClick={() => openDetailPage(game)}
+            >
               <div className={`aspect-video ${game.isActive ? game.colorClass : 'bg-gray-400'} flex items-center justify-center relative`}>
                 <Gamepad2 className="w-12 h-12 text-white/50 group-hover:scale-110 transition-transform" />
                 <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
@@ -159,22 +204,31 @@ export function GamesManagementComponent() {
                   </span>
                 </div>
               </div>
-              <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+              <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2">
                   <span className={`text-[11px] font-medium ${game.isActive ? 'text-green-600' : 'text-gray-400'}`}>
                     {game.isActive ? 'Đang bật' : 'Đang tắt'}
                   </span>
                   <button 
                     className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${game.isActive ? 'bg-primary-600' : 'bg-gray-200'}`}
+                    onClick={(e) => toggleGameActive(game, e)}
                   >
                     <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${game.isActive ? 'translate-x-4' : 'translate-x-0'}`} />
                   </button>
                 </div>
                 <div className="flex gap-1">
-                  <button className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
+                  <button 
+                    className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                    onClick={(e) => openEditPage(game, e)}
+                    title="Chỉnh sửa"
+                  >
                     <Edit size={14} />
                   </button>
-                  <button className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                  <button 
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    onClick={(e) => openDeleteModal(game, e)}
+                    title="Xóa"
+                  >
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -208,7 +262,18 @@ export function GamesManagementComponent() {
           <p className="text-gray-500">Thử tìm kiếm với từ khóa khác</p>
         </div>
       )}
+
+      {/* Modal xác nhận xóa */}
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa"
+        message={`Bạn có chắc chắn muốn xóa trò chơi "${gameToDelete?.name}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+      />
     </div>
   );
 }
-

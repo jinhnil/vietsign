@@ -4,7 +4,6 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   House,
   BookOpen,
-  Settings,
   LogOut,
   Users,
   GraduationCap,
@@ -189,12 +188,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       icon: <Calendar size={22} />,
       label: "Ký hiệu mỗi ngày",
       path: "/daily-signs",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
-    },
-    {
-      icon: <Settings size={22} />,
-      label: "Cài đặt",
-      path: "/settings",
       allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
     },
   ];

@@ -2,11 +2,13 @@
 
 import { Building, Search, Plus, MapPin, Users, Phone, Mail, Edit, Trash2, MoreVertical, Map, User } from "lucide-react";
 import { useState, useEffect } from "react";
-import { mockFacilities, facilityStatusConfig, getFacilitiesStats, getUniqueProvinceCodes } from "@/src/data";
+import { useRouter } from "next/navigation";
+import { mockFacilities, facilityStatusConfig, getFacilitiesStats, getUniqueProvinceCodes, FacilityItem } from "@/src/data";
 import { fetchProvinces, fetchProvinceById, type Province, type Commune } from "@/src/services/vietnamLocationsApi";
 import { getUserById } from "@/src/data/usersData";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
 import { Modal } from "@/src/components/common/Modal";
+import { ConfirmModal } from "@/src/components/common/ConfirmModal";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -19,6 +21,7 @@ interface LocationNames {
 import { removeVietnameseTones } from "@/src/utils/text";
 
 export function FacilitiesManagement() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterProvince, setFilterProvince] = useState<number | "all">("all");
 
@@ -30,6 +33,13 @@ export function FacilitiesManagement() {
   const [selectedModalProvince, setSelectedModalProvince] = useState<number | "">("");
   const [modalWards, setModalWards] = useState<Commune[]>([]);
   const [loadingWards, setLoadingWards] = useState(false);
+
+  // State để quản lý dữ liệu (mock)
+  const [facilities, setFacilities] = useState<FacilityItem[]>(mockFacilities);
+
+  // State cho modal xác nhận xóa
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [facilityToDelete, setFacilityToDelete] = useState<FacilityItem | null>(null);
 
   // Lấy danh sách tỉnh/thành phố từ API
   useEffect(() => {
@@ -71,7 +81,7 @@ export function FacilitiesManagement() {
             for (const commune of provinceDetail.communes) {
               const wardCode = parseInt(commune.id);
               // Kiểm tra xem ward này có trong danh sách cơ sở không
-              const facilityWithWard = mockFacilities.find(f => f.wardCode === wardCode);
+              const facilityWithWard = facilities.find(f => f.wardCode === wardCode);
               if (facilityWithWard) {
                 wardNames[wardCode] = commune.name;
               }
@@ -85,7 +95,7 @@ export function FacilitiesManagement() {
       setLocationNames(prev => ({ ...prev, wards: wardNames }));
     }
     loadWards();
-  }, [provinces]);
+  }, [provinces, facilities]);
 
   // Helper để lấy tên tỉnh
   const getProvinceName = (provinceCode: number): string => {
@@ -98,7 +108,7 @@ export function FacilitiesManagement() {
   };
 
   // Helper để tạo địa chỉ đầy đủ
-  const getFullAddress = (facility: (typeof mockFacilities)[0]): string => {
+  const getFullAddress = (facility: FacilityItem): string => {
     const wardName = getWardName(facility.wardCode);
     const provinceName = getProvinceName(facility.provinceCode);
     if (wardName) {
@@ -108,7 +118,7 @@ export function FacilitiesManagement() {
   };
 
   // Lọc cơ sở theo tìm kiếm và tỉnh/thành phố
-  const filteredFacilities = mockFacilities.filter(facility => {
+  const filteredFacilities = facilities.filter(facility => {
     const provinceName = getProvinceName(facility.provinceCode);
     const fullAddress = getFullAddress(facility);
     const normalizedQuery = removeVietnameseTones(searchQuery);
@@ -146,6 +156,33 @@ export function FacilitiesManagement() {
     }
   };
 
+  // Mở trang chi tiết
+  const openDetailPage = (facility: FacilityItem) => {
+    router.push(`/facilities/${facility.id}`);
+  };
+
+  // Mở trang chi tiết ở chế độ sửa
+  const openEditPage = (facility: FacilityItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(`/facilities/${facility.id}`);
+  };
+
+  // Mở modal xác nhận xóa
+  const openDeleteModal = (facility: FacilityItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFacilityToDelete(facility);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Xử lý xóa
+  const handleDelete = () => {
+    if (facilityToDelete) {
+      setFacilities(prev => prev.filter(f => f.id !== facilityToDelete.id));
+      setIsDeleteModalOpen(false);
+      setFacilityToDelete(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -154,7 +191,7 @@ export function FacilitiesManagement() {
             <Building className="w-8 h-8 text-primary-600" />
             Quản lý cơ sở giáo dục
           </h1>
-          <p className="text-gray-600 mt-1">Quản lý các cơ sở đào tạo trong hệ thống</p>
+          <p className="text-gray-600 mt-1">Quản lý các cơ sở đào tạo trong hệ thống ({facilities.length} cơ sở)</p>
         </div>
         <button 
           onClick={() => {
@@ -172,23 +209,23 @@ export function FacilitiesManagement() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-500">Tổng cơ sở</p>
-          <p className="text-2xl font-bold text-gray-900">{stats.totalFacilities}</p>
+          <p className="text-2xl font-bold text-gray-900">{facilities.length}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-500">Đang hoạt động</p>
-          <p className="text-2xl font-bold text-green-600">{stats.activeFacilities}</p>
+          <p className="text-2xl font-bold text-green-600">{facilities.filter(f => f.status === 'active').length}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-500">Tổng học sinh</p>
-          <p className="text-2xl font-bold text-primary-600">{stats.totalStudents}</p>
+          <p className="text-2xl font-bold text-primary-600">{facilities.reduce((sum, f) => sum + f.studentCount, 0)}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-500">Tổng giáo viên</p>
-          <p className="text-2xl font-bold text-amber-600">{stats.totalTeachers}</p>
+          <p className="text-2xl font-bold text-amber-600">{facilities.reduce((sum, f) => sum + f.teacherCount, 0)}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-500">Số tỉnh/TP</p>
-          <p className="text-2xl font-bold text-purple-600">{stats.provinceCount}</p>
+          <p className="text-2xl font-bold text-purple-600">{new Set(facilities.map(f => f.provinceCode)).size}</p>
         </div>
       </div>
 
@@ -236,7 +273,11 @@ export function FacilitiesManagement() {
           const provinceName = getProvinceName(facility.provinceCode);
           
           return (
-            <div key={facility.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+            <div 
+              key={facility.id} 
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => openDetailPage(facility)}
+            >
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -250,7 +291,12 @@ export function FacilitiesManagement() {
                       </span>
                     </div>
                   </div>
-                  <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"><MoreVertical size={20} /></button>
+                  <button 
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical size={20} />
+                  </button>
                 </div>
                 
                 <div className="space-y-3 text-sm">
@@ -295,11 +341,17 @@ export function FacilitiesManagement() {
                 </div>
               </div>
               
-              <div className="px-6 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-2">
-                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
+              <div className="px-6 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                <button 
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                  onClick={(e) => openEditPage(facility, e)}
+                >
                   <Edit size={16} />Chỉnh sửa
                 </button>
-                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                <button 
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  onClick={(e) => openDeleteModal(facility, e)}
+                >
                   <Trash2 size={16} />Xóa
                 </button>
               </div>
@@ -320,7 +372,7 @@ export function FacilitiesManagement() {
             currentPage={currentPage}
             totalPages={totalPages}
             itemsPerPage={ITEMS_PER_PAGE}
-            totalItems={mockFacilities.length}
+            totalItems={facilities.length}
             filteredItems={filteredFacilities.length}
             itemName="cơ sở"
             onPageChange={setCurrentPage}
@@ -328,6 +380,7 @@ export function FacilitiesManagement() {
         </div>
       )}
 
+      {/* Modal thêm cơ sở mới */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
@@ -381,6 +434,18 @@ export function FacilitiesManagement() {
           </div>
         </form>
       </Modal>
+
+      {/* Modal xác nhận xóa */}
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa"
+        message={`Bạn có chắc chắn muốn xóa cơ sở "${facilityToDelete?.name}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+      />
     </div>
   );
 }

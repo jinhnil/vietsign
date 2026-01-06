@@ -2,20 +2,30 @@
 
 import { Users, Search, Plus, Filter, Edit, Trash2, UserCheck, UserX } from "lucide-react";
 import { useState } from "react";
-import { mockUsers, roleLabels, roleColors, getFacilityById, mockFacilities } from "@/src/data";
+import { useRouter } from "next/navigation";
+import { mockUsers, roleLabels, roleColors, getFacilityById, mockFacilities, UserItem } from "@/src/data";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
 import { Modal } from "@/src/components/common/Modal";
+import { ConfirmModal } from "@/src/components/common/ConfirmModal";
 
 import { removeVietnameseTones } from "@/src/utils/text";
 
 const ITEMS_PER_PAGE = 8;
 
 export function UsersManagement() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const filteredUsers = mockUsers.filter(user => {
+  // State để quản lý dữ liệu (mock)
+  const [users, setUsers] = useState<UserItem[]>(mockUsers);
+
+  // State cho modal xác nhận xóa
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserItem | null>(null);
+
+  const filteredUsers = users.filter(user => {
     const normalizedQuery = removeVietnameseTones(searchQuery);
     const matchesSearch = removeVietnameseTones(user.name).includes(normalizedQuery) ||
                           removeVietnameseTones(user.email).includes(normalizedQuery);
@@ -26,6 +36,33 @@ export function UsersManagement() {
 
   const { currentPage, totalPages, paginatedItems, paddedItems, setCurrentPage } = usePagination(filteredUsers, ITEMS_PER_PAGE);
 
+  // Mở trang chi tiết
+  const openDetailPage = (user: UserItem) => {
+    router.push(`/users/${user.id}`);
+  };
+
+  // Mở trang chi tiết ở chế độ sửa
+  const openEditPage = (user: UserItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(`/users/${user.id}`);
+  };
+
+  // Mở modal xác nhận xóa
+  const openDeleteModal = (user: UserItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setUserToDelete(user);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Xử lý xóa
+  const handleDelete = () => {
+    if (userToDelete) {
+      setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
+      setIsDeleteModalOpen(false);
+      setUserToDelete(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -34,7 +71,7 @@ export function UsersManagement() {
             <Users className="w-8 h-8 text-primary-600" />
             Quản lý người dùng
           </h1>
-          <p className="text-gray-600 mt-1">Quản lý tất cả người dùng trong hệ thống</p>
+          <p className="text-gray-600 mt-1">Quản lý tất cả người dùng trong hệ thống ({users.length} người dùng)</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -90,7 +127,11 @@ export function UsersManagement() {
             <tbody className="divide-y divide-gray-100">
               {paddedItems.map((user, index) => (
                 user ? (
-                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                  <tr 
+                    key={user.id} 
+                    className="hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => openDetailPage(user)}
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold overflow-hidden border border-gray-100 shadow-sm">
@@ -128,11 +169,19 @@ export function UsersManagement() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
+                      <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                        <button 
+                          className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                          onClick={(e) => openEditPage(user, e)}
+                          title="Chỉnh sửa"
+                        >
                           <Edit size={18} />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <button 
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          onClick={(e) => openDeleteModal(user, e)}
+                          title="Xóa"
+                        >
                           <Trash2 size={18} />
                         </button>
                       </div>
@@ -148,17 +197,26 @@ export function UsersManagement() {
           </table>
         </div>
         
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          itemsPerPage={ITEMS_PER_PAGE}
-          totalItems={mockUsers.length}
-          filteredItems={filteredUsers.length}
-          itemName="người dùng"
-          onPageChange={setCurrentPage}
-        />
+        {filteredUsers.length > 0 ? (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            itemsPerPage={ITEMS_PER_PAGE}
+            totalItems={users.length}
+            filteredItems={filteredUsers.length}
+            itemName="người dùng"
+            onPageChange={setCurrentPage}
+          />
+        ) : (
+          <div className="p-12 text-center">
+            <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy người dùng</h3>
+            <p className="text-gray-500">Thử tìm kiếm với từ khóa khác</p>
+          </div>
+        )}
       </div>
 
+      {/* Modal thêm người dùng mới */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
@@ -206,7 +264,18 @@ export function UsersManagement() {
           </div>
         </form>
       </Modal>
+
+      {/* Modal xác nhận xóa */}
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa"
+        message={`Bạn có chắc chắn muốn xóa người dùng "${userToDelete?.name}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        type="danger"
+      />
     </div>
   );
 }
-
