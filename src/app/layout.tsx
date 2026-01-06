@@ -2,6 +2,7 @@
 import "./globals.css";
 import StoreProvider from "@/src/store/StoreProvider";
 import QueryProvider from "../providers/query-provider";
+import { ThemeProvider } from "../providers/ThemeProvider";
 
 export const metadata = {
   title: "VietSignSchool App",
@@ -14,13 +15,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <StoreProvider>
           <QueryProvider>
-            <div className="font-sans antialiased selection:bg-primary-100 selection:text-primary-900">
-              {children}
-            </div>
+            <ThemeProvider>
+              <div className="font-sans antialiased selection:bg-primary-100 selection:text-primary-900">
+                {children}
+              </div>
+            </ThemeProvider>
           </QueryProvider>
         </StoreProvider>
       </body>

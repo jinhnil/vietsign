@@ -18,15 +18,12 @@ export const Register: React.FC = () => {
   const registerMutation = useMutation({
     mutationFn: (values: any) => Auth.register(values),
     onSuccess: async (res) => {
-      // Assuming register returns something indicating success or OTP step
+      console.log(res);
       message.success("Đăng ký thành công! Vui lòng kiểm tra email để xác thực OTP.");
-      // Redirect to OTP verification or login page?
-      // For now, redirect to login
       router.push("/login");
     },
     onError: (error: Error) => {
-      // console.error(error);
-      message.error("Đăng ký thất bại. Vui lòng thử lại.");
+      message.error(error.message);
     },
   });
 

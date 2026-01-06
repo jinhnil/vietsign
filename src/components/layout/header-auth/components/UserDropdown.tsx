@@ -1,9 +1,10 @@
 import React from "react";
 import Link from "next/link";
-import { User, Settings, LogOut, Moon, HelpCircle, Shield, Keyboard } from "lucide-react";
+import { User, Settings, LogOut, Moon, Sun, HelpCircle, Keyboard } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { logout } from "@/src/store/slices/adminSlice";
+import { useTheme } from "@/src/providers/ThemeProvider";
 
 interface UserDropdownProps {
     user: any;
@@ -13,11 +14,16 @@ interface UserDropdownProps {
 const UserDropdown: React.FC<UserDropdownProps> = ({ user, onClose }) => {
     const dispatch = useDispatch();
     const router = useRouter();
+    const { theme, toggleTheme } = useTheme();
 
     const handleLogout = () => {
         dispatch(logout());
         router.push("/");
         onClose();
+    };
+
+    const handleThemeToggle = () => {
+        toggleTheme();
     };
 
     return (
@@ -52,11 +58,24 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ user, onClose }) => {
                     <span className="text-sm font-medium">Cài đặt</span>
                 </Link>
                 <button
+                    onClick={handleThemeToggle}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                    <Moon size={20} className="text-gray-500" />
-                    <span className="text-sm font-medium flex-1 text-left">Giao diện: Sáng</span>
-                    <span className="text-xs text-gray-400">foo</span>
+                    {theme === "light" ? (
+                        <Sun size={20} className="text-amber-500" />
+                    ) : (
+                        <Moon size={20} className="text-gray-500" />
+                    )}
+                    <span className="text-sm font-medium flex-1 text-left">
+                        Giao diện: {theme === "light" ? "Sáng" : "Tối"}
+                    </span>
+                    <div className={`w-10 h-5 rounded-full relative transition-colors ${
+                        theme === "dark" ? "bg-primary-600" : "bg-gray-300"
+                    }`}>
+                        <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                            theme === "dark" ? "translate-x-5" : "translate-x-0.5"
+                        }`} />
+                    </div>
                 </button>
             </div>
 
@@ -89,3 +108,4 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ user, onClose }) => {
 };
 
 export default UserDropdown;
+

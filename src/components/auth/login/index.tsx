@@ -25,9 +25,13 @@ const Login: React.FC = () => {
     onSuccess: async (res) => {
       localStorage.setItem("access_token", res.access_token);
       localStorage.setItem("refresh_token", res.refresh_token);
-      const userProfile = await UserCode.getProfile();
-      dispatch(login(userProfile.data));
-      localStorage.setItem("user", JSON.stringify(userProfile.data));
+      // const userProfile = await UserCode.getProfile();
+      // dispatch(login(userProfile.data));
+      // localStorage.setItem("user", JSON.stringify(userProfile.data));
+      if (res.user) {
+        dispatch(login(res.user));
+        localStorage.setItem("user", JSON.stringify(res.user));
+      }
       message.success("Đăng nhập thành công");
       router.push("/home");
     },

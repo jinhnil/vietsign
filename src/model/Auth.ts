@@ -2,24 +2,25 @@ import { Base } from "./base";
 
 class AuthModelClass extends Base {
     constructor() {
-        super("user-service");
+        super("auth");
     }
 
     // Đăng nhập
     login = async (body?: any) => {
-        const res = await this.apiPost("/auth/login", body);
+        const res = await this.apiPost("/login", body);
         return res.data;
     };
 
     // Đăng ký
     register = async (body?: any) => {
-        return await this.apiPost("/register/generate-otp", body);
+        console.log(body);
+        return await this.apiPost("/register", body);
     };
 
     // validate otp
-    validateOtp = async (body?: any) => {
-        return await this.apiPost("/register/validate-otp", body);
-    };
+    // validateOtp = async (body?: any) => {
+    //     return await this.apiPost("/auth/register", body);
+    // };
 }
 
 const AuthModel = new AuthModelClass();
