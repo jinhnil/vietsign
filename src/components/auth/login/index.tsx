@@ -9,7 +9,7 @@ import { DEMO_ACCOUNTS } from "@/src/config/mockdata";
 import { Copy, CheckCircle, AlertCircle } from "lucide-react";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import Auth from "@/src/model/Auth";
-import UserCode from "@/src/model/User";
+import UserModel, { mapRoleCode } from "@/src/model/User";
 import { Button, Form, Input, message } from "antd";
 
 import { useMutation } from "@tanstack/react-query";
@@ -26,18 +26,23 @@ const Login: React.FC = () => {
     onSuccess: async (res) => {
       console.log("Login response:", res); // Debug
       
-      // Hỗ trợ cả camelCase và snake_case
+      // Backend chỉ trả về accessToken
       const accessToken = res.accessToken || res.access_token;
-      const refreshToken = res.refreshToken || res.refresh_token;
       
       localStorage.setItem("access_token", accessToken);
-      localStorage.setItem("refresh_token", refreshToken);
       
-      const userProfile = await UserCode.getProfile();
+      // Lấy thông tin profile từ backend
+      const userProfile = await UserModel.getProfile();
       console.log("User profile:", userProfile); // Debug
       
-      dispatch(login(userProfile.user));
-      localStorage.setItem("user", JSON.stringify(userProfile.user));
+      // Map role code từ backend sang frontend role format
+      const userData = {
+        ...userProfile.user,
+        role: mapRoleCode(userProfile.user.code || 'USER')
+      };
+      
+      dispatch(login(userData));
+      localStorage.setItem("user", JSON.stringify(userData));
       message.success("Đăng nhập thành công");
       router.push("/home");
     },
@@ -80,7 +85,7 @@ const Login: React.FC = () => {
           <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-red-800">Đăng nhập thất bại vui lòng nhập lại tài khoản hoặc mật khẩu</p>
+              <p className="text-sm font-medium text-red-800">Đăng nhập thất bại</p>
               <p className="text-sm text-red-600 mt-1">{loginError}</p>
             </div>
           </div>
@@ -119,6 +124,16 @@ const Login: React.FC = () => {
               prefix={<LockOutlined className="text-gray-400" size={16} />}
             />
           </Form.Item>
+
+          {/* Quên mật khẩu */}
+          <div className="flex justify-end -mt-2 mb-4">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-primary-600 hover:text-primary-700 hover:underline"
+            >
+              Quên mật khẩu?
+            </Link>
+          </div>
 
           <Form.Item>
             <Button

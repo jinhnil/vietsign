@@ -5,23 +5,32 @@ class AuthModelClass extends Base {
         super("auth");
     }
 
-    // Đăng nhập
+    // POST /auth/login - Đăng nhập
     login = async (body?: any) => {
         const res = await this.apiPost("/login", body);
         return res.data;
     };
 
-    // Đăng ký
+    // POST /auth/register - Đăng ký
     register = async (body?: any) => {
         console.log(body);
-        return await this.apiPost("/register", body);
+        const res = await this.apiPost("/register", body);
+        return res.data;
     };
 
-    // validate otp
-    // validateOtp = async (body?: any) => {
-    //     return await this.apiPost("/auth/register", body);
-    // };
+    // POST /auth/forgot-password - Quên mật khẩu
+    forgotPassword = async (email: string) => {
+        const res = await this.apiPost("/forgot-password", { email });
+        return res.data;
+    };
+
+    // POST /auth/reset-password - Đặt lại mật khẩu
+    resetPassword = async (token: string, newPassword: string) => {
+        const res = await this.apiPost("/reset-password", { token, newPassword });
+        return res.data;
+    };
 }
 
 const AuthModel = new AuthModelClass();
 export default AuthModel;
+
