@@ -2,74 +2,12 @@
 
 import React from "react";
 import { ChevronLeft, Info, Hand } from "lucide-react";
+import { learnCategories } from "@/src/data";
 
 export const Learn: React.FC = () => {
-  const categories = [
-    {
-      title: "Chủ đề",
-      colorClass: "bg-red-500",
-      textClass: "text-red-500",
-      items: [
-        {
-          title: "Cơ bản",
-          subtitle: "Hội thoại ASL theo chủ đề",
-        },
-        {
-          title: "Độc thoại: Cấp độ 1",
-          subtitle: "Luyện tập hiểu ASL",
-        },
-        {
-          title: "Độc thoại: Cấp độ 2",
-          subtitle: "Luyện tập ASL nâng cao",
-        },
-      ],
-    },
-    {
-      title: "Ngữ pháp",
-      colorClass: "bg-purple-600",
-      textClass: "text-purple-600",
-      items: [
-        {
-          title: "Biểu cảm: Cấp độ 1",
-          subtitle: "Cách khuôn mặt hoạt động với câu",
-        },
-        {
-          title: "Biểu cảm: Cấp độ 2",
-          subtitle: "Học các loại câu và biểu cảm nâng cao",
-        },
-      ],
-    },
-    {
-      title: "Công cụ",
-      colorClass: "bg-blue-500",
-      textClass: "text-blue-500",
-      items: [
-        {
-          title: "Học tên của tôi",
-          subtitle: "Học cách giới thiệu bản thân",
-        },
-        {
-          title: "Trò chơi đánh vần",
-          subtitle: "Cải thiện kỹ năng ngón tay",
-        },
-        {
-          title: "Ký hiệu của ngày",
-          subtitle: "Đăng ký để học từ mới mỗi ngày",
-        },
-      ],
-    },
-  ];
-
   return (
     <div className="animate-in fade-in duration-500">
-      {/* Top Controls */}
-      <div className="flex items-center mb-12">
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-gray-700 rounded text-gray-400 text-sm hover:text-white hover:border-gray-500 transition-all">
-          <ChevronLeft size={16} />
-          Chọn độ khó
-        </button>
-      </div>
-
+      
       {/* Main Title */}
       <div className="text-center mb-16 relative flex items-center justify-center">
         {/* Đường kẻ nằm dưới */}
@@ -87,7 +25,7 @@ export const Learn: React.FC = () => {
 
       {/* Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {categories.map((category, idx) => (
+        {learnCategories.map((category, idx) => (
           <div key={idx} className="flex flex-col gap-6">
             {/* Column Header */}
             <div

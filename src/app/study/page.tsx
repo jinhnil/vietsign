@@ -1,10 +1,10 @@
 import React from "react";
 import { Metadata } from "next";
-import { LearnLayout } from "@/src/components/layout/learnlayout";
+import DashboardLayout from "@/src/components/layout/authlayout";
 import { Study } from "@/src/components/study";
 
 export const metadata: Metadata = {
-  title: "Học Bài - VietSign",
+  title: "Học Bài - VietSignSchool",
   description: "Study Vietnamese Sign Language",
   icons: {
     icon: [
@@ -24,8 +24,8 @@ export const metadata: Metadata = {
 
 export default function StudyPage() {
   return (
-    <LearnLayout>
+    <DashboardLayout>
       <Study />
-    </LearnLayout>
+    </DashboardLayout>
   );
 }

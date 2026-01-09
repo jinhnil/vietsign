@@ -1,10 +1,10 @@
 import React from "react";
 import { Metadata } from "next";
-import { LearnLayout } from "@/src/components/layout/learnlayout";
+import DashboardLayout from "@/src/components/layout/authlayout";
 import { DailySigns } from "@/src/components/daily-signs";
 
 export const metadata: Metadata = {
-  title: "Ký Hiệu Của Ngày - VietSign",
+  title: "Ký Hiệu Của Ngày - VietSignSchool",
   description: "Daily Sign of the Day",
   icons: {
     icon: [
@@ -24,8 +24,8 @@ export const metadata: Metadata = {
 
 export default function DailySignsPage() {
   return (
-    <LearnLayout>
+    <DashboardLayout>
       <DailySigns />
-    </LearnLayout>
+    </DashboardLayout>
   );
 }

@@ -10,8 +10,8 @@ Dự án tuân theo cấu trúc Next.js App Router (giả lập qua React Router
 
 - `/app`: Chứa các route/trang chính.
     - `/(auth)`: Các trang đăng nhập, đăng ký.
-    - `/dashboard`: Giao diện quản lý (Light Mode).
-    - `/learn`: Giao diện học tập (Dark Mode).
+    - `/dashboard`: Giao diện quản lý.
+    - `/learn`: Giao diện học tập.
 - `/components`: Các thành phần tái sử dụng.
     - `/layout`: Header, Footer, Sidebar, Shell layouts.
     - `/module`: Các thành phần lớn cho trang (Hero, Features).

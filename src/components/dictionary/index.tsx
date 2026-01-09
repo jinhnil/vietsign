@@ -1,121 +1,266 @@
 "use client";
 
-import React from "react";
-import { ChevronLeft, Info } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { BookOpen, Search, Plus, Filter, Mic, Video, Star, ArrowRight, Book, ArrowUpAZ, ArrowDownAZ, X } from "lucide-react";
+import { dictionaryItems, categories } from "@/src/data";
+import { Pagination, usePagination } from "@/src/components/common/Pagination";
+import Link from "next/link";
+
+const ITEMS_PER_PAGE = 12;
+
+import { removeVietnameseTones } from "@/src/utils/text";
+
 
 export const Dictionary: React.FC = () => {
-  const categories = [
-    {
-      title: "A - F",
-      colorClass: "bg-blue-500",
-      textClass: "text-blue-500",
-      items: [
-        {
-          title: "Ký hiệu A",
-          subtitle: "Học cách ký hiệu chữ A",
-        },
-        {
-          title: "Ký hiệu B",
-          subtitle: "Học cách ký hiệu chữ B",
-        },
-        {
-          title: "Ký hiệu C",
-          subtitle: "Học cách ký hiệu chữ C",
-        },
-      ],
-    },
-    {
-      title: "G - M",
-      colorClass: "bg-green-500",
-      textClass: "text-green-500",
-      items: [
-        {
-          title: "Ký hiệu G",
-          subtitle: "Học cách ký hiệu chữ G",
-        },
-        {
-          title: "Ký hiệu H",
-          subtitle: "Học cách ký hiệu chữ H",
-        },
-        {
-          title: "Ký hiệu I",
-          subtitle: "Học cách ký hiệu chữ I",
-        },
-      ],
-    },
-    {
-      title: "N - S",
-      colorClass: "bg-purple-600",
-      textClass: "text-purple-600",
-      items: [
-        {
-          title: "Ký hiệu N",
-          subtitle: "Học cách ký hiệu chữ N",
-        },
-        {
-          title: "Ký hiệu O",
-          subtitle: "Học cách ký hiệu chữ O",
-        },
-        {
-          title: "Ký hiệu P",
-          subtitle: "Học cách ký hiệu chữ P",
-        },
-      ],
-    },
-  ];
+  const [activeTab, setActiveTab] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // Mặc định A-Z
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [wrapperRef]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (query.trim()) {
+      const normalizedQuery = removeVietnameseTones(query);
+      const filteredSuggestions = dictionaryItems.filter(item =>
+        removeVietnameseTones(item.word).includes(normalizedQuery)
+      );
+      setSuggestions(filteredSuggestions);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionClick = (word: string) => {
+    setSearchQuery(word);
+    setShowSuggestions(false);
+  };
+
+  // Lọc và sắp xếp
+  const filteredItems = dictionaryItems
+    .filter(item => {
+      const categoryMap: { [key: string]: string } = {
+        alphabet: "Chữ cái",
+        numbers: "Số đếm",
+        greetings: "Chào hỏi",
+        family: "Gia đình",
+        education: "Giáo dục",
+        daily: "Đời sống",
+        time: "Thời gian",
+        emotion: "Cảm xúc",
+        location: "Địa điểm",
+      };
+      
+      const matchesCategory = activeTab === "all" || item.category === categoryMap[activeTab];
+      const normalizedQuery = removeVietnameseTones(searchQuery);
+      const normalizedWord = removeVietnameseTones(item.word);
+      const matchesSearch = normalizedWord.includes(normalizedQuery);
+
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => {
+      const wordA = removeVietnameseTones(a.word);
+      const wordB = removeVietnameseTones(b.word);
+      if (sortOrder === 'asc') {
+        return wordA.localeCompare(wordB);
+      } else {
+        return wordB.localeCompare(wordA);
+      }
+    });
+
+  const { currentPage, totalPages, paginatedItems, paddedItems, setCurrentPage } = usePagination(filteredItems, ITEMS_PER_PAGE);
+
+  const HighlightedText = ({ text, highlight }: { text: string, highlight: string }) => {
+    if (!highlight.trim()) {
+      return <span>{text}</span>;
+    }
+    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    return (
+      <span>
+        {parts.map((part, i) =>
+          part.toLowerCase() === highlight.toLowerCase() ? (
+            <span key={i} className="bg-yellow-200 text-gray-900 font-bold px-0.5 rounded-sm">{part}</span>
+          ) : (
+            <span key={i}>{part}</span>
+          )
+        )}
+      </span>
+    );
+  };
 
   return (
-    <div className="animate-in fade-in duration-500">
-      {/* Top Controls */}
-      <div className="flex items-center mb-12">
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-gray-700 rounded text-gray-400 text-sm hover:text-white hover:border-gray-500 transition-all">
-          <ChevronLeft size={16} />
-          Tìm kiếm
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <BookOpen className="w-8 h-8 text-primary-600" />
+            Từ điển
+          </h1>
+          <p className="text-gray-600 mt-1">Các từ và video ngôn ngữ ký hiệu ({dictionaryItems.length} từ)</p>
+        </div>
+      </div>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <input type="text" placeholder="Tìm kiếm từ (không cần dấu)..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex flex-wrap items-center gap-3">
+        {categories.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => { setActiveTab(cat.id); setCurrentPage(1); }}
+            className={`
+                    px-5 py-2.5 rounded-xl font-medium transition-all duration-200 border
+                    ${activeTab === cat.id
+                ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/20"
+                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+              }
+                `}
+          >
+            {cat.label}
+          </button>
+        ))}
+        <button 
+          onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
+          className={`ml-auto px-5 py-2.5 rounded-xl font-medium border flex items-center gap-2 transition-all ${
+            showAdvancedFilter 
+              ? 'bg-blue-600 text-white border-blue-600' 
+              : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+          }`}
+        >
+          <Filter size={18} />
+          Bộ lọc nâng cao
         </button>
       </div>
 
-      {/* Main Title */}
-      <div className="text-center mb-16 relative flex items-center justify-center">
-        <div className="absolute left-0 w-full h-[1px] bg-gray-800"></div>
-        <h1 className="relative z-10 text-4xl font-light text-gray-200 inline-flex items-center gap-2 bg-white px-6">
-          Từ Điển
-          <Info
-            size={18}
-            className="text-gray-600 cursor-pointer hover:text-gray-400 transition-colors"
-          />
-        </h1>
-      </div>
-
-      {/* Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {categories.map((category, idx) => (
-          <div key={idx} className="flex flex-col gap-6">
-            {/* Column Header */}
-            <div
-              className={`${category.colorClass} text-white text-center py-3 rounded-t-lg font-medium text-lg shadow-sm`}
+      {/* Advanced Filter Panel */}
+      {showAdvancedFilter && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-gray-900">Bộ lọc nâng cao</h3>
+            <button 
+              onClick={() => setShowAdvancedFilter(false)}
+              className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
             >
-              {category.title}
-            </div>
-
-            {/* Cards */}
-            <div className="flex flex-col gap-6">
-              {category.items.map((item, itemIdx) => (
-                <div
-                  key={itemIdx}
-                  className="bg-gray-50 border border-gray-200 rounded-lg p-6 cursor-pointer hover:shadow-lg hover:border-gray-300 transition-all duration-200 group"
+              <X size={18} />
+            </button>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Sắp xếp:</span>
+              <div className="flex rounded-xl border border-gray-200 overflow-hidden">
+                <button
+                  onClick={() => setSortOrder('asc')}
+                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all ${
+                    sortOrder === 'asc'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
                 >
-                  <h3 className="font-medium text-gray-900 group-hover:text-gray-700">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-2 group-hover:text-gray-500">
-                    {item.subtitle}
-                  </p>
-                </div>
-              ))}
+                  <ArrowUpAZ size={16} />
+                  A → Z
+                </button>
+                <button
+                  onClick={() => setSortOrder('desc')}
+                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all border-l border-gray-200 ${
+                    sortOrder === 'desc'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <ArrowDownAZ size={16} />
+                  Z → A
+                </button>
+              </div>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
+
+      {/* Dictionary Grid */}
+      {filteredItems.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {paddedItems.map((item, index) => (
+              item ? (
+                <Link key={item.id} href={`/dictionary/${item.id}`} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden relative cursor-pointer">
+                  {/* Content */}
+                  <div className="p-5">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider mb-1">
+                          {item.category}
+                        </p>
+                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                          {item.word}
+                        </h3>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <Book size={20} className="text-gray-300 mb-1" />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-4 text-gray-500 text-sm">
+                      <span>{item.views} lượt xem</span>
+                      <ArrowRight size={16} className="text-primary-600 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                    </div>
+                  </div>
+                </Link>
+              ) : (
+                <div key={`empty-${index}`} className="opacity-0 pointer-events-none h-[160px]" aria-hidden="true" />
+              )
+            ))}
+          </div>
+          
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={ITEMS_PER_PAGE}
+              totalItems={dictionaryItems.length}
+              filteredItems={filteredItems.length}
+              itemName="từ vựng"
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-300">
+          <p className="text-gray-500 text-lg">Không tìm thấy kết quả nào cho "{searchQuery}"</p>
+          <button
+            onClick={() => { setSearchQuery(""); setShowSuggestions(false); }}
+            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+          >
+            Xóa tìm kiếm
+          </button>
+        </div>
+      )}
     </div>
   );
 };

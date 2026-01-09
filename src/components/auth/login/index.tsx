@@ -3,90 +3,149 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DEMO_ACCOUNTS } from "../../../config/mockdata";
-import { Copy, CheckCircle } from "lucide-react";
-import { useAuth } from "../../../providers/auth-provider";
+import { useDispatch } from "react-redux";
+import { login } from "@/src/store/slices/adminSlice";
+import { DEMO_ACCOUNTS } from "@/src/config/mockdata";
+import { Copy, CheckCircle, AlertCircle } from "lucide-react";
+import { LockOutlined, MailOutlined } from "@ant-design/icons";
+import Auth from "@/src/model/Auth";
+import UserModel, { mapRoleCode } from "@/src/model/User";
+import { Button, Form, Input, message } from "antd";
 
-export const Login: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { login } = useAuth();
+import { useMutation } from "@tanstack/react-query";
+import Loading from "@/src/app/loading";
+
+const Login: React.FC = () => {
+  const [form] = Form.useForm();
+  const dispatch = useDispatch();
   const router = useRouter();
+  const [loginError, setLoginError] = useState<string | null>(null);
+
+  const loginMutation = useMutation({
+    mutationFn: Auth.login,
+    onSuccess: async (res) => {
+      console.log("Login response:", res); // Debug
+      
+      // Backend chỉ trả về accessToken
+      const accessToken = res.accessToken || res.access_token;
+      
+      localStorage.setItem("access_token", accessToken);
+      
+      // Lấy thông tin profile từ backend
+      const userProfile = await UserModel.getProfile();
+      console.log("User profile:", userProfile); // Debug
+      
+      // Map role code từ backend sang frontend role format
+      const userData = {
+        ...userProfile.user,
+        role: mapRoleCode(userProfile.user.code || 'USER')
+      };
+      
+      dispatch(login(userData));
+      localStorage.setItem("user", JSON.stringify(userData));
+      message.success("Đăng nhập thành công");
+      router.push("/home");
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message
+        || error?.response?.data?.error
+        || error?.message
+        || "Đăng nhập thất bại. Vui lòng thử lại.";
+      setLoginError(errorMessage);
+    },
+  });
+
+  const handleSubmit = (values: any) => {
+    setLoginError(null); // Clear previous error
+    loginMutation.mutate(values);
+  };
 
   const handleDemoFill = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
+    form.setFieldsValue({
+      email: demoEmail,
+      password: demoPass,
+    });
   };
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  if (loginMutation.isPending) {
+    return <Loading />;
+  }
 
-    // Tìm tài khoản demo khớp (giả lập backend validation)
-    const matchedAccount = DEMO_ACCOUNTS.find(
-      (acc) => acc.email === email && acc.password === password
-    );
-
-    const userData = matchedAccount
-      ? {
-          email: matchedAccount.email,
-          role: matchedAccount.role,
-          name: matchedAccount.label,
-          label: matchedAccount.label,
-        }
-      : {
-          email: email,
-          role: "User",
-          name: email.split("@")[0],
-        };
-
-    // Đăng nhập thành công
-    login(userData);
-
-    // Chuyển hướng về Home
-    router.push("/home");
-  };
 
   return (
     <div className="min-h-screen pt-20 flex items-center justify-center bg-gray-50 px-4">
       {/* Form Đăng nhập */}
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 animate-in fade-in slide-in-from-bottom-2 m-5">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 m-5">
         <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
-          Chào mừng đến với VietSign
+          Đăng nhập VietSignSchool
         </h2>
-        <form className="space-y-6" onSubmit={handleLogin}>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Địa chỉ Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all placeholder-gray-400"
-              placeholder="ban@example.com"
-              required
-            />
+
+        {/* Thông báo lỗi đăng nhập */}
+        {loginError && (
+          <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-red-800">Đăng nhập thất bại</p>
+              <p className="text-sm text-red-600 mt-1">{loginError}</p>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Mật khẩu
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all placeholder-gray-400"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-primary-600 text-white font-bold py-3 rounded-lg hover:bg-primary-700 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+        )}
+
+        <Form
+          form={form}
+          name="login_form"
+          className="space-y-6"
+          onFinish={handleSubmit}
+          layout="vertical"
+        >
+          <Form.Item
+            label="Tài khoản / Email"
+            name="email"
+            rules={[
+              { required: true, message: "Vui lòng nhập email!" },
+              { type: "email", message: "Email không hợp lệ!" }
+            ]}
           >
-            Đăng nhập
-          </button>
-        </form>
+            <Input
+              placeholder="Nhập email hoặc tên tài khoản"
+              className="py-2"
+              prefix={<MailOutlined className="text-gray-400" size={16} />}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Mật khẩu"
+            name="password"
+            rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
+          >
+            <Input.Password
+              placeholder="••••••••"
+              className="py-2"
+              prefix={<LockOutlined className="text-gray-400" size={16} />}
+            />
+          </Form.Item>
+
+          {/* Quên mật khẩu */}
+          <div className="flex justify-end -mt-2 mb-4">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-primary-600 hover:text-primary-700 hover:underline"
+            >
+              Quên mật khẩu?
+            </Link>
+          </div>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="w-full bg-primary-600 hover:bg-primary-700 h-10 font-semibold"
+            >
+              Đăng nhập
+            </Button>
+          </Form.Item>
+        </Form>
+
         <p className="mt-6 text-center text-gray-500">
           Chưa có tài khoản?{" "}
           <Link
@@ -136,3 +195,5 @@ export const Login: React.FC = () => {
     </div>
   );
 };
+
+export default Login;

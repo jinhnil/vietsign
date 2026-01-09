@@ -1,10 +1,10 @@
 import { Metadata } from "next";
 import DefaultLayout from "@/src/components/layout/defaultlayout";
-import { Register } from "@/src/components/auth/register";
+import Register from "@/src/components/auth/register";
 
 export const metadata: Metadata = {
-  title: "Register - VietSign",
-  description: "Register page for VietSign",
+  title: "Register - VietSignSchool",
+  description: "Register page for VietSignSchool",
   icons: {
     icon: [
       {

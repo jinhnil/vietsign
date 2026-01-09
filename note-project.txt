@@ -1,0 +1,10 @@
+admin: home, dashboard, quản lý người dùng, quản lý cơ sở, quản lý học tập, quản lý lớp học, thông báo, quản lý công cụ, quản lý kiểm tra, thống kê, quản lý từ điển, quản lý trò chơi
+quản trị viên cơ sở: home, dashboard, quản lý người dùng, quản lý học tập, quản lý lớp học, thông báo, quản lý công cụ, quản lý kiểm tra, thống kê, từ điển, quản lý trò chơi
+giáo viên: home, dashboard, thông báo, quản lý lớp học, quản lý học tập, thống kê, quản lý kiểm tra, chấm điểm,từ điển, trò chơi  
+học sinh: home, dashboard, thông báo, quản lý học tập, thống kê, làm bài kiểm tra, học tập, đăng ký lớp học, từ điển, trò chơi
+test: tất cả các quyền
+
+
+demo web: cloudflared tunnel --url http://localhost:3000
+
+{"user_id":1,"name":"admin","email":"admin@gmail.com","phone_number":"0912834422","code":"ADMIN","is_deleted":{"type":"Buffer","data":[0]},"is_oauth2":{"type":"Buffer","data":[0]},"created_by":"admin@gmail.com","created_date":"2024-04-08T10:04:56.677Z","modified_by":"anonymousUser","modified_date":"2024-12-21T20:20:19.789Z"}

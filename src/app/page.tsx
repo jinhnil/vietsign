@@ -1,10 +1,17 @@
-import LandingPage from "../components/landing/index";
-import DefaultLayout from "../components/layout/defaultlayout";
+"use client";
 
-export default function Home() {
+import LandingPage from "../components/landing/index";
+import SmartLayout from "../components/layout/smartlayout";
+import { Home } from "../components/home";
+
+export default function HomePage() {
   return (
-    <DefaultLayout>
-      <LandingPage />
-    </DefaultLayout>
+    <SmartLayout
+      // Content shown when user is logged in (uses DashboardLayout)
+      authContent={<Home />}
+      // Content shown when user is not logged in (uses DefaultLayout)
+      guestContent={<LandingPage />}
+    />
   );
 }
+
