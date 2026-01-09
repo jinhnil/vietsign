@@ -2,12 +2,19 @@
  * Organization Hooks
  * 
  * React Query hooks để quản lý tổ chức.
+ * Sử dụng organizationService để đảm bảo dữ liệu được convert đúng format.
  */
 
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import OrganizationModel from '@/src/model/Organization';
+import { 
+    fetchAllOrganizations, 
+    fetchOrganizationById, 
+    createOrganization, 
+    updateOrganization, 
+    deleteOrganization 
+} from '@/src/services/organizationService';
 
 // Query Keys
 export const organizationKeys = {
@@ -24,7 +31,7 @@ export const organizationKeys = {
 export function useOrganizations(filters?: any) {
     return useQuery({
         queryKey: organizationKeys.list(filters),
-        queryFn: () => OrganizationModel.getAll(filters),
+        queryFn: () => fetchAllOrganizations(filters),
     });
 }
 
@@ -34,7 +41,7 @@ export function useOrganizations(filters?: any) {
 export function useOrganization(id: number) {
     return useQuery({
         queryKey: organizationKeys.detail(id),
-        queryFn: () => OrganizationModel.getById(id),
+        queryFn: () => fetchOrganizationById(id),
         enabled: !!id,
     });
 }
@@ -46,7 +53,7 @@ export function useCreateOrganization() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (data: any) => OrganizationModel.create(data),
+        mutationFn: (data: any) => createOrganization(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: organizationKeys.lists() });
         },
@@ -61,7 +68,7 @@ export function useUpdateOrganization() {
 
     return useMutation({
         mutationFn: ({ id, data }: { id: number; data: any }) => 
-            OrganizationModel.update(id, data),
+            updateOrganization(id, data),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: organizationKeys.detail(variables.id) });
             queryClient.invalidateQueries({ queryKey: organizationKeys.lists() });
@@ -76,7 +83,7 @@ export function useDeleteOrganization() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (id: number) => OrganizationModel.delete(id),
+        mutationFn: (id: number) => deleteOrganization(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: organizationKeys.lists() });
         },

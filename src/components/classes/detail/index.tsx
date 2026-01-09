@@ -5,7 +5,7 @@ import { ArrowLeft, Edit, Trash2, Save, X, Users, Calendar, Clock, User, Buildin
 import { useParams, useRouter } from "next/navigation";
 import { mockClasses, ClassItem, statusConfig } from "@/src/data";
 import { getUserById, mockUsers } from "@/src/data/usersData";
-import { getFacilityById, mockFacilities } from "@/src/data/facilitiesData";
+import { getOrganizationById as getFacilityById, mockOrganizations as mockFacilities } from "@/src/data/organizationsData";
 import { ConfirmModal } from "@/src/components/common/ConfirmModal";
 
 export function ClassManagementDetail() {

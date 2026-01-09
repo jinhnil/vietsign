@@ -1,14 +1,16 @@
 "use client";
 
-import { Building, Search, Plus, MapPin, Users, Phone, Mail, Edit, Trash2, MoreVertical, Map, User } from "lucide-react";
+import { Building, Search, Plus, MapPin, Users, Phone, Mail, Edit, Trash2, MoreVertical, Map, User, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { mockFacilities, facilityStatusConfig, getFacilitiesStats, getUniqueProvinceCodes, FacilityItem } from "@/src/data";
+import { facilityStatusConfig, getUniqueProvinceCodes, OrganizationItem } from "@/src/data";
 import { fetchProvinces, fetchProvinceById, type Province, type Commune } from "@/src/services/vietnamLocationsApi";
 import { getUserById } from "@/src/data/usersData";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
 import { Modal } from "@/src/components/common/Modal";
 import { ConfirmModal } from "@/src/components/common/ConfirmModal";
+import { useOrganizations, useCreateOrganization, useDeleteOrganization } from "@/src/hooks/useOrganizations";
+import { message } from "antd";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -34,12 +36,16 @@ export function FacilitiesManagement() {
   const [modalWards, setModalWards] = useState<Commune[]>([]);
   const [loadingWards, setLoadingWards] = useState(false);
 
-  // State để quản lý dữ liệu (mock)
-  const [facilities, setFacilities] = useState<FacilityItem[]>(mockFacilities);
+  // API Hooks
+  const { data: facilitiesData, isLoading, isError } = useOrganizations();
+  const createMutation = useCreateOrganization();
+  const deleteMutation = useDeleteOrganization();
 
-  // State cho modal xác nhận xóa
+  // Chuyển đổi dữ liệu từ API nếu cần thiết hoặc sử dụng trực tiếp
+  const facilities: OrganizationItem[] = Array.isArray(facilitiesData) ? facilitiesData : [];
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [facilityToDelete, setFacilityToDelete] = useState<FacilityItem | null>(null);
+  const [facilityToDelete, setFacilityToDelete] = useState<OrganizationItem | null>(null);
 
   // Lấy danh sách tỉnh/thành phố từ API
   useEffect(() => {
@@ -64,12 +70,13 @@ export function FacilitiesManagement() {
     loadProvinces();
   }, []);
 
-  // Lấy tên phường/xã từ API khi có danh sách tỉnh
+  // Lấy tên phường/xã từ API khi có danh sách tỉnh và facilities
   useEffect(() => {
     async function loadWards() {
-      if (provinces.length === 0) return;
+      if (provinces.length === 0 || facilities.length === 0) return;
       
-      const uniqueProvinceCodes = getUniqueProvinceCodes();
+      // Lấy danh sách province code từ facilities hiện có
+      const uniqueProvinceCodes = [...new Set(facilities.map(f => f.provinceCode))];
       const wardNames: Record<number, string> = {};
       
       // Lấy thông tin phường/xã cho từng tỉnh có cơ sở
@@ -95,26 +102,32 @@ export function FacilitiesManagement() {
       setLocationNames(prev => ({ ...prev, wards: wardNames }));
     }
     loadWards();
-  }, [provinces, facilities]);
+  }, [provinces, facilitiesData]); // deps thay đổi thành facilitiesData
 
   // Helper để lấy tên tỉnh
   const getProvinceName = (provinceCode: number): string => {
+    if (!provinceCode || provinceCode <= 0) return "";
     return locationNames.provinces[provinceCode] || `Tỉnh #${provinceCode}`;
   };
 
   // Helper để lấy tên phường/xã
   const getWardName = (wardCode: number): string => {
+    if (!wardCode || wardCode <= 0) return "";
     return locationNames.wards[wardCode] || '';
   };
 
   // Helper để tạo địa chỉ đầy đủ
-  const getFullAddress = (facility: FacilityItem): string => {
+  const getFullAddress = (facility: OrganizationItem): string => {
+    const parts = [];
+    if (facility.streetAddress) parts.push(facility.streetAddress);
+    
     const wardName = getWardName(facility.wardCode);
+    if (wardName) parts.push(wardName);
+    
     const provinceName = getProvinceName(facility.provinceCode);
-    if (wardName) {
-      return `${facility.streetAddress}, ${wardName}, ${provinceName}`;
-    }
-    return `${facility.streetAddress}, ${provinceName}`;
+    if (provinceName) parts.push(provinceName);
+    
+    return parts.length > 0 ? parts.join(", ") : "Chưa có địa chỉ";
   };
 
   // Lọc cơ sở theo tìm kiếm và tỉnh/thành phố
@@ -128,9 +141,6 @@ export function FacilitiesManagement() {
     const matchesProvince = filterProvince === "all" || facility.provinceCode === filterProvince;
     return matchesSearch && matchesProvince;
   });
-
-  // Thống kê
-  const stats = getFacilitiesStats();
 
   // Pagination
   const { currentPage, totalPages, paginatedItems, paddedItems, setCurrentPage } = usePagination(filteredFacilities, ITEMS_PER_PAGE);
@@ -157,18 +167,18 @@ export function FacilitiesManagement() {
   };
 
   // Mở trang chi tiết
-  const openDetailPage = (facility: FacilityItem) => {
+  const openDetailPage = (facility: OrganizationItem) => {
     router.push(`/facilities/${facility.id}`);
   };
 
   // Mở trang chi tiết ở chế độ sửa
-  const openEditPage = (facility: FacilityItem, e: React.MouseEvent) => {
+  const openEditPage = (facility: OrganizationItem, e: React.MouseEvent) => {
     e.stopPropagation();
     router.push(`/facilities/${facility.id}`);
   };
 
   // Mở modal xác nhận xóa
-  const openDeleteModal = (facility: FacilityItem, e: React.MouseEvent) => {
+  const openDeleteModal = (facility: OrganizationItem, e: React.MouseEvent) => {
     e.stopPropagation();
     setFacilityToDelete(facility);
     setIsDeleteModalOpen(true);
@@ -177,11 +187,68 @@ export function FacilitiesManagement() {
   // Xử lý xóa
   const handleDelete = () => {
     if (facilityToDelete) {
-      setFacilities(prev => prev.filter(f => f.id !== facilityToDelete.id));
-      setIsDeleteModalOpen(false);
-      setFacilityToDelete(null);
+      deleteMutation.mutate(facilityToDelete.id, {
+        onSuccess: () => {
+          message.success("Đã xóa cơ sở thành công");
+          setIsDeleteModalOpen(false);
+          setFacilityToDelete(null);
+        },
+        onError: (error: any) => {
+          message.error(error.message || "Xóa thất bại");
+        }
+      });
     }
   };
+
+  const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    // Thu thập dữ liệu từ form
+    // Lưu ý: Đây là xử lý cơ bản, bạn cần mở rộng form và validation
+    const newData = {
+      name: formData.get("name") as string,
+      streetAddress: formData.get("streetAddress") as string,
+      provinceCode: Number(selectedModalProvince),
+      wardCode: Number(formData.get("wardCode")),
+      phone: formData.get("phone") as string,
+      email: formData.get("email") as string,
+      status: 'active', // Mặc định
+      studentCount: 0,
+      teacherCount: 0,
+      managerId: 0, // Cần logic chọn manager
+    };
+
+    createMutation.mutate(newData, {
+      onSuccess: () => {
+        message.success("Thêm cơ sở mới thành công");
+        setIsModalOpen(false);
+        // Reset form states if needed
+      },
+      onError: (error: any) => {
+        message.error(error.message || "Thêm mới thất bại");
+      }
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-red-500">
+        <p>Không thể tải dữ liệu cơ sở.</p>
+        <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-primary-100 text-primary-700 rounded-lg">
+          Thử lại
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -217,11 +284,11 @@ export function FacilitiesManagement() {
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-500">Tổng học sinh</p>
-          <p className="text-2xl font-bold text-primary-600">{facilities.reduce((sum, f) => sum + f.studentCount, 0)}</p>
+          <p className="text-2xl font-bold text-primary-600">{facilities.reduce((sum, f) => sum + (f.studentCount || 0), 0)}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-500">Tổng giáo viên</p>
-          <p className="text-2xl font-bold text-amber-600">{facilities.reduce((sum, f) => sum + f.teacherCount, 0)}</p>
+          <p className="text-2xl font-bold text-amber-600">{facilities.reduce((sum, f) => sum + (f.teacherCount || 0), 0)}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-500">Số tỉnh/TP</p>
@@ -386,15 +453,15 @@ export function FacilitiesManagement() {
         onClose={() => setIsModalOpen(false)} 
         title="Thêm cơ sở mới"
       >
-        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
+        <form className="space-y-4" onSubmit={handleCreate}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-sm font-semibold text-gray-700">Tên cơ sở <span className="text-red-500">*</span></label>
-              <input type="text" placeholder="Nhập tên cơ sở" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+              <input type="text" name="name" placeholder="Nhập tên cơ sở" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-sm font-semibold text-gray-700">Địa chỉ chi tiết <span className="text-red-500">*</span></label>
-              <input type="text" placeholder="Số nhà, tên đường..." className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+              <input type="text" name="streetAddress" placeholder="Số nhà, tên đường..." className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-gray-700">Tỉnh / Thành phố <span className="text-red-500">*</span></label>
@@ -411,6 +478,7 @@ export function FacilitiesManagement() {
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-gray-700">Phường / Xã <span className="text-red-500">*</span></label>
               <select 
+                name="wardCode"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white" 
                 required
                 disabled={!selectedModalProvince || loadingWards}
@@ -421,16 +489,18 @@ export function FacilitiesManagement() {
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-gray-700">Số điện thoại <span className="text-red-500">*</span></label>
-              <input type="tel" placeholder="024..." className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+              <input type="tel" name="phone" placeholder="024..." className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-gray-700">Email <span className="text-red-500">*</span></label>
-              <input type="email" placeholder="facility@vietsign.edu.vn" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
+              <input type="email" name="email" placeholder="facility@vietsign.edu.vn" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all" required />
             </div>
           </div>
           <div className="flex gap-3 mt-6">
             <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium">Hủy</button>
-            <button type="submit" className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm">Lưu cơ sở</button>
+            <button type="submit" className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm" disabled={createMutation.isPending}>
+              {createMutation.isPending ? 'Đang lưu...' : 'Lưu cơ sở'}
+            </button>
           </div>
         </form>
       </Modal>
@@ -441,8 +511,8 @@ export function FacilitiesManagement() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDelete}
         title="Xác nhận xóa"
-        message={`Bạn có chắc chắn muốn xóa cơ sở "${facilityToDelete?.name}"? Hành động này không thể hoàn tác.`}
-        confirmText="Xóa"
+        message={`Bạn có chắc chắn muốn xóa cơ sở "${facilityToDelete?.name}" ư? Hành động này không thể hoàn tác.`}
+        confirmText={deleteMutation.isPending ? "Đang xóa..." : "Xóa"}
         cancelText="Hủy"
         type="danger"
       />

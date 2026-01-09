@@ -1,16 +1,14 @@
 import { Metadata } from "next";
 import DashboardLayout from "@/src/components/layout/authlayout";
 import { FacilityManagementDetail } from "@/src/components/facilities/detail";
-import { mockFacilities } from "@/src/data";
+
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id: idParam } = await params;
-  const id = Number(idParam);
-  const facility = mockFacilities.find(f => f.id === id);
+  const { id } = await params;
   
   return {
-    title: `Chi tiết: ${facility?.name || "Cơ sở"} - Quản lý cơ sở - VietSignSchool`,
-    description: `Chi tiết và chỉnh sửa cơ sở: ${facility?.name}`,
+    title: `Chi tiết cơ sở - Quản lý cơ sở - VietSignSchool`,
+    description: `Chi tiết và chỉnh sửa thông tin cơ sở giáo dục`,
   };
 }
 

@@ -2,7 +2,7 @@
 // Sử dụng ID để liên kết với các bảng khác
 
 import { getUserById } from './usersData';
-import { getFacilityById } from './facilitiesData';
+import { getOrganizationById as getFacilityById } from './organizationsData';
 
 export interface ClassItem {
   id: number;

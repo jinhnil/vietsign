@@ -8,7 +8,7 @@ export * from './dailySignsData';
 export * from './vietnamLocationsData';
 export * from './statisticsData';
 export * from './usersData';
-export * from './facilitiesData';
+export * from './organizationsData'; // Organizations (thay thế Facilities)
 export * from './notificationsData';
 export * from './gradingData';
 export * from './messagesData';

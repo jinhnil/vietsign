@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { mockClasses, statusConfig, ClassItem } from "@/src/data";
 import { getUserById } from "@/src/data/usersData";
-import { getFacilityById } from "@/src/data/facilitiesData";
+import { getOrganizationById as getFacilityById } from "@/src/data/organizationsData";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
 import { Modal } from "@/src/components/common/Modal";
 import { ConfirmModal } from "@/src/components/common/ConfirmModal";
@@ -15,7 +15,7 @@ const ITEMS_PER_PAGE = 6;
 import { removeVietnameseTones } from "@/src/utils/text";
 
 import { mockUsers } from "@/src/data/usersData";
-import { mockFacilities } from "@/src/data/facilitiesData";
+import { mockOrganizations as mockFacilities } from "@/src/data/organizationsData";
 
 export function ClassesManagement() {
   const router = useRouter();
