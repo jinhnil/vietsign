@@ -21,6 +21,7 @@ import {
   Library,
   Calendar,
   Lightbulb,
+  MessageCircle,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "@/src/store/slices/adminSlice";
@@ -68,6 +69,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       icon: <LayoutDashboard size={22} />,
       label: "Dashboard",
       path: "/dashboard",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
+    },
+    {
+      icon: <MessageCircle size={22} />,
+      label: "Tin nhắn",
+      path: "/messages",
       allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
     },
 
@@ -195,7 +202,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
   // Lọc menu dựa trên role của user hiện tại
   const filteredMenuItems = useMemo(() => {
     if (!user) return [];
-    return MENU_ITEMS.filter((item) => item.allowedRoles.includes(user.role));
+    return MENU_ITEMS.filter((item) => item.allowedRoles.includes(user.code));
   }, [user]);
 
   const isActive = (path: string) => pathname === path;

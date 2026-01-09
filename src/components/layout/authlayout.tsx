@@ -10,11 +10,13 @@ import Loader from "@/src/components/UI/Loader";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  hideFooter?: boolean;
 }
 
 const BREAKPOINT = 1000; // Breakpoint for auto collapse/expand
+const SIDEBAR_STATE_KEY = 'sidebar_open'; // localStorage key for sidebar state
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, hideFooter = false }: DashboardLayoutProps) {
   const isAuthenticated = useSelector((state: any) => state.admin.isAuthenticated);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,7 +35,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     if (shouldCollapse) {
       setIsSidebarOpen(false);
     } else {
-      setIsSidebarOpen(true);
+      // On large screens, restore saved state from localStorage
+      const savedState = localStorage.getItem(SIDEBAR_STATE_KEY);
+      if (savedState !== null) {
+        setIsSidebarOpen(savedState === 'true');
+      } else {
+        setIsSidebarOpen(true); // Default to open
+      }
     }
   }, []);
 
@@ -81,7 +89,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }, [isAuthenticated]);
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    const newState = !isSidebarOpen;
+    setIsSidebarOpen(newState);
+    // Save to localStorage (only for large screens)
+    if (!isSmallScreen) {
+      localStorage.setItem(SIDEBAR_STATE_KEY, String(newState));
+    }
   };
 
   // Show loading while checking auth
@@ -89,8 +102,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     return <Loader />;
   }
 
+  // Calculate sidebar width based on state
+  const sidebarWidth = isSmallScreen ? 0 : (isSidebarOpen ? 240 : 96);
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div 
+      className="min-h-screen bg-gray-50"
+      style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
+    >
       {/* 1. Header fixed at top */}
       <Header toggleSidebar={toggleSidebar} />
 
@@ -118,9 +137,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         `}
       >
         <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto">{children}</div>
-        <div className="mt-[200px]">
-          <Footer />
-        </div>
+        {!hideFooter && (
+          <div className="mt-[200px]">
+            <Footer />
+          </div>
+        )}
       </main>
     </div>
   );

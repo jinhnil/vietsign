@@ -6,32 +6,38 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { login } from "@/src/store/slices/adminSlice";
 import { DEMO_ACCOUNTS } from "@/src/config/mockdata";
-import { Copy, CheckCircle } from "lucide-react";
+import { Copy, CheckCircle, AlertCircle } from "lucide-react";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import Auth from "@/src/model/Auth";
 import UserCode from "@/src/model/User";
 import { Button, Form, Input, message } from "antd";
 
 import { useMutation } from "@tanstack/react-query";
-import Loader from "@/src/components/UI/Loader";
+import Loading from "@/src/app/loading";
 
 const Login: React.FC = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const router = useRouter();
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const loginMutation = useMutation({
     mutationFn: Auth.login,
     onSuccess: async (res) => {
-      localStorage.setItem("access_token", res.access_token);
-      localStorage.setItem("refresh_token", res.refresh_token);
-      // const userProfile = await UserCode.getProfile();
-      // dispatch(login(userProfile.data));
-      // localStorage.setItem("user", JSON.stringify(userProfile.data));
-      if (res.user) {
-        dispatch(login(res.user));
-        localStorage.setItem("user", JSON.stringify(res.user));
-      }
+      console.log("Login response:", res); // Debug
+      
+      // Hỗ trợ cả camelCase và snake_case
+      const accessToken = res.accessToken || res.access_token;
+      const refreshToken = res.refreshToken || res.refresh_token;
+      
+      localStorage.setItem("access_token", accessToken);
+      localStorage.setItem("refresh_token", refreshToken);
+      
+      const userProfile = await UserCode.getProfile();
+      console.log("User profile:", userProfile); // Debug
+      
+      dispatch(login(userProfile.user));
+      localStorage.setItem("user", JSON.stringify(userProfile.user));
       message.success("Đăng nhập thành công");
       router.push("/home");
     },
@@ -40,11 +46,12 @@ const Login: React.FC = () => {
         || error?.response?.data?.error
         || error?.message
         || "Đăng nhập thất bại. Vui lòng thử lại.";
-      message.error(errorMessage);
+      setLoginError(errorMessage);
     },
   });
 
   const handleSubmit = (values: any) => {
+    setLoginError(null); // Clear previous error
     loginMutation.mutate(values);
   };
 
@@ -56,7 +63,7 @@ const Login: React.FC = () => {
   };
 
   if (loginMutation.isPending) {
-    return <Loader />;
+    return <Loading />;
   }
 
 
@@ -67,6 +74,17 @@ const Login: React.FC = () => {
         <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
           Đăng nhập VietSignSchool
         </h2>
+
+        {/* Thông báo lỗi đăng nhập */}
+        {loginError && (
+          <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-red-800">Đăng nhập thất bại vui lòng nhập lại tài khoản hoặc mật khẩu</p>
+              <p className="text-sm text-red-600 mt-1">{loginError}</p>
+            </div>
+          </div>
+        )}
 
         <Form
           form={form}

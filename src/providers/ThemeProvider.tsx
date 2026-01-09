@@ -30,14 +30,14 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
     useEffect(() => {
         setMounted(true);
-        // Lấy theme từ localStorage hoặc system preference
+        // Lấy theme từ localStorage, mặc định là light
         const savedTheme = localStorage.getItem("theme") as Theme;
-        if (savedTheme) {
+        if (savedTheme && (savedTheme === "light" || savedTheme === "dark")) {
             setThemeState(savedTheme);
         } else {
-            // Kiểm tra system preference
-            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            setThemeState(prefersDark ? "dark" : "light");
+            // Mặc định là light theme
+            setThemeState("light");
+            localStorage.setItem("theme", "light");
         }
     }, []);
 

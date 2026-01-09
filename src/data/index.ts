@@ -11,3 +11,4 @@ export * from './usersData';
 export * from './facilitiesData';
 export * from './notificationsData';
 export * from './gradingData';
+export * from './messagesData';

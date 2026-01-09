@@ -31,7 +31,8 @@ http.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error?.response?.status === 401) {
+    // Không redirect nếu lỗi 401 đến từ API login (để hiển thị thông báo lỗi)
+    if (error?.response?.status === 401 && !error.config.url.includes("/login")) {
       store.dispatch(logout());
       // Redirect về trang chủ khi token hết hạn
       if (typeof window !== 'undefined') {
