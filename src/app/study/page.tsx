@@ -4,8 +4,8 @@ import DashboardLayout from "@/src/components/layout/authlayout";
 import { Study } from "@/src/components/study";
 
 export const metadata: Metadata = {
-  title: "Học Bài - VietSignSchool",
-  description: "Study Vietnamese Sign Language",
+  title: "Lớp học của tôi - VietSignSchool",
+  description: "Các lớp học đã đăng ký",
   icons: {
     icon: [
       {

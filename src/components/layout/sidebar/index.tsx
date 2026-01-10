@@ -22,6 +22,7 @@ import {
   Calendar,
   Lightbulb,
   MessageCircle,
+  Shield,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "@/src/store/slices/adminSlice";
@@ -38,7 +39,10 @@ interface MenuItem {
   allowedRoles: string[]; // Danh sách các role được phép truy cập
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false }) => {
+export const Sidebar: React.FC<SidebarProps> = ({
+  isOpen,
+  isSmallScreen = false,
+}) => {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch();
@@ -63,19 +67,40 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       icon: <House size={22} />,
       label: "Trang chủ",
       path: "/home",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
+      allowedRoles: [
+        "ADMIN",
+        "FACILITY_MANAGER",
+        "TEACHER",
+        "STUDENT",
+        "USER",
+        "TEST",
+      ],
     },
     {
       icon: <LayoutDashboard size={22} />,
       label: "Dashboard",
       path: "/dashboard",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
+      allowedRoles: [
+        "ADMIN",
+        "FACILITY_MANAGER",
+        "TEACHER",
+        "STUDENT",
+        "USER",
+        "TEST",
+      ],
     },
     {
       icon: <MessageCircle size={22} />,
       label: "Tin nhắn",
       path: "/messages",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
+      allowedRoles: [
+        "ADMIN",
+        "FACILITY_MANAGER",
+        "TEACHER",
+        "STUDENT",
+        "USER",
+        "TEST",
+      ],
     },
 
     // === QUẢN LÝ (ADMIN & FACILITY_MANAGER) ===
@@ -84,6 +109,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       label: "Quản lý người dùng",
       path: "/users",
       allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEST"],
+    },
+    {
+      icon: <Shield size={22} />,
+      label: "Quản lý phân quyền",
+      path: "/permissions",
+      allowedRoles: ["ADMIN", "TEST"],
     },
     {
       icon: <Building size={22} />,
@@ -95,7 +126,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       icon: <GraduationCap size={22} />,
       label: "Quản lý học tập",
       path: "/learning",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
+      allowedRoles: [
+        "ADMIN",
+        "FACILITY_MANAGER",
+        "TEACHER",
+        "STUDENT",
+        "USER",
+        "TEST",
+      ],
     },
     {
       icon: <BookOpenCheck size={22} />,
@@ -107,7 +145,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       icon: <Bell size={22} />,
       label: "Thông báo",
       path: "/notifications",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
+      allowedRoles: [
+        "ADMIN",
+        "FACILITY_MANAGER",
+        "TEACHER",
+        "STUDENT",
+        "USER",
+        "TEST",
+      ],
     },
     {
       icon: <Wrench size={22} />,
@@ -125,7 +170,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       icon: <BarChart3 size={22} />,
       label: "Thống kê",
       path: "/statistics",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
+      allowedRoles: [
+        "ADMIN",
+        "FACILITY_MANAGER",
+        "TEACHER",
+        "STUDENT",
+        "USER",
+        "TEST",
+      ],
     },
     {
       icon: <Library size={22} />,
@@ -145,7 +197,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       icon: <BookOpen size={22} />,
       label: "Từ điển",
       path: "/dictionary",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
+      allowedRoles: [
+        "ADMIN",
+        "FACILITY_MANAGER",
+        "TEACHER",
+        "STUDENT",
+        "USER",
+        "TEST",
+      ],
     },
 
     // === CHỈ TEACHER, STUDENT & USER ===
@@ -153,7 +212,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
       icon: <Gamepad2 size={22} />,
       label: "Trò chơi",
       path: "/games",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
+      allowedRoles: [
+        "ADMIN",
+        "FACILITY_MANAGER",
+        "TEACHER",
+        "STUDENT",
+        "USER",
+        "TEST",
+      ],
     },
 
     // === CHỈ TEACHER ===
@@ -173,7 +239,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
     },
     {
       icon: <BookOpenCheck size={22} />,
-      label: "Học tập",
+      label: "Lớp học",
       path: "/study",
       allowedRoles: ["STUDENT", "USER", "TEST"],
     },
@@ -187,15 +253,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
     // === TRANG BỔ SUNG ===
     {
       icon: <Lightbulb size={22} />,
-      label: "Học ngôn ngữ",
+      label: "Học tập",
       path: "/learn",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
+      allowedRoles: [
+        "ADMIN",
+        "FACILITY_MANAGER",
+        "TEACHER",
+        "STUDENT",
+        "USER",
+        "TEST",
+      ],
     },
     {
       icon: <Calendar size={22} />,
       label: "Ký hiệu mỗi ngày",
       path: "/daily-signs",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "STUDENT", "USER", "TEST"],
+      allowedRoles: [
+        "ADMIN",
+        "FACILITY_MANAGER",
+        "TEACHER",
+        "STUDENT",
+        "USER",
+        "TEST",
+      ],
     },
   ];
 
@@ -212,14 +292,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
   const getSidebarClasses = () => {
     if (isSmallScreen) {
       // Mobile/small screen behavior: slide in/out
-      return isOpen
-        ? "w-60 px-3 translate-x-0"
-        : "w-60 px-3 -translate-x-full";
+      return isOpen ? "w-60 px-3 translate-x-0" : "w-60 px-3 -translate-x-full";
     } else {
       // Desktop behavior: collapse/expand
-      return isOpen
-        ? "w-60 px-3 translate-x-0"
-        : "w-24 px-2 translate-x-0";
+      return isOpen ? "w-60 px-3 translate-x-0" : "w-24 px-2 translate-x-0";
     }
   };
 
@@ -237,29 +313,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
           // On small screens, always show expanded style (sidebar slides in as drawer)
           // On large screens, show collapsed/expanded based on isOpen
           const showExpanded = isSmallScreen || isOpen;
-          
+
           return (
             <Link
               key={item.path}
               href={item.path}
               className={`
                 flex items-center rounded-xl transition-colors duration-200 group
-                ${showExpanded
-                  ? "flex-row px-3 py-2.5 gap-4 justify-start" // Expanded: horizontal
-                  : "flex-col justify-center items-center py-3 gap-0 h-20" // Collapsed: vertical, centered
+                ${
+                  showExpanded
+                    ? "flex-row px-3 py-2.5 gap-4 justify-start" // Expanded: horizontal
+                    : "flex-col justify-center items-center py-3 gap-0 h-20" // Collapsed: vertical, centered
                 }
-                ${active
-                  ? "bg-primary-50 text-primary-700"
-                  : "text-gray-700 hover:bg-gray-100"
+                ${
+                  active
+                    ? "bg-primary-50 text-primary-700"
+                    : "text-gray-700 hover:bg-gray-100"
                 }
               `}
               title={!showExpanded ? item.label : ""}
             >
               <div
-                className={`${active
-                  ? "text-primary-600"
-                  : "text-gray-500 group-hover:text-gray-900"
-                  } flex-shrink-0`}
+                className={`${
+                  active
+                    ? "text-primary-600"
+                    : "text-gray-500 group-hover:text-gray-900"
+                } flex-shrink-0`}
               >
                 {item.icon}
               </div>
@@ -267,10 +346,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, isSmallScreen = false 
               <span
                 className={`
                 transition-all duration-200 leading-tight text-center
-                ${showExpanded
+                ${
+                  showExpanded
                     ? "text-sm font-medium w-auto whitespace-nowrap opacity-100" // Open: show text
                     : "text-xs font-medium opacity-100" // Closed: show text small
-                  }
+                }
               `}
               >
                 {item.label}

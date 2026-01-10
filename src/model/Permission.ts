@@ -1,93 +1,138 @@
 import { Base } from "./base";
 
 export interface Permission {
-    code: string;
-    name: string;
-    description?: string;
-    module?: string;
+  code: string;
+  name: string;
+  description?: string;
+  group?: string;
 }
 
-export interface RolePermission {
-    roleCode: string;
-    permissions: Permission[];
+export interface Role {
+  code: string;
+  name: string;
+  description?: string;
+  permissions?: Permission[];
+}
+
+export interface UserPermission {
+  userId: number;
+  permissions: string[]; // List of permission codes
 }
 
 class PermissionModelClass extends Base {
-    constructor() {
-        super("api"); // Matches backend /api routes for permissions
-    }
+  constructor() {
+    super("permissions"); // Maps to /permissions
+  }
 
-    // ==================== PERMISSION ROUTES ====================
+  // ==================== PERMISSIONS ====================
 
-    // GET /api/permissions - Lấy danh sách tất cả quyền (Admin only)
-    getAllPermissions = async (): Promise<any> => {
-        const res = await this.apiGet("/permissions");
-        return res.data;
-    };
+  // GET /api/permissions - Get all permissions
+  getAllPermissions = async (): Promise<any> => {
+    // Since super is "permissions", apiGet("") -> /api/permissions
+    // But check if Base appends slash.
+    // If apiPrefixNode is .../api/permissions, apiGetNode("") might handle it or need adjustment.
+    // Base.ts: http.get(`${this.apiPrefixNode}${url}`)
+    // If url is "", it is .../api/permissions
+    const res = await this.apiGetNode("");
+    return res.data;
+  };
 
-    // GET /api/permissions/my - Lấy quyền của user hiện tại
-    getMyPermissions = async (): Promise<any> => {
-        const res = await this.apiGet("/permissions/my");
-        return res.data;
-    };
+  // GET /api/permissions/my - Get my permissions
+  getMyPermissions = async (): Promise<any> => {
+    const res = await this.apiGetNode("/my");
+    return res.data;
+  };
 
-    // GET /api/permissions/user/:userId - Lấy quyền của user khác (Admin only)
-    getUserPermissions = async (userId: number): Promise<any> => {
-        const res = await this.apiGet(`/permissions/user/${userId}`);
-        return res.data;
-    };
+  // GET /api/permissions/user/{userId} - Get user permissions
+  getUserPermissions = async (userId: number): Promise<any> => {
+    const res = await this.apiGetNode(`/user/${userId}`);
+    return res.data;
+  };
 
-    // POST /api/permissions/grant - Cấp quyền cho user (Admin only)
-    grantPermission = async (userId: number, permissionCode: string): Promise<any> => {
-        const res = await this.apiPost("/permissions/grant", { userId, permissionCode });
-        return res.data;
-    };
+  // POST /api/permissions/grant - Grant permission
+  grantPermission = async (
+    userId: number,
+    permissionCode: string
+  ): Promise<any> => {
+    const res = await this.apiPostNode("/grant", { userId, permissionCode });
+    return res.data;
+  };
 
-    // POST /api/permissions/revoke - Thu hồi quyền (Admin only)
-    revokePermission = async (userId: number, permissionCode: string): Promise<any> => {
-        const res = await this.apiPost("/permissions/revoke", { userId, permissionCode });
-        return res.data;
-    };
+  // POST /api/permissions/revoke - Revoke permission
+  revokePermission = async (
+    userId: number,
+    permissionCode: string
+  ): Promise<any> => {
+    const res = await this.apiPostNode("/revoke", { userId, permissionCode });
+    return res.data;
+  };
 
-    // ==================== ROLE PERMISSION ROUTES ====================
+  // ==================== ROLES ====================
+  // Routes start with /api/roles, so we use api...WithoutPrefixNode + manually adding /roles
 
-    // GET /api/roles/:roleCode/permissions - Lấy quyền của role
-    getRolePermissions = async (roleCode: string): Promise<any> => {
-        const res = await this.apiGet(`/roles/${roleCode}/permissions`);
-        return res.data;
-    };
+  // GET /api/roles/{roleCode}/permissions
+  getRolePermissions = async (roleCode: string): Promise<any> => {
+    const res = await this.apiGetWithoutPrefixNode(
+      `/roles/${roleCode}/permissions`
+    );
+    return res.data;
+  };
 
-    // POST /api/roles/:roleCode/permissions - Thêm quyền cho role
-    addRolePermission = async (roleCode: string, permissionCode: string): Promise<any> => {
-        const res = await this.apiPost(`/roles/${roleCode}/permissions`, { permissionCode });
-        return res.data;
-    };
+  // POST /api/roles/{roleCode}/permissions - Add permission to role
+  addRolePermission = async (
+    roleCode: string,
+    permissionCode: string
+  ): Promise<any> => {
+    const res = await this.apiPostWithoutPrefixNode(
+      `/roles/${roleCode}/permissions`,
+      { permissionCode }
+    );
+    return res.data;
+  };
 
-    // DELETE /api/roles/:roleCode/permissions/:permissionCode - Xóa quyền khỏi role
-    removeRolePermission = async (roleCode: string, permissionCode: string): Promise<any> => {
-        const res = await this.apiDelete(`/roles/${roleCode}/permissions/${permissionCode}`);
-        return res.data;
-    };
+  // DELETE /api/roles/{roleCode}/permissions/{permissionCode}
+  removeRolePermission = async (
+    roleCode: string,
+    permissionCode: string
+  ): Promise<any> => {
+    const res = await this.apiDeleteWithoutPrefixNode(
+      `/roles/${roleCode}/permissions/${permissionCode}`
+    );
+    return res.data;
+  };
 
-    // ==================== ORGANIZATION MANAGER ROUTES ====================
+  // ==================== ORGANIZATIONS ====================
 
-    // POST /api/organizations/:orgId/assign-manager - Gán người phụ trách
-    assignOrganizationManager = async (orgId: number, userId: number): Promise<any> => {
-        const res = await this.apiPost(`/organizations/${orgId}/assign-manager`, { userId });
-        return res.data;
-    };
+  // GET /api/organizations/{orgId}/managers
+  getOrganizationManagers = async (orgId: number): Promise<any> => {
+    const res = await this.apiGetWithoutPrefixNode(
+      `/organizations/${orgId}/managers`
+    );
+    return res.data;
+  };
 
-    // DELETE /api/organizations/:orgId/remove-manager/:userId - Gỡ người phụ trách
-    removeOrganizationManager = async (orgId: number, userId: number): Promise<any> => {
-        const res = await this.apiDelete(`/organizations/${orgId}/remove-manager/${userId}`);
-        return res.data;
-    };
+  // POST /api/organizations/{orgId}/assign-manager
+  assignOrganizationManager = async (
+    orgId: number,
+    userId: number
+  ): Promise<any> => {
+    const res = await this.apiPostWithoutPrefixNode(
+      `/organizations/${orgId}/assign-manager`,
+      { userId }
+    );
+    return res.data;
+  };
 
-    // GET /api/organizations/:orgId/managers - Lấy danh sách người phụ trách
-    getOrganizationManagers = async (orgId: number): Promise<any> => {
-        const res = await this.apiGet(`/organizations/${orgId}/managers`);
-        return res.data;
-    };
+  // DELETE /api/organizations/{orgId}/remove-manager/{userId}
+  removeOrganizationManager = async (
+    orgId: number,
+    userId: number
+  ): Promise<any> => {
+    const res = await this.apiDeleteWithoutPrefixNode(
+      `/organizations/${orgId}/remove-manager/${userId}`
+    );
+    return res.data;
+  };
 }
 
 const PermissionModel = new PermissionModelClass();

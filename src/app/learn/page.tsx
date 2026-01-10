@@ -4,7 +4,7 @@ import DashboardLayout from "@/src/components/layout/authlayout";
 import { Learn } from "@/src/components/learn/index";
 
 export const metadata: Metadata = {
-  title: "Learn - VietSignSchool",
+  title: "Học tập - VietSignSchool",
   description: "Learn Vietnamese Sign Language",
   icons: {
     icon: [
