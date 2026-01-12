@@ -6,20 +6,7 @@ import { Learn } from "@/src/components/learn/index";
 export const metadata: Metadata = {
   title: "Học tập - VietSignSchool",
   description: "Learn Vietnamese Sign Language",
-  icons: {
-    icon: [
-      {
-        media: "(prefers-color-scheme: light)",
-        url: "/favicon.ico",
-        href: "/favicon.ico",
-      },
-      {
-        media: "(prefers-color-scheme: dark)",
-        url: "/favicon.ico",
-        href: "/favicon.ico",
-      },
-    ],
-  },
+  
 };
 
 export default function LearnPage() {

@@ -26,76 +26,71 @@ class PermissionModelClass extends Base {
 
   // ==================== PERMISSIONS ====================
 
-  // GET /api/permissions - Get all permissions
+  // GET /permissions - Get all permissions
   getAllPermissions = async (): Promise<any> => {
-    // Since super is "permissions", apiGet("") -> /api/permissions
-    // But check if Base appends slash.
-    // If apiPrefixNode is .../api/permissions, apiGetNode("") might handle it or need adjustment.
-    // Base.ts: http.get(`${this.apiPrefixNode}${url}`)
-    // If url is "", it is .../api/permissions
-    const res = await this.apiGetNode("");
+    const res = await this.apiGet("");
     return res.data;
   };
 
-  // GET /api/permissions/my - Get my permissions
+  // GET /permissions/my - Get my permissions
   getMyPermissions = async (): Promise<any> => {
-    const res = await this.apiGetNode("/my");
+    const res = await this.apiGet("/my");
     return res.data;
   };
 
-  // GET /api/permissions/user/{userId} - Get user permissions
+  // GET /permissions/user/{userId} - Get user permissions
   getUserPermissions = async (userId: number): Promise<any> => {
-    const res = await this.apiGetNode(`/user/${userId}`);
+    const res = await this.apiGet(`/user/${userId}`);
     return res.data;
   };
 
-  // POST /api/permissions/grant - Grant permission
+  // POST /permissions/grant - Grant permission
   grantPermission = async (
     userId: number,
     permissionCode: string
   ): Promise<any> => {
-    const res = await this.apiPostNode("/grant", { userId, permissionCode });
+    const res = await this.apiPost("/grant", { userId, permissionCode });
     return res.data;
   };
 
-  // POST /api/permissions/revoke - Revoke permission
+  // POST /permissions/revoke - Revoke permission
   revokePermission = async (
     userId: number,
     permissionCode: string
   ): Promise<any> => {
-    const res = await this.apiPostNode("/revoke", { userId, permissionCode });
+    const res = await this.apiPost("/revoke", { userId, permissionCode });
     return res.data;
   };
 
   // ==================== ROLES ====================
-  // Routes start with /api/roles, so we use api...WithoutPrefixNode + manually adding /roles
+  // Routes start with /roles, so we use apiGetWithoutPrefix + manually adding /roles
 
-  // GET /api/roles/{roleCode}/permissions
+  // GET /roles/{roleCode}/permissions
   getRolePermissions = async (roleCode: string): Promise<any> => {
-    const res = await this.apiGetWithoutPrefixNode(
+    const res = await this.apiGetWithoutPrefix(
       `/roles/${roleCode}/permissions`
     );
     return res.data;
   };
 
-  // POST /api/roles/{roleCode}/permissions - Add permission to role
+  // POST /roles/{roleCode}/permissions - Add permission to role
   addRolePermission = async (
     roleCode: string,
     permissionCode: string
   ): Promise<any> => {
-    const res = await this.apiPostWithoutPrefixNode(
+    const res = await this.apiPostWithoutPrefix(
       `/roles/${roleCode}/permissions`,
       { permissionCode }
     );
     return res.data;
   };
 
-  // DELETE /api/roles/{roleCode}/permissions/{permissionCode}
+  // DELETE /roles/{roleCode}/permissions/{permissionCode}
   removeRolePermission = async (
     roleCode: string,
     permissionCode: string
   ): Promise<any> => {
-    const res = await this.apiDeleteWithoutPrefixNode(
+    const res = await this.apiDeleteWithoutPrefix(
       `/roles/${roleCode}/permissions/${permissionCode}`
     );
     return res.data;
@@ -103,32 +98,32 @@ class PermissionModelClass extends Base {
 
   // ==================== ORGANIZATIONS ====================
 
-  // GET /api/organizations/{orgId}/managers
+  // GET /organizations/{orgId}/managers
   getOrganizationManagers = async (orgId: number): Promise<any> => {
-    const res = await this.apiGetWithoutPrefixNode(
+    const res = await this.apiGetWithoutPrefix(
       `/organizations/${orgId}/managers`
     );
     return res.data;
   };
 
-  // POST /api/organizations/{orgId}/assign-manager
+  // POST /organizations/{orgId}/assign-manager
   assignOrganizationManager = async (
     orgId: number,
     userId: number
   ): Promise<any> => {
-    const res = await this.apiPostWithoutPrefixNode(
+    const res = await this.apiPostWithoutPrefix(
       `/organizations/${orgId}/assign-manager`,
       { userId }
     );
     return res.data;
   };
 
-  // DELETE /api/organizations/{orgId}/remove-manager/{userId}
+  // DELETE /organizations/{orgId}/remove-manager/{userId}
   removeOrganizationManager = async (
     orgId: number,
     userId: number
   ): Promise<any> => {
-    const res = await this.apiDeleteWithoutPrefixNode(
+    const res = await this.apiDeleteWithoutPrefix(
       `/organizations/${orgId}/remove-manager/${userId}`
     );
     return res.data;

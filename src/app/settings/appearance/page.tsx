@@ -3,8 +3,8 @@ import HomeLayout from "@/src/components/layout/authlayout";
 import { AppearanceSettings } from "@/src/components/settings/appearance";
 
 export const metadata: Metadata = {
-  title: "Appearance Settings - VietSignSchool",
-  description: "Customize the look and feel of VietSignSchool",
+  title: "Cài đặt giao diện - VietSignSchool",
+  description: "Cài đặt giao diện VietSignSchool",
 };
 
 export default function AppearanceSettingsPage() {

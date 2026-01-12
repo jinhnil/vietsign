@@ -1,13 +1,51 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ChevronLeft, Info, Hand } from "lucide-react";
-import { learnCategories } from "@/src/data";
+import {
+  learnCategories as initialCategories,
+  LearnCategory,
+} from "@/src/data/learnData";
+import { fetchAllLessons, Lesson } from "@/src/services/lessonService";
 
 export const Learn: React.FC = () => {
+  const [categories, setCategories] =
+    useState<LearnCategory[]>(initialCategories);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadLessons = async () => {
+      setIsLoading(true);
+      try {
+        const allLessons = await fetchAllLessons();
+
+        // Group lessons by category
+        // We iterate over the initial structure to preserve order and styling
+        const updatedCategories = initialCategories.map((cat) => {
+          // Find lessons that belong to this category
+          // We assume the API returns a 'category' field matching the category ID
+          // or we use the fallback mechanism where we injected it.
+          const catLessons = allLessons.filter((l) => l.category === cat.id);
+
+          // If we found lessons for this category from the API, we use them.
+          // Note: simplistic mapping.
+          return {
+            ...cat,
+            items: catLessons.length > 0 ? catLessons : cat.items,
+          };
+        });
+        setCategories(updatedCategories);
+      } catch (error) {
+        console.error("Failed to load lessons", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadLessons();
+  }, []);
+
   return (
     <div className="animate-in fade-in duration-500">
-      
       {/* Main Title */}
       <div className="text-center mb-16 relative flex items-center justify-center">
         {/* Đường kẻ nằm dưới */}
@@ -25,7 +63,7 @@ export const Learn: React.FC = () => {
 
       {/* Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {learnCategories.map((category, idx) => (
+        {categories.map((category, idx) => (
           <div key={idx} className="flex flex-col gap-6">
             {/* Column Header */}
             <div

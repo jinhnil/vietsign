@@ -10,9 +10,10 @@ import {
   User,
   BookOpen,
 } from "lucide-react";
-import { mockClasses } from "@/src/data/classesData";
+import { mockClasses, ClassItem } from "@/src/data/classesData";
+import { fetchAllClasses } from "@/src/services/classService";
+import { fetchUsersByRole } from "@/src/services/userService";
 import { mockFacilities } from "@/src/data/facilitiesData";
-import { getUserById } from "@/src/data/usersData";
 import Link from "next/link";
 
 // Helper to get facility name
@@ -22,24 +23,50 @@ const getFacilityName = (facilityId: number | null) => {
   return facility ? facility.name : "Không xác định";
 };
 
-// Helper to get teacher name
-const getTeacherName = (teacherId: number) => {
-  const teacher = getUserById(teacherId);
-  return teacher ? teacher.name : `GV ID: ${teacherId}`;
-};
-
 export const Study: React.FC = () => {
   // Simulate registered classes (hardcoded IDs for demo)
   // In a real app, this would come from an API endpoint: GET /user/registrations
-  const [registeredClasses, setRegisteredClasses] = useState<any[]>([]);
+  const [registeredClasses, setRegisteredClasses] = useState<ClassItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [teachersMap, setTeachersMap] = useState<Record<number, string>>({});
 
   useEffect(() => {
-    // Picking a few random classes to simulate registration
-    // IDs: 1 (A1 - Ongoing), 5 (K1 - Ongoing), 11 (O1 - Ongoing), 3 (C1 - Upcoming)
-    const myClassIds = [1, 5, 11, 3];
-    const myClasses = mockClasses.filter((c) => myClassIds.includes(c.id));
-    setRegisteredClasses(myClasses);
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const [allClasses, teachers] = await Promise.all([
+          fetchAllClasses(),
+          fetchUsersByRole("TEACHER"),
+        ]);
+
+        // Simulation logic:
+        const myClassIds = [1, 5, 11, 3];
+        const myClasses = allClasses.filter((c) => myClassIds.includes(c.id));
+        setRegisteredClasses(myClasses);
+
+        // Create map
+        const map: Record<number, string> = {};
+        teachers.forEach((t: any) => {
+          map[t.id] = t.name;
+        });
+        setTeachersMap(map);
+      } catch (error) {
+        console.error("Failed to load classes", error);
+        // Fallback to mock logic if API fails completely
+        const myClassIds = [1, 5, 11, 3];
+        const myClasses = mockClasses.filter((c) => myClassIds.includes(c.id));
+        setRegisteredClasses(myClasses);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
   }, []);
+
+  // Helper to get teacher name
+  const getTeacherName = (teacherId: number) => {
+    return teachersMap[teacherId] || `GV ID: ${teacherId}`;
+  };
 
   return (
     <div className="animate-in fade-in duration-500 space-y-8">

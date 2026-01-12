@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Bell, Search, Menu, Hand } from "lucide-react";
+import { Bell, Search, Menu } from "lucide-react";
 import { useSelector } from "react-redux";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import UserDropdown from "./components/UserDropdown";
 import NotificationDropdown from "./components/NotificationDropdown";
@@ -13,11 +14,12 @@ interface DashboardHeaderProps {
 export const Header: React.FC<DashboardHeaderProps> = ({ toggleSidebar }) => {
   const user = useSelector((state: any) => state.admin.user);
   const pathname = usePathname();
-  const [activeDropdown, setActiveDropdown] = useState<'notifications' | 'user' | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<
+    "notifications" | "user" | null
+  >(null);
 
   return (
     <header className="fixed top-0 left-0 w-full h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-50">
-
       {/* Backdrop for closing dropdowns */}
       {activeDropdown && (
         <div
@@ -37,8 +39,14 @@ export const Header: React.FC<DashboardHeaderProps> = ({ toggleSidebar }) => {
 
         {/* Logo Area */}
         <Link href="/" className="flex items-center gap-3 group mr-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform">
-            <Hand size={22} />
+          <div className="w-10 h-10 relative group-hover:scale-105 transition-transform">
+            <Image
+              src="/icon.svg"
+              alt="VietSignSchool Logo"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
           </div>
           <div className="hidden sm:block">
             <span className="font-bold text-xl text-gray-900 tracking-tight">
@@ -72,13 +80,19 @@ export const Header: React.FC<DashboardHeaderProps> = ({ toggleSidebar }) => {
         {/* Notification */}
         <div className="relative">
           <button
-            className={`p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors relative ${activeDropdown === 'notifications' ? 'bg-gray-100' : ''}`}
-            onClick={() => setActiveDropdown(activeDropdown === 'notifications' ? null : 'notifications')}
+            className={`p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors relative ${
+              activeDropdown === "notifications" ? "bg-gray-100" : ""
+            }`}
+            onClick={() =>
+              setActiveDropdown(
+                activeDropdown === "notifications" ? null : "notifications"
+              )
+            }
           >
             <Bell size={22} />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
           </button>
-          {activeDropdown === 'notifications' && (
+          {activeDropdown === "notifications" && (
             <NotificationDropdown onClose={() => setActiveDropdown(null)} />
           )}
         </div>
@@ -87,11 +101,13 @@ export const Header: React.FC<DashboardHeaderProps> = ({ toggleSidebar }) => {
         <div className="relative ml-2">
           <div
             className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-2 ring-white cursor-pointer hover:scale-105 transition-transform select-none"
-            onClick={() => setActiveDropdown(activeDropdown === 'user' ? null : 'user')}
+            onClick={() =>
+              setActiveDropdown(activeDropdown === "user" ? null : "user")
+            }
           >
             {user?.name?.charAt(0).toUpperCase() || "U"}
           </div>
-          {activeDropdown === 'user' && (
+          {activeDropdown === "user" && (
             <UserDropdown user={user} onClose={() => setActiveDropdown(null)} />
           )}
         </div>

@@ -27,7 +27,7 @@ import { ConfirmModal } from "@/src/components/common/ConfirmModal";
 
 import { removeVietnameseTones } from "@/src/utils/text";
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 10;
 
 export function UsersManagement() {
   const router = useRouter();
@@ -46,6 +46,7 @@ export function UsersManagement() {
   });
 
   // State để quản lý dữ liệu
+  const [allUsers, setAllUsers] = useState<UserItem[]>([]); // Store all users for client-side pagination
   const [users, setUsers] = useState<UserItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
@@ -67,29 +68,51 @@ export function UsersManagement() {
   }, [searchQuery]);
 
   // Fetch users logic
+  // Fetch users logic
   const loadUsers = async () => {
     setIsLoading(true);
     try {
+      // Fetch ALL users (large limit) to handle pagination on client side
+      // This bypasses the backend pagination count bug
       const response = await fetchAllUsers({
-        page: currentPage,
-        limit: ITEMS_PER_PAGE,
+        page: 1,
+        limit: 10000,
         search: debouncedSearch,
         role: filterRole !== "all" ? filterRole : undefined,
       });
-      setUsers(response.users);
-      setTotalItems(response.total);
-      setTotalPages(response.totalPages);
+
+      const fetchedUsers = response.users;
+      setAllUsers(fetchedUsers);
+      setTotalItems(fetchedUsers.length);
+      setTotalPages(Math.ceil(fetchedUsers.length / ITEMS_PER_PAGE) || 1);
+
+      // Update displayed users immediately for current page
+      // (Effect below handles it too, but we ensure consistency)
+      // const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      // const endIndex = startIndex + ITEMS_PER_PAGE;
+      // setUsers(fetchedUsers.slice(startIndex, endIndex));
     } catch (error) {
       console.error("Failed to load users", error);
+      setAllUsers([]);
       setUsers([]);
+      setTotalItems(0);
+      setTotalPages(1);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Load data when filters change (not on currentPage change)
   useEffect(() => {
     loadUsers();
-  }, [currentPage, debouncedSearch, filterRole]);
+  }, [debouncedSearch, filterRole]);
+
+  // Client-side pagination effect
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setUsers(allUsers.slice(startIndex, endIndex));
+  }, [currentPage, allUsers]);
 
   // Reset page when filter changes
   useEffect(() => {
@@ -218,22 +241,22 @@ export function UsersManagement() {
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full table-fixed">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[35%]">
                   Người dùng
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[15%]">
                   Vai trò
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[20%]">
                   Cơ sở
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[15%]">
                   Trạng thái
                 </th>
-                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 w-[15%]">
                   Thao tác
                 </th>
               </tr>
@@ -257,8 +280,8 @@ export function UsersManagement() {
                       onClick={() => openDetailPage(user)}
                     >
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold overflow-hidden border border-gray-100 shadow-sm">
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <div className="w-10 h-10 min-w-[40px] rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold overflow-hidden border border-gray-100 shadow-sm">
                             {user.avatar ? (
                               <img
                                 src={user.avatar}
@@ -269,11 +292,17 @@ export function UsersManagement() {
                               (user.name || "U").charAt(0)
                             )}
                           </div>
-                          <div>
-                            <p className="font-medium text-gray-900">
+                          <div className="min-w-0">
+                            <p
+                              className="font-medium text-gray-900 truncate"
+                              title={user.name}
+                            >
                               {user.name}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p
+                              className="text-sm text-gray-500 truncate"
+                              title={user.email}
+                            >
                               {user.email}
                             </p>
                           </div>

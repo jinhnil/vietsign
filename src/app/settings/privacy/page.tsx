@@ -3,8 +3,8 @@ import HomeLayout from "@/src/components/layout/authlayout";
 import { PrivacySettings } from "@/src/components/settings/privacy";
 
 export const metadata: Metadata = {
-  title: "Privacy Settings - VietSignSchool",
-  description: "Manage your privacy and data sharing settings",
+  title: "Cài đặt quyền riêng tư - VietSignSchool",
+  description: "Cài đặt quyền riêng tư VietSignSchool",
 };
 
 export default function PrivacySettingsPage() {

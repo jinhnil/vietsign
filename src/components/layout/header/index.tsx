@@ -2,7 +2,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Hand } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import Image from "next/image";
 
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,8 +18,14 @@ export const Header: React.FC = () => {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center gap-2">
             <Link href="/" className="flex items-center gap-3 group mr-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform">
-                <Hand size={22} />
+              <div className="w-10 h-10 relative group-hover:scale-105 transition-transform">
+                <Image
+                  src="/icon.svg"
+                  alt="VietSignSchool Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
               </div>
               <div className="hidden sm:block">
                 <span className="font-bold text-xl text-gray-900 tracking-tight">
@@ -28,7 +35,6 @@ export const Header: React.FC = () => {
               </div>
             </Link>
           </div>
-
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3">

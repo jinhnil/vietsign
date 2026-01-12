@@ -5,20 +5,7 @@ import { DictionaryManagementComponent } from "@/src/components/dictionary-manag
 export const metadata: Metadata = {
   title: "Quản lý từ điển - VietSignSchool",
   description: "Quản lý từ điển VietSignSchool",
-  icons: {
-    icon: [
-      {
-        media: "(prefers-color-scheme: light)",
-        url: "/favicon.ico",
-        href: "/favicon.ico",
-      },
-      {
-        media: "(prefers-color-scheme: dark)",
-        url: "/favicon.ico",
-        href: "/favicon.ico",
-      },
-    ],
-  },
+  
 };
 
 export default function DictionaryManagementPage() {

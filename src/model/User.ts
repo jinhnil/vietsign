@@ -37,7 +37,7 @@ export const mapRoleCode = (code: string): UserRole => {
 
 class UserModelClass extends Base {
   constructor() {
-    super("user"); // Matches backend /user routes
+    super("users"); // Matches backend /users routes
   }
 
   // ==================== USER'S OWN PROFILE ====================
@@ -91,7 +91,7 @@ class UserModelClass extends Base {
 
   // GET /user/all - Lấy danh sách tất cả user (Admin only)
   getAllUsers = async (query?: any): Promise<any> => {
-    const res = await this.apiGet("/all", query);
+    const res = await this.apiGet("", query);
     return res.data;
   };
 

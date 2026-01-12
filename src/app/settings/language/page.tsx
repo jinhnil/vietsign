@@ -3,8 +3,8 @@ import HomeLayout from "@/src/components/layout/authlayout";
 import { LanguageSettings } from "@/src/components/settings/language";
 
 export const metadata: Metadata = {
-  title: "Language Settings - VietSignSchool",
-  description: "Set your preferred language and region",
+  title: "Cài đặt ngôn ngữ - VietSignSchool",
+  description: "Cài đặt ngôn ngữ VietSignSchool",
 };
 
 export default function LanguageSettingsPage() {

@@ -3,8 +3,8 @@ import HomeLayout from "@/src/components/layout/authlayout";
 import { AccountSettings } from "@/src/components/settings/account";
 
 export const metadata: Metadata = {
-  title: "Account Settings - VietSignSchool",
-  description: "Manage your account settings",
+  title: "Cài đặt tài khoản - VietSignSchool",
+  description: "Cài đặt tài khoản VietSignSchool",
 };
 
 export default function AccountSettingsPage() {

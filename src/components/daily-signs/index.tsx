@@ -1,48 +1,118 @@
 "use client";
 
-import React from "react";
-import { Calendar, ChevronRight, Play, Pause, Star, Volume2, VolumeX, Maximize, BookOpen } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Calendar,
+  ChevronRight,
+  Play,
+  Pause,
+  Star,
+  Volume2,
+  VolumeX,
+  Maximize,
+  BookOpen,
+} from "lucide-react";
 import Link from "next/link";
-import { 
-  getTodaySignOrDefault, 
-  getRecentSigns, 
-  getRelatedWords,
-} from "@/src/data/dailySignsData";
+import { dailySignSchedule } from "@/src/data/dailySignsData";
+import { fetchWordById, fetchAllWords } from "@/src/services/dictionaryService";
+import { DictionaryItem } from "@/src/data/dictionaryData";
 
 export function DailySigns() {
-  const todaySign = getTodaySignOrDefault();
-  const recentSigns = getRecentSigns(5);
-  const relatedWords = getRelatedWords(todaySign.id, 4);
-  const today = new Date().toLocaleDateString("vi-VN", { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  const [todaySign, setTodaySign] = useState<DictionaryItem | null>(null);
+  const [recentSigns, setRecentSigns] = useState<DictionaryItem[]>([]);
+  const [relatedWords, setRelatedWords] = useState<DictionaryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const today = new Date().toLocaleDateString("vi-VN", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        // 1. Determine Today's Sign ID
+        const dateStr = new Date().toISOString().split("T")[0]; // simple ISO date
+        // Find entry, simplified matching
+        // In real app might need robust date handling
+        let entry = dailySignSchedule.find((e) => e.date === dateStr);
+        if (!entry) {
+          // Fallback to closest or first
+          entry = dailySignSchedule[0];
+        }
+
+        // 2. Fetch Today's Sign
+        if (entry) {
+          const sign = await fetchWordById(entry.dictionaryItemId);
+          if (sign) {
+            setTodaySign(sign);
+
+            // 3. Fetch Related Words (same category)
+            // Try fetching all and filtering? Or backend filter
+            const allWords = await fetchAllWords(); // ideally { category: sign.category }
+            const related = allWords
+              .filter((w) => w.category === sign.category && w.id !== sign.id)
+              .slice(0, 4);
+            setRelatedWords(related);
+          }
+        }
+
+        // 4. Fetch Recent Signs (last 5 days)
+        // Simplified logic: just take previous entries from schedule
+        const todayIndex = dailySignSchedule.findIndex(
+          (e) => e.date === dateStr
+        );
+        if (todayIndex > 0) {
+          const recentIndices = [];
+          for (let i = 1; i <= 5; i++) {
+            if (todayIndex - i >= 0)
+              recentIndices.push(dailySignSchedule[todayIndex - i]);
+          }
+
+          const recents = await Promise.all(
+            recentIndices.map((e) => fetchWordById(e.dictionaryItemId))
+          );
+          setRecentSigns(recents.filter(Boolean) as DictionaryItem[]);
+        } else {
+          // Mock behavior if no recent history (e.g. start of schedule)
+          // Just take some earlier ones or empty
+          setRecentSigns([]);
+        }
+      } catch (error) {
+        console.error("Failed to load daily signs", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
   // Video player states
-  const videoRef = React.useRef<HTMLVideoElement>(null);
-  const progressRef = React.useRef<HTMLDivElement>(null);
-  const [isPlaying, setIsPlaying] = React.useState(false);
-  const [volume, setVolume] = React.useState(0.5);
-  const [isMuted, setIsMuted] = React.useState(true);
-  const [currentTime, setCurrentTime] = React.useState(0);
-  const [duration, setDuration] = React.useState(0);
-  const [progress, setProgress] = React.useState(0);
-  const [playbackSpeed, setPlaybackSpeed] = React.useState(1);
-  const [showSpeedMenu, setShowSpeedMenu] = React.useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(0.5);
+  const [isMuted, setIsMuted] = useState(true);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
 
   // Format time display (mm:ss)
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   // Update progress bar as video plays
-  React.useEffect(() => {
+  useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || !todaySign) return;
 
     const handleTimeUpdate = () => {
       setCurrentTime(video.currentTime);
@@ -53,15 +123,17 @@ export function DailySigns() {
       setDuration(video.duration);
     };
 
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener("timeupdate", handleTimeUpdate);
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
 
     return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
     };
-  }, [todaySign.id]);
+  }, [todaySign?.id]);
 
+  // Handlers (togglePlay, toggleMute, etc.) - reuse existing implementation style
+  // ... (keeping implementation short in replacement for brevity if unchanged logic, but here I should include them to ensure variables match)
   const togglePlay = () => {
     if (videoRef.current) {
       if (isPlaying) {
@@ -128,11 +200,19 @@ export function DailySigns() {
   };
 
   const speedOptions = [
-    { label: 'Rất nhanh', value: 2 },
-    { label: 'Nhanh', value: 1.5 },
-    { label: 'Bình thường', value: 1 },
-    { label: 'Chậm', value: 0.5 },
+    { label: "Rất nhanh", value: 2 },
+    { label: "Nhanh", value: 1.5 },
+    { label: "Bình thường", value: 1 },
+    { label: "Chậm", value: 0.5 },
   ];
+
+  if (isLoading || !todaySign) {
+    return (
+      <div className="py-20 text-center text-gray-500">
+        Đang tải ký hiệu hôm nay...
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -153,7 +233,7 @@ export function DailySigns() {
           {/* Video Player - 2/3 width */}
           <div className="lg:w-2/3 relative group bg-black">
             <div className="aspect-video relative overflow-hidden">
-              <video 
+              <video
                 key={todaySign.id}
                 ref={videoRef}
                 className="w-full h-full object-cover cursor-pointer"
@@ -170,13 +250,16 @@ export function DailySigns() {
 
               {/* Play Button Overlay (when paused) */}
               {!isPlaying && (
-                <div 
+                <div
                   onClick={togglePlay}
                   className="absolute inset-0 bg-black/30 flex items-center justify-center cursor-pointer transition-opacity duration-300"
                 >
                   <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border-2 border-white/30">
                     <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg">
-                      <Play size={28} className="text-primary-600 fill-current ml-1" />
+                      <Play
+                        size={28}
+                        className="text-primary-600 fill-current ml-1"
+                      />
                     </div>
                   </div>
                 </div>
@@ -187,20 +270,24 @@ export function DailySigns() {
                 <div className="space-y-3">
                   {/* Progress Bar */}
                   <div className="flex items-center gap-2">
-                    <span className="text-white text-xs font-medium min-w-[36px]">{formatTime(currentTime)}</span>
-                    <div 
+                    <span className="text-white text-xs font-medium min-w-[36px]">
+                      {formatTime(currentTime)}
+                    </span>
+                    <div
                       ref={progressRef}
                       onClick={handleProgressClick}
                       className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden cursor-pointer group/progress hover:h-2 transition-all"
                     >
-                      <div 
+                      <div
                         className="h-full bg-gradient-to-r from-white to-primary-200 relative transition-all"
                         style={{ width: `${progress}%` }}
                       >
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg scale-0 group-hover/progress:scale-100 transition-transform"></div>
                       </div>
                     </div>
-                    <span className="text-white text-xs font-medium min-w-[36px]">{formatTime(duration)}</span>
+                    <span className="text-white text-xs font-medium min-w-[36px]">
+                      {formatTime(duration)}
+                    </span>
                   </div>
 
                   {/* Control Buttons */}
@@ -208,22 +295,30 @@ export function DailySigns() {
                     {/* Left Controls */}
                     <div className="flex items-center gap-3">
                       {/* Play/Pause */}
-                      <button 
-                        onClick={togglePlay} 
+                      <button
+                        onClick={togglePlay}
                         className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-                        title={isPlaying ? 'Tạm dừng' : 'Phát'}
+                        title={isPlaying ? "Tạm dừng" : "Phát"}
                       >
-                        {isPlaying ? <Pause size={18} className="fill-current" /> : <Play size={18} className="fill-current ml-0.5" />}
+                        {isPlaying ? (
+                          <Pause size={18} className="fill-current" />
+                        ) : (
+                          <Play size={18} className="fill-current ml-0.5" />
+                        )}
                       </button>
 
                       {/* Volume Control */}
                       <div className="flex items-center gap-1 group/volume">
-                        <button 
-                          onClick={toggleMute} 
+                        <button
+                          onClick={toggleMute}
                           className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
-                          title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+                          title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
                         >
-                          {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                          {isMuted ? (
+                            <VolumeX size={18} />
+                          ) : (
+                            <Volume2 size={18} />
+                          )}
                         </button>
                         <input
                           type="range"
@@ -246,7 +341,7 @@ export function DailySigns() {
                     <div className="flex items-center gap-2">
                       {/* Speed Control */}
                       <div className="relative">
-                        <button 
+                        <button
                           onClick={() => setShowSpeedMenu(!showSpeedMenu)}
                           className="px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold transition-colors"
                           title="Tốc độ phát"
@@ -260,7 +355,9 @@ export function DailySigns() {
                                 key={option.value}
                                 onClick={() => handleSpeedChange(option.value)}
                                 className={`w-full px-3 py-2 text-left text-xs font-medium hover:bg-white/10 transition-colors whitespace-nowrap ${
-                                  playbackSpeed === option.value ? 'text-primary-400 bg-white/5' : 'text-white'
+                                  playbackSpeed === option.value
+                                    ? "text-primary-400 bg-white/5"
+                                    : "text-white"
                                 }`}
                               >
                                 {option.label} ({option.value}x)
@@ -271,7 +368,7 @@ export function DailySigns() {
                       </div>
 
                       {/* Fullscreen */}
-                      <button 
+                      <button
                         onClick={handleFullscreen}
                         className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
                         title="Phóng to"
@@ -291,9 +388,11 @@ export function DailySigns() {
               <Star size={14} />
               <span>Từ vựng hôm nay</span>
             </div>
-            
-            <h2 className="text-4xl lg:text-5xl font-bold mb-4">{todaySign.word}</h2>
-            
+
+            <h2 className="text-4xl lg:text-5xl font-bold mb-4">
+              {todaySign.word}
+            </h2>
+
             <div className="flex items-center gap-3 mb-6">
               <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
                 {todaySign.category}
@@ -304,19 +403,20 @@ export function DailySigns() {
             </div>
 
             <p className="text-white/90 text-base leading-relaxed mb-6">
-              Học ký hiệu &quot;{todaySign.word}&quot; - một từ thuộc danh mục &quot;{todaySign.category}&quot; 
-              với {todaySign.views.toLocaleString()} lượt xem.
+              Học ký hiệu &quot;{todaySign.word}&quot; - một từ thuộc danh mục
+              &quot;{todaySign.category}&quot; với{" "}
+              {todaySign.views.toLocaleString()} lượt xem.
             </p>
 
             <div className="flex flex-wrap gap-3">
-              <button 
+              <button
                 onClick={togglePlay}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-primary-600 rounded-xl font-medium hover:bg-white/90 transition-colors"
               >
                 {isPlaying ? <Pause size={18} /> : <Play size={18} />}
-                {isPlaying ? 'Tạm dừng' : 'Bắt đầu học'}
+                {isPlaying ? "Tạm dừng" : "Bắt đầu học"}
               </button>
-              <Link 
+              <Link
                 href={`/dictionary/${todaySign.id}`}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 text-white rounded-xl font-medium hover:bg-white/30 transition-colors"
               >
@@ -331,26 +431,38 @@ export function DailySigns() {
       {/* Related Words */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Từ vựng liên quan</h3>
-          <Link href="/dictionary" className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Từ vựng liên quan
+          </h3>
+          <Link
+            href="/dictionary"
+            className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
+          >
             Xem tất cả <ChevronRight size={16} />
           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {relatedWords.map((word) => (
-            <Link 
-              key={word.id} 
+            <Link
+              key={word.id}
               href={`/dictionary/${word.id}`}
               className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-lg hover:border-primary-200 transition-all cursor-pointer group"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-primary-600 font-medium">{word.category}</span>
-                <Play size={14} className="text-gray-300 group-hover:text-primary-500 transition-colors" />
+                <span className="text-xs text-primary-600 font-medium">
+                  {word.category}
+                </span>
+                <Play
+                  size={14}
+                  className="text-gray-300 group-hover:text-primary-500 transition-colors"
+                />
               </div>
               <h4 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
                 {word.word}
               </h4>
-              <p className="text-xs text-gray-500 mt-1">{word.views.toLocaleString()} lượt xem</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {word.views.toLocaleString()} lượt xem
+              </p>
             </Link>
           ))}
         </div>
@@ -359,16 +471,21 @@ export function DailySigns() {
       {/* Recent Signs */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Các từ gần đây</h3>
-          <Link href="/dictionary" className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Các từ gần đây
+          </h3>
+          <Link
+            href="/dictionary"
+            className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
+          >
             Xem lịch sử <ChevronRight size={16} />
           </Link>
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100 overflow-hidden">
           {recentSigns.length > 0 ? (
             recentSigns.map((sign, index) => (
-              <Link 
-                key={sign.id} 
+              <Link
+                key={sign.id}
                 href={`/dictionary/${sign.id}`}
                 className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors cursor-pointer"
               >
@@ -380,7 +497,9 @@ export function DailySigns() {
                   <p className="text-sm text-gray-500">{sign.category}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400">{index + 1} ngày trước</span>
+                  <span className="text-xs text-gray-400">
+                    {index + 1} ngày trước
+                  </span>
                   <ChevronRight size={18} className="text-gray-300" />
                 </div>
               </Link>

@@ -1,11 +1,31 @@
 "use client";
 
-import React from "react";
-import { Gamepad2, Trophy, Flame, Zap, Brain, BookOpen, Sparkles, Play, Users, Star } from "lucide-react";
-import { gameSections, levelConfig, getGamesStats } from "@/src/data";
+import React, { useEffect, useState } from "react";
+import {
+  Gamepad2,
+  Trophy,
+  Flame,
+  Zap,
+  Brain,
+  BookOpen,
+  Sparkles,
+  Play,
+  Users,
+  Star,
+} from "lucide-react";
+import {
+  gameSections as mockSections,
+  levelConfig,
+  GameItem,
+  GameSection,
+} from "@/src/data/gamesData";
+import { fetchAllGames } from "@/src/services/gameService";
 
 // Icon mapping
-const iconMap: Record<string, React.ComponentType<{ className?: string; size?: number }>> = {
+const iconMap: Record<
+  string,
+  React.ComponentType<{ className?: string; size?: number }>
+> = {
   Flame,
   Brain,
   BookOpen,
@@ -13,15 +33,63 @@ const iconMap: Record<string, React.ComponentType<{ className?: string; size?: n
 };
 
 export const Games: React.FC = () => {
-  const stats = getGamesStats();
+  const [sections, setSections] = useState<GameSection[]>(mockSections);
+  const [games, setGames] = useState<GameItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadGames = async () => {
+      setIsLoading(true);
+      try {
+        const fetchedGames = await fetchAllGames();
+        setGames(fetchedGames);
+
+        // Update sections with fetched games (retaining structure)
+        // This assumes fetchedGames contains all games.
+        // Ideally backend should return structure or we map by category/id
+
+        // For now, let's map back to sections based on IDs or Categories if possible
+        // Or simply replace the games list in existing sections
+
+        const updatedSections = mockSections.map((section) => ({
+          ...section,
+          games: section.games
+            .map((staticGame) => {
+              const found = fetchedGames.find((g) => g.id === staticGame.id);
+              return found || staticGame; // Update if found, else keep static (or filter out)
+            })
+            .filter((g) => g.isActive), // Ensure client side active check
+        }));
+        setSections(updatedSections);
+      } catch (error) {
+        console.error("Failed to load games", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadGames();
+  }, []);
+
+  const stats = {
+    totalGames: games.length,
+    totalPlayers: games.reduce((sum, g) => sum + (g.players || 0), 0),
+    avgRating: games.length
+      ? games.reduce((sum, g) => sum + (g.rating || 0), 0) / games.length
+      : 0,
+    sectionsCount: sections.length,
+  };
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Trung tâm trò chơi</h1>
-          <p className="text-gray-500">Vừa học vừa chơi với {stats.totalGames} thử thách thú vị.</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Trung tâm trò chơi
+          </h1>
+          <p className="text-gray-500">
+            Vừa học vừa chơi với {stats.totalGames} thử thách thú vị.
+          </p>
         </div>
         <div className="flex gap-3">
           <div className="px-4 py-2 bg-yellow-50 text-yellow-700 rounded-lg flex items-center gap-2 font-medium">
@@ -44,51 +112,75 @@ export const Games: React.FC = () => {
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
           <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
-          <p className="text-2xl font-bold text-gray-900">{(stats.totalPlayers / 1000).toFixed(0)}K</p>
+          <p className="text-2xl font-bold text-gray-900">
+            {(stats.totalPlayers / 1000).toFixed(0)}K
+          </p>
           <p className="text-sm text-gray-500">Người chơi</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
           <Star className="w-8 h-8 text-amber-500 mx-auto mb-2" />
-          <p className="text-2xl font-bold text-gray-900">{stats.avgRating.toFixed(1)}</p>
+          <p className="text-2xl font-bold text-gray-900">
+            {stats.avgRating.toFixed(1)}
+          </p>
           <p className="text-sm text-gray-500">Đánh giá</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
           <Trophy className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-          <p className="text-2xl font-bold text-gray-900">{stats.sectionsCount}</p>
+          <p className="text-2xl font-bold text-gray-900">
+            {stats.sectionsCount}
+          </p>
           <p className="text-sm text-gray-500">Danh mục</p>
         </div>
       </div>
 
       {/* Game Sections */}
-      {gameSections.map((section, idx) => {
+      {sections.map((section, idx) => {
         const IconComponent = iconMap[section.iconName];
-        const activeGames = section.games.filter(g => g.isActive);
-        
+        const activeGames = section.games.filter((g) => g.isActive);
+
         if (activeGames.length === 0) return null;
 
         return (
           <div key={idx}>
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-white border border-gray-100 rounded-lg shadow-sm">
-                {IconComponent && <IconComponent className="text-primary-600" size={24} />}
+                {IconComponent && (
+                  <IconComponent className="text-primary-600" size={24} />
+                )}
               </div>
-              <h2 className="text-xl font-bold text-gray-900">{section.title}</h2>
-              <span className="text-sm text-gray-500">({activeGames.length})</span>
+              <h2 className="text-xl font-bold text-gray-900">
+                {section.title}
+              </h2>
+              <span className="text-sm text-gray-500">
+                ({activeGames.length})
+              </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {activeGames.map((game) => (
-                <div key={game.id} className="group bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer hover:-translate-y-1">
+                <div
+                  key={game.id}
+                  className="group bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer hover:-translate-y-1"
+                >
                   <div className="flex items-start justify-between mb-4">
-                    <div className={`w-12 h-12 rounded-xl ${game.colorClass} flex items-center justify-center shadow-sm`}>
+                    <div
+                      className={`w-12 h-12 rounded-xl ${game.colorClass} flex items-center justify-center shadow-sm`}
+                    >
                       <Gamepad2 size={24} className="text-white" />
                     </div>
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${levelConfig[game.level]?.color || 'bg-gray-100 text-gray-700'}`}>
+                    <span
+                      className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                        levelConfig[game.level]?.color ||
+                        "bg-gray-100 text-gray-700"
+                      }`}
+                    >
                       {game.level}
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors uppercase">{game.name}</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors uppercase">
+                    {game.name}
+                  </h3>
                   <p className="text-gray-500 text-sm mb-3 line-clamp-2">
                     {game.description}
                   </p>
@@ -106,7 +198,10 @@ export const Games: React.FC = () => {
                     </div>
                     {(game.rating || 0) > 0 && (
                       <div className="flex items-center gap-1">
-                        <Star size={14} className="text-amber-400 fill-amber-400" />
+                        <Star
+                          size={14}
+                          className="text-amber-400 fill-amber-400"
+                        />
                         {game.rating}
                       </div>
                     )}

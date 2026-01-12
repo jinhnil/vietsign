@@ -6,20 +6,7 @@ import { Study } from "@/src/components/study";
 export const metadata: Metadata = {
   title: "Lớp học của tôi - VietSignSchool",
   description: "Các lớp học đã đăng ký",
-  icons: {
-    icon: [
-      {
-        media: "(prefers-color-scheme: light)",
-        url: "/favicon.ico",
-        href: "/favicon.ico",
-      },
-      {
-        media: "(prefers-color-scheme: dark)",
-        url: "/favicon.ico",
-        href: "/favicon.ico",
-      },
-    ],
-  },
+  
 };
 
 export default function StudyPage() {

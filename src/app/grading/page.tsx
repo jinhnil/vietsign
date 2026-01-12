@@ -5,20 +5,7 @@ import { GradingManagement } from "@/src/components/grading";
 export const metadata: Metadata = {
   title: "Chấm điểm - VietSignSchool",
   description: "Chấm điểm VietSignSchool",
-  icons: {
-    icon: [
-      {
-        media: "(prefers-color-scheme: light)",
-        url: "/favicon.ico",
-        href: "/favicon.ico",
-      },
-      {
-        media: "(prefers-color-scheme: dark)",
-        url: "/favicon.ico",
-        href: "/favicon.ico",
-      },
-    ],
-  },
+  
 };
 
 export default function GradingPage() {
