@@ -21,6 +21,8 @@ export interface LearnItem {
   categoryTitle?: string;
   colorClass?: string;
   lessonsList?: Lesson[];
+  videoUrl?: string;
+  vocabularyList?: string[];
 }
 
 export interface Lesson {
@@ -28,6 +30,8 @@ export interface Lesson {
   title: string;
   description: string;
   duration: string;
+  videoUrl?: string;
+  vocabularyList?: string[];
 }
 
 export const learnCategories: LearnCategory[] = [
@@ -45,6 +49,63 @@ export const learnCategories: LearnCategory[] = [
         lessons: 20,
         duration: "4 giờ",
         level: "Cơ bản",
+        description:
+          "Khóa học này cung cấp kiến thức cơ bản về ngôn ngữ ký hiệu, giúp bạn làm quen với các bảng chữ cái, số đếm và các câu giao tiếp thông dụng hàng ngày.",
+        videoUrl: "https://www.youtube.com/watch?v=DaMjr4AfYA0",
+        vocabularyList: [
+          "Xin chào",
+          "Cảm ơn",
+          "Tạm biệt",
+          "Xin lỗi",
+          "Tôi tên là...",
+          "Bạn khỏe không?",
+        ],
+        lessonsList: [
+          {
+            id: 1,
+            title: "Bảng chữ cái",
+            description:
+              "Học cách đánh vần bằng ngón tay bảng chữ cái tiếng Việt.",
+            duration: "15 phút",
+            videoUrl: "https://www.youtube.com/watch?v=DaMjr4AfYA0",
+            vocabularyList: [
+              "A",
+              "B",
+              "C",
+              "D",
+              "Đ",
+              "E",
+              "G",
+              "H",
+              "I",
+              "K",
+              "L",
+              "M",
+            ],
+          },
+          {
+            id: 2,
+            title: "Số đếm",
+            description: "Học cách đếm số từ 0 đến 100 bằng ký hiệu tay.",
+            duration: "20 phút",
+            videoUrl: "https://www.youtube.com/watch?v=DaMjr4AfYA0",
+            vocabularyList: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+          },
+          {
+            id: 3,
+            title: "Lời chào hỏi",
+            description:
+              "Các mẫu câu chào hỏi thông dụng trong giao tiếp hàng ngày.",
+            duration: "10 phút",
+            videoUrl: "https://www.youtube.com/watch?v=DaMjr4AfYA0",
+            vocabularyList: [
+              "Chào buổi sáng",
+              "Chào buổi trưa",
+              "Chào buổi tối",
+              "Gặp lại sau",
+            ],
+          },
+        ],
       },
       {
         id: 2,
