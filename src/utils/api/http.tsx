@@ -23,7 +23,7 @@ http.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  },
+  }
 );
 
 http.interceptors.response.use(
@@ -32,16 +32,26 @@ http.interceptors.response.use(
   },
   (error) => {
     // Không redirect nếu lỗi 401 đến từ API login (để hiển thị thông báo lỗi)
-    if (error?.response?.status === 401 && !error.config.url.includes("/login")) {
+    if (
+      error?.response?.status === 401 &&
+      !error.config.url.includes("/login")
+    ) {
+      const apiToken = localStorage.getItem("access_token");
+
+      // Ignore 401 if using bypass token
+      if (apiToken === "mock_token_bypass_api") {
+        console.warn("API 401 ignored due to bypass mode");
+        return Promise.reject(error);
+      }
+
       store.dispatch(logout());
       // Redirect về trang chủ khi token hết hạn
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         window.location.href = "/";
       }
     }
     return Promise.reject(error);
-  },
+  }
 );
 
 export default http;
-

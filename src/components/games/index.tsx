@@ -160,6 +160,27 @@ export const Games: React.FC = () => {
               {activeGames.map((game) => (
                 <div
                   key={game.id}
+                  onClick={() => {
+                    const routes: Record<number, string> = {
+                      1: "/games/guess-video",
+                      2: "/games/speed-king",
+                      3: "/games/daily-challenge",
+                      4: "/games/puzzle",
+                      5: "/games/memory-match",
+                      6: "/games/story-sign",
+                      7: "/games/quiz",
+                      8: "/games/kids-learning",
+                      9: "/games/animal-signs",
+                      10: "/games/fingerspelling-rush",
+                      11: "/games/fill-blank",
+                      12: "/games/music-sign",
+                    };
+                    const route = routes[game.id];
+                    if (route) {
+                      // Note: In a real app we would use router.push(route)
+                      window.location.href = route;
+                    }
+                  }}
                   className="group bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer hover:-translate-y-1"
                 >
                   <div className="flex items-start justify-between mb-4">

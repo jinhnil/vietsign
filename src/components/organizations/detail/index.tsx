@@ -7,116 +7,138 @@ import {
   Trash2,
   Save,
   X,
-  Calendar,
-  Clock,
+  MapPin,
+  Phone,
+  Mail,
   Users,
-  FileText,
-  BookOpen,
-  CheckCircle2,
+  User,
+  Clock,
+  Calendar,
+  Building,
+  Loader2,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { mockExams, ExamItem, examStatusConfig } from "@/src/data";
+import { OrganizationItem, organizationStatusConfig } from "@/src/data";
+import { getUserById } from "@/src/data/usersData";
 import {
-  fetchExamById,
-  updateExam,
-  deleteExam,
-} from "@/src/services/examService";
-import { fetchAllClasses } from "@/src/services/classService";
-import { mockClasses } from "@/src/data/classesData"; // Keep for type or fallback
+  fetchProvinces,
+  fetchProvinceById,
+} from "@/src/services/vietnamLocationsApi";
 import { ConfirmModal } from "@/src/components/common/ConfirmModal";
+import {
+  useOrganization,
+  useUpdateOrganization,
+  useDeleteOrganization,
+} from "@/src/hooks/useOrganizations";
+import { message } from "antd";
 
-export function ExamManagementDetail() {
+export function OrganizationDetail() {
   const params = useParams();
   const router = useRouter();
 
   const id = Number(params.id);
-  const [exam, setExam] = useState<ExamItem | null>(null);
+
+  // API Hooks
+  const { data: organization, isLoading, isError } = useOrganization(id);
+  const updateMutation = useUpdateOrganization();
+  const deleteMutation = useDeleteOrganization();
+
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState<Partial<ExamItem>>({});
+  const [editForm, setEditForm] = useState<Partial<OrganizationItem>>({});
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [classesMap, setClassesMap] = useState<Record<number, string>>({});
-  const [classesList, setClassesList] = useState<any[]>([]);
+
+  const [provinceName, setProvinceName] = useState<string>("");
+  const [wardName, setWardName] = useState<string>("");
 
   useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        const [fetchedExam, classesData] = await Promise.all([
-          fetchExamById(id),
-          fetchAllClasses(),
-        ]);
+    if (organization) {
+      setEditForm({ ...organization });
+      loadLocationNames(organization.provinceCode, organization.wardCode);
+    }
+  }, [organization]);
 
-        if (fetchedExam) {
-          setExam(fetchedExam);
-          setEditForm({ ...fetchedExam });
+  const loadLocationNames = async (provinceCode: number, wardCode: number) => {
+    try {
+      if (!provinceCode || provinceCode <= 0) return;
+
+      const provinces = await fetchProvinces();
+      const province = provinces.find((p) => parseInt(p.id) === provinceCode);
+      if (province) {
+        setProvinceName(province.name);
+
+        if (!wardCode || wardCode <= 0) return;
+        const provinceDetail = await fetchProvinceById(provinceCode);
+        if (provinceDetail?.communes) {
+          const ward = provinceDetail.communes.find(
+            (c) => parseInt(c.id) === wardCode
+          );
+          if (ward) setWardName(ward.name);
         }
-
-        setClassesList(classesData);
-        const map: Record<number, string> = {};
-        classesData.forEach((c) => {
-          map[c.id] = c.name;
-        });
-        setClassesMap(map);
-      } catch (error) {
-        console.error("Failed to load exam or classes", error);
-        // Fallback
-        const found = mockExams.find((e) => e.id === id);
-        if (found) {
-          setExam(found);
-          setEditForm({ ...found });
-        }
-      } finally {
-        setIsLoading(false);
       }
-    };
-    loadData();
-  }, [id]);
-
-  const getClassName = (classId: number): string => {
-    return classesMap[classId] || "Không xác định";
-  };
-
-  const handleSave = async () => {
-    if (exam && editForm) {
-      try {
-        // Optimistic update
-        const updatedItem = { ...exam, ...editForm } as ExamItem;
-        setExam(updatedItem);
-        setIsEditing(false);
-
-        await updateExam(exam.id, editForm);
-      } catch (error) {
-        console.error("Failed to update exam", error);
-      }
+    } catch (error) {
+      console.error("Failed to load location names:", error);
     }
   };
 
-  const handleDelete = async () => {
-    if (exam) {
-      try {
-        await deleteExam(exam.id);
-        router.push("/exams-management");
-      } catch (error) {
-        console.error("Failed to delete exam", error);
-      }
-    }
-  };
-
-  if (!exam) {
-    if (isLoading)
-      return (
-        <div className="flex justify-center py-20 text-gray-500">
-          Đang tải...
-        </div>
+  const handleSave = () => {
+    if (organization && editForm) {
+      updateMutation.mutate(
+        { id: organization.id, data: editForm },
+        {
+          onSuccess: () => {
+            message.success("Cập nhật thành công");
+            setIsEditing(false);
+          },
+          onError: (error: any) => {
+            message.error(error.message || "Cập nhật thất bại");
+          },
+        }
       );
+    }
+  };
+
+  const handleDelete = () => {
+    if (organization) {
+      deleteMutation.mutate(organization.id, {
+        onSuccess: () => {
+          message.success("Xóa thành công");
+          router.push("/organizations-management");
+        },
+        onError: (error: any) => {
+          message.error(error.message || "Xóa thất bại");
+        },
+      });
+    }
+  };
+
+  const getFullAddress = () => {
+    if (!organization) return "";
+    const parts = [];
+    if (organization.streetAddress) parts.push(organization.streetAddress);
+    if (wardName) parts.push(wardName);
+    if (provinceName) parts.push(provinceName); // Province name lấy từ API locations
+    return parts.length > 0 ? parts.join(", ") : "Chưa cập nhật địa chỉ";
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+      </div>
+    );
+  }
+
+  // Handle case where organization is null or undefined after loading
+  const currentOrganization = organization;
+
+  if (isError || !currentOrganization) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          Không tìm thấy bài kiểm tra
+          Không tìm thấy tổ chức
         </h2>
         <button
-          onClick={() => router.push("/exams-management")}
+          onClick={() => router.push("/organizations-management")}
           className="px-6 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
         >
           Quay lại danh sách
@@ -125,14 +147,16 @@ export function ExamManagementDetail() {
     );
   }
 
-  const statusInfo = examStatusConfig[exam.status];
+  const statusInfo =
+    organizationStatusConfig[currentOrganization.status] ||
+    organizationStatusConfig.inactive;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center">
         <button
-          onClick={() => router.push("/exams-management")}
+          onClick={() => router.push("/organizations-management")}
           className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-white rounded-xl transition-all font-medium border border-transparent hover:border-gray-200 hover:shadow-sm group"
         >
           <ArrowLeft
@@ -150,17 +174,19 @@ export function ExamManagementDetail() {
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center">
-                <FileText size={32} className="text-white" />
+                <Building size={32} className="text-white" />
               </div>
               <div className="text-white">
-                <h1 className="text-2xl font-bold">{exam.title}</h1>
+                <h1 className="text-2xl font-bold">
+                  {currentOrganization.name}
+                </h1>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-white/20">
                     {statusInfo.label}
                   </span>
-                  {exam.type && (
+                  {provinceName && (
                     <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-white/20">
-                      {exam.type}
+                      {provinceName}
                     </span>
                   )}
                 </div>
@@ -168,12 +194,16 @@ export function ExamManagementDetail() {
             </div>
             <div className="flex gap-6 text-white text-center">
               <div>
-                <p className="text-3xl font-bold">{exam.questions}</p>
-                <p className="text-xs text-white/80">Câu hỏi</p>
+                <p className="text-3xl font-bold">
+                  {currentOrganization.studentCount}
+                </p>
+                <p className="text-xs text-white/80">Học sinh</p>
               </div>
               <div>
-                <p className="text-3xl font-bold">{exam.students}</p>
-                <p className="text-xs text-white/80">Học sinh</p>
+                <p className="text-3xl font-bold">
+                  {currentOrganization.teacherCount}
+                </p>
+                <p className="text-xs text-white/80">Giáo viên</p>
               </div>
             </div>
           </div>
@@ -184,176 +214,97 @@ export function ExamManagementDetail() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-semibold text-gray-700">
-                Tên bài kiểm tra
+                Tên tổ chức
               </label>
               {isEditing ? (
                 <input
                   type="text"
-                  value={editForm.title || ""}
+                  value={editForm.name || ""}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, title: e.target.value })
+                    setEditForm({ ...editForm, name: e.target.value })
                   }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all text-lg font-medium"
                 />
               ) : (
                 <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 text-lg font-bold">
-                  {exam.title}
+                  {currentOrganization.name}
                 </p>
               )}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-semibold text-gray-700">
-                Lớp học
-              </label>
-              {isEditing ? (
-                <select
-                  value={editForm.classId || ""}
-                  onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      classId: Number(e.target.value),
-                    })
-                  }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
-                >
-                  {classesList.map((cls) => (
-                    <option key={cls.id} value={cls.id}>
-                      {cls.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
-                  <BookOpen size={18} className="text-gray-400" />
-                  {getClassName(exam.classId)}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Loại bài thi
-              </label>
-              {isEditing ? (
-                <select
-                  value={editForm.type || ""}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, type: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
-                >
-                  <option value="Định kỳ">Định kỳ</option>
-                  <option value="Giữa kỳ">Giữa kỳ</option>
-                  <option value="Cuối kỳ">Cuối kỳ</option>
-                  <option value="Thực hành">Thực hành</option>
-                  <option value="Đầu vào">Đầu vào</option>
-                  <option value="Online">Online</option>
-                </select>
-              ) : (
-                <p className="px-4 py-3 bg-gray-50 rounded-xl">
-                  <span className="inline-flex px-3 py-1 text-sm font-medium rounded-full bg-purple-100 text-purple-700">
-                    {exam.type}
-                  </span>
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Ngày thi
-              </label>
-              <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
-                <Calendar size={18} className="text-gray-400" />
-                {exam.date}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Giờ thi
-              </label>
-              <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
-                <Clock size={18} className="text-gray-400" />
-                {exam.time}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Thời lượng
+                Địa chỉ
               </label>
               {isEditing ? (
                 <input
                   type="text"
-                  value={editForm.duration || ""}
+                  value={editForm.streetAddress || ""}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, duration: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-                />
-              ) : (
-                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 font-medium">
-                  {exam.duration}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Số câu hỏi
-              </label>
-              {isEditing ? (
-                <input
-                  type="number"
-                  value={editForm.questions || ""}
-                  onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      questions: Number(e.target.value),
-                    })
+                    setEditForm({ ...editForm, streetAddress: e.target.value })
                   }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
                 />
               ) : (
                 <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
-                  <FileText size={18} className="text-gray-400" />
-                  {exam.questions} câu
+                  <MapPin size={18} className="text-gray-400 flex-shrink-0" />
+                  {getFullAddress()}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">
-                Điểm đạt tối thiểu
+                Số điện thoại
               </label>
               {isEditing ? (
                 <input
-                  type="number"
-                  value={editForm.passingScore || ""}
+                  type="tel"
+                  value={editForm.phone || ""}
                   onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      passingScore: Number(e.target.value),
-                    })
+                    setEditForm({ ...editForm, phone: e.target.value })
                   }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
                 />
               ) : (
                 <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
-                  <CheckCircle2 size={18} className="text-gray-400" />
-                  {exam.passingScore}%
+                  <Phone size={18} className="text-gray-400" />
+                  {currentOrganization.phone}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">
-                Số học sinh
+                Email
+              </label>
+              {isEditing ? (
+                <input
+                  type="email"
+                  value={editForm.email || ""}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, email: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                />
+              ) : (
+                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
+                  <Mail size={18} className="text-gray-400" />
+                  {currentOrganization.email}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">
+                Quản lý
               </label>
               <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
-                <Users size={18} className="text-gray-400" />
-                {exam.students} học sinh
+                <User size={18} className="text-gray-400" />
+                {currentOrganization.managers &&
+                currentOrganization.managers.length > 0
+                  ? currentOrganization.managers.map((m) => m.name).join(", ")
+                  : "Chưa có quản lý"}
               </p>
             </div>
 
@@ -367,14 +318,14 @@ export function ExamManagementDetail() {
                   onChange={(e) =>
                     setEditForm({
                       ...editForm,
-                      status: e.target.value as ExamItem["status"],
+                      status: e.target.value as OrganizationItem["status"],
                     })
                   }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
                 >
-                  <option value="upcoming">Sắp diễn ra</option>
-                  <option value="ongoing">Đang diễn ra</option>
-                  <option value="completed">Đã hoàn thành</option>
+                  <option value="active">Đang hoạt động</option>
+                  <option value="inactive">Tạm ngưng</option>
+                  <option value="maintenance">Bảo trì</option>
                 </select>
               ) : (
                 <p className="px-4 py-3 bg-gray-50 rounded-xl">
@@ -387,7 +338,40 @@ export function ExamManagementDetail() {
               )}
             </div>
 
-            {(exam.description || isEditing) && (
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">
+                Giờ mở cửa
+              </label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editForm.openingHours || ""}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, openingHours: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                />
+              ) : (
+                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
+                  <Clock size={18} className="text-gray-400" />
+                  {currentOrganization.openingHours || "Chưa cập nhật"}
+                </p>
+              )}
+            </div>
+
+            {currentOrganization.createdAt && (
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">
+                  Ngày tạo
+                </label>
+                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
+                  <Calendar size={18} className="text-gray-400" />
+                  {currentOrganization.createdAt}
+                </p>
+              </div>
+            )}
+
+            {(currentOrganization.description || isEditing) && (
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-semibold text-gray-700">
                   Mô tả
@@ -403,11 +387,28 @@ export function ExamManagementDetail() {
                   />
                 ) : (
                   <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">
-                    {exam.description}
+                    {currentOrganization.description}
                   </p>
                 )}
               </div>
             )}
+
+            <div className="md:col-span-2 grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+              <div className="bg-primary-50 rounded-xl p-4 text-center">
+                <Users size={24} className="text-primary-600 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-primary-600">
+                  {currentOrganization.studentCount}
+                </p>
+                <p className="text-sm text-gray-500">Học sinh</p>
+              </div>
+              <div className="bg-green-50 rounded-xl p-4 text-center">
+                <Users size={24} className="text-green-600 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-green-600">
+                  {currentOrganization.teacherCount}
+                </p>
+                <p className="text-sm text-gray-500">Giáo viên</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -418,7 +419,7 @@ export function ExamManagementDetail() {
               <button
                 onClick={() => {
                   setIsEditing(false);
-                  setEditForm({ ...exam });
+                  setEditForm({ ...currentOrganization });
                 }}
                 className="px-6 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-white transition-colors font-medium flex items-center gap-2"
               >
@@ -428,9 +429,10 @@ export function ExamManagementDetail() {
               <button
                 onClick={handleSave}
                 className="px-6 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium flex items-center gap-2"
+                disabled={updateMutation.isPending}
               >
                 <Save size={18} />
-                Lưu thay đổi
+                {updateMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
               </button>
             </>
           ) : (
@@ -459,8 +461,8 @@ export function ExamManagementDetail() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDelete}
         title="Xác nhận xóa"
-        message={`Bạn có chắc chắn muốn xóa bài kiểm tra "${exam.title}"? Hành động này không thể hoàn tác.`}
-        confirmText="Xóa"
+        message={`Bạn có chắc chắn muốn xóa tổ chức "${currentOrganization.name}"? Hành động này không thể hoàn tác.`}
+        confirmText={deleteMutation.isPending ? "Đang xóa..." : "Xóa"}
         cancelText="Hủy"
         type="danger"
       />

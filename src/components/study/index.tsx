@@ -13,13 +13,13 @@ import {
 import { mockClasses, ClassItem } from "@/src/data/classesData";
 import { fetchAllClasses } from "@/src/services/classService";
 import { fetchUsersByRole } from "@/src/services/userService";
-import { mockFacilities } from "@/src/data/facilitiesData";
+import { mockOrganizations } from "@/src/data/organizationsData";
 import Link from "next/link";
 
 // Helper to get facility name
 const getFacilityName = (facilityId: number | null) => {
   if (facilityId === null) return "Online";
-  const facility = mockFacilities.find((f) => f.id === facilityId);
+  const facility = mockOrganizations.find((f) => f.id === facilityId);
   return facility ? facility.name : "Không xác định";
 };
 

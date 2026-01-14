@@ -111,7 +111,7 @@ export function ClassManagementDetail() {
     if (classItem) {
       try {
         await deleteClass(classItem.id);
-        router.push("/classes");
+        router.push("/classes-management");
       } catch (error) {
         console.error("Failed to delete class", error);
       }
@@ -131,7 +131,7 @@ export function ClassManagementDetail() {
           Không tìm thấy lớp học
         </h2>
         <button
-          onClick={() => router.push("/classes")}
+          onClick={() => router.push("/classes-management")}
           className="px-6 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
         >
           Quay lại danh sách
@@ -148,7 +148,7 @@ export function ClassManagementDetail() {
       {/* Header */}
       <div className="flex items-center">
         <button
-          onClick={() => router.push("/classes")}
+          onClick={() => router.push("/classes-management")}
           className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-white rounded-xl transition-all font-medium border border-transparent hover:border-gray-200 hover:shadow-sm group"
         >
           <ArrowLeft

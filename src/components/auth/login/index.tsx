@@ -25,32 +25,33 @@ const Login: React.FC = () => {
     mutationFn: Auth.login,
     onSuccess: async (res) => {
       console.log("Login response:", res); // Debug
-      
+
       // Backend chỉ trả về accessToken
       const accessToken = res.accessToken || res.access_token;
-      
+
       localStorage.setItem("access_token", accessToken);
-      
+
       // Lấy thông tin profile từ backend
       const userProfile = await UserModel.getProfile();
       console.log("User profile:", userProfile); // Debug
-      
+
       // Map role code từ backend sang frontend role format
       const userData = {
         ...userProfile.user,
-        role: mapRoleCode(userProfile.user.code || 'USER')
+        role: mapRoleCode(userProfile.user.code || "USER"),
       };
-      
+
       dispatch(login(userData));
       localStorage.setItem("user", JSON.stringify(userData));
       message.success("Đăng nhập thành công");
       router.push("/home");
     },
     onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message
-        || error?.response?.data?.error
-        || error?.message
-        || "Đăng nhập thất bại. Vui lòng thử lại.";
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Đăng nhập thất bại. Vui lòng thử lại.";
       setLoginError(errorMessage);
     },
   });
@@ -67,10 +68,32 @@ const Login: React.FC = () => {
     });
   };
 
+  const handleBypassLogin = () => {
+    // Mock user data for bypass
+    const mockUser = {
+      id: "9999",
+      email: "admin@demo.local",
+      name: "Admin Demo (Offline)",
+      code: "TEST",
+      role: mapRoleCode("TEST"),
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin",
+    };
+
+    // Set local storage
+    localStorage.setItem("access_token", "mock_token_bypass_api");
+    localStorage.setItem("user", JSON.stringify(mockUser));
+
+    // Dispatch login action
+    dispatch(login(mockUser));
+
+    // Notify and redirect
+    message.success("Đăng nhập chế độ Offline thành công!");
+    router.push("/home");
+  };
+
   if (loginMutation.isPending) {
     return <Loading />;
   }
-
 
   return (
     <div className="min-h-screen pt-20 flex items-center justify-center bg-gray-50 px-4">
@@ -85,7 +108,9 @@ const Login: React.FC = () => {
           <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-red-800">Đăng nhập thất bại</p>
+              <p className="text-sm font-medium text-red-800">
+                Đăng nhập thất bại
+              </p>
               <p className="text-sm text-red-600 mt-1">{loginError}</p>
             </div>
           </div>
@@ -103,7 +128,7 @@ const Login: React.FC = () => {
             name="email"
             rules={[
               { required: true, message: "Vui lòng nhập email!" },
-              { type: "email", message: "Email không hợp lệ!" }
+              { type: "email", message: "Email không hợp lệ!" },
             ]}
           >
             <Input
@@ -189,6 +214,22 @@ const Login: React.FC = () => {
                 <Copy size={16} className="opacity-60" />
               </button>
             ))}
+
+            <button
+              onClick={handleBypassLogin}
+              className="flex items-center justify-between p-3 rounded-xl border border-dashed border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100 transition-all hover:shadow-md hover:scale-[1.02] mt-2 group"
+            >
+              <div className="text-left">
+                <p className="font-bold text-sm">Truy cập nhanh (Không API)</p>
+                <p className="text-xs opacity-80">
+                  Bỏ qua đăng nhập, vào thẳng hệ thống
+                </p>
+              </div>
+              <CheckCircle
+                size={16}
+                className="opacity-60 group-hover:opacity-100 transition-opacity"
+              />
+            </button>
           </div>
         </div>
       </div>

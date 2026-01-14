@@ -20,7 +20,7 @@ import { useParams, useRouter } from "next/navigation";
 import { mockClasses, ClassItem, statusConfig } from "@/src/data/classesData";
 import { fetchClassById } from "@/src/services/classService";
 import { fetchUserById } from "@/src/services/userService";
-import { mockFacilities } from "@/src/data/facilitiesData";
+import { mockOrganizations } from "@/src/data/organizationsData";
 import Link from "next/link";
 
 export function StudyDetail() {
@@ -68,7 +68,7 @@ export function StudyDetail() {
 
   const getFacilityName = (facilityId: number | null): string => {
     if (facilityId === null) return "Online";
-    const facility = mockFacilities.find((f) => f.id === facilityId);
+    const facility = mockOrganizations.find((f) => f.id === facilityId);
     return facility?.name || "Không xác định";
   };
 

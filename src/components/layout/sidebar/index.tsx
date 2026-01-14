@@ -23,6 +23,8 @@ import {
   Lightbulb,
   MessageCircle,
   Shield,
+  HelpCircle,
+  Hand,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "@/src/store/slices/adminSlice";
@@ -118,14 +120,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       icon: <Building size={22} />,
-      label: "Quản lý cơ sở",
-      path: "/facilities",
+      label: "Quản lý tổ chức",
+      path: "/organizations-management",
       allowedRoles: ["ADMIN", "TEST"],
     },
     {
       icon: <GraduationCap size={22} />,
       label: "Quản lý học tập",
-      path: "/learning",
+      path: "/learning-management",
       allowedRoles: [
         "ADMIN",
         "FACILITY_MANAGER",
@@ -138,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       icon: <BookOpenCheck size={22} />,
       label: "Quản lý lớp học",
-      path: "/classes",
+      path: "/classes-management",
       allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "TEST"],
     },
     {
@@ -163,7 +165,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       icon: <ClipboardCheck size={22} />,
       label: "Quản lý kiểm tra",
-      path: "/exams",
+      path: "/exams-management",
       allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "TEST"],
     },
     {
@@ -191,6 +193,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       path: "/games-management",
       allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEST"],
     },
+    {
+      icon: <HelpCircle size={22} />,
+      label: "Quản lý câu hỏi",
+      path: "/questions-management",
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "TEST"],
+    },
 
     // === CHỈ FACILITY_MANAGER, TEACHER, STUDENT, USER ===
     {
@@ -212,6 +220,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: <Gamepad2 size={22} />,
       label: "Trò chơi",
       path: "/games",
+      allowedRoles: [
+        "ADMIN",
+        "FACILITY_MANAGER",
+        "TEACHER",
+        "STUDENT",
+        "USER",
+        "TEST",
+      ],
+    },
+    {
+      icon: <Hand size={22} />,
+      label: "Luyện tập",
+      path: "/practice",
       allowedRoles: [
         "ADMIN",
         "FACILITY_MANAGER",

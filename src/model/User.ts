@@ -31,6 +31,7 @@ export const mapRoleCode = (code: string): UserRole => {
     TEACHER: { role: "Teacher", label: "Giáo viên" },
     STUDENT: { role: "Student", label: "Học sinh" },
     USER: { role: "User", label: "Người dùng" },
+    TEST: { role: "Admin", label: "Tài khoản Test (Full Access)" }, // Map to Admin role type for compatibility, but label distinct
   };
   return roleMap[code] || { role: "User", label: "Người dùng" };
 };

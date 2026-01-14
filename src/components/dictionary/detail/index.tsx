@@ -1,7 +1,23 @@
 "use client";
 
 import React from "react";
-import { ArrowLeft, BookOpen, Star, Share2, Play, Pause, Eye, Calendar, Award, TrendingUp, Info, ArrowRight, Volume2, VolumeX, Maximize } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  Star,
+  Share2,
+  Play,
+  Pause,
+  Eye,
+  Calendar,
+  Award,
+  TrendingUp,
+  Info,
+  ArrowRight,
+  Volume2,
+  VolumeX,
+  Maximize,
+} from "lucide-react";
 import Link from "next/link";
 import { dictionaryItems } from "@/src/data";
 import { useParams, useRouter } from "next/navigation";
@@ -20,14 +36,14 @@ export const DictionaryDetail: React.FC = () => {
   const [playbackSpeed, setPlaybackSpeed] = React.useState(1);
   const [showSpeedMenu, setShowSpeedMenu] = React.useState(false);
   const id = Number(params.id);
-  
-  const item = dictionaryItems.find(i => i.id === id);
+
+  const item = dictionaryItems.find((i) => i.id === id);
 
   // Format time display (mm:ss)
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   // Handle video autoplay when component mounts or item changes
@@ -38,7 +54,7 @@ export const DictionaryDetail: React.FC = () => {
       video.volume = volume;
       video.muted = isMuted;
       video.playbackRate = playbackSpeed;
-      
+
       const playPromise = video.play();
       if (playPromise !== undefined) {
         playPromise
@@ -62,12 +78,12 @@ export const DictionaryDetail: React.FC = () => {
       setDuration(video.duration);
     };
 
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener("timeupdate", handleTimeUpdate);
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
 
     return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
     };
   }, []);
 
@@ -137,17 +153,19 @@ export const DictionaryDetail: React.FC = () => {
   };
 
   const speedOptions = [
-    { label: 'Rất nhanh', value: 2 },
-    { label: 'Nhanh', value: 1.5 },
-    { label: 'Bình thường', value: 1 },
-    { label: 'Chậm', value: 0.5 },
+    { label: "Rất nhanh", value: 2 },
+    { label: "Nhanh", value: 1.5 },
+    { label: "Bình thường", value: 1 },
+    { label: "Chậm", value: 0.5 },
   ];
 
   if (!item) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Không tìm thấy từ này</h2>
-        <button 
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          Không tìm thấy từ này
+        </h2>
+        <button
           onClick={() => router.back()}
           className="px-6 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
         >
@@ -159,29 +177,36 @@ export const DictionaryDetail: React.FC = () => {
 
   // Lấy các từ liên quan (cùng category)
   const relatedItems = dictionaryItems
-    .filter(i => i.category === item.category && i.id !== item.id)
+    .filter((i) => i.category === item.category && i.id !== item.id)
     .slice(0, 3);
 
   // Lấy từ trước và sau dựa trên ID
-  const prevItem = dictionaryItems.find(i => i.id === id - 1);
-  const nextItem = dictionaryItems.find(i => i.id === id + 1);
+  const prevItem = dictionaryItems.find((i) => i.id === id - 1);
+  const nextItem = dictionaryItems.find((i) => i.id === id + 1);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Top Navigation & Breadcrumbs */}
       <div className="flex items-center justify-between">
-        <button 
+        <button
           onClick={() => router.push(`/dictionary`)}
           className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-white rounded-xl transition-all font-medium border border-transparent hover:border-gray-200 hover:shadow-sm group"
         >
-          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+          <ArrowLeft
+            size={20}
+            className="group-hover:-translate-x-1 transition-transform"
+          />
           <span>Quay lại</span>
         </button>
-        
+
         <nav className="hidden md:flex items-center gap-2 text-sm text-gray-500 font-medium">
-          <Link href="/home" className="hover:text-primary-600">Trang chủ</Link>
+          <Link href="/home" className="hover:text-primary-600">
+            Trang chủ
+          </Link>
           <span>/</span>
-          <Link href="/dictionary" className="hover:text-primary-600">Từ điển</Link>
+          <Link href="/dictionary" className="hover:text-primary-600">
+            Từ điển
+          </Link>
           <span>/</span>
           <span className="text-gray-900">{item.word}</span>
         </nav>
@@ -194,7 +219,7 @@ export const DictionaryDetail: React.FC = () => {
           <div className="lg:w-3/4 bg-gray-900 relative group">
             <div className="aspect-[16/9] lg:aspect-auto lg:h-[600px] w-full relative overflow-hidden bg-black">
               {/* Real Video Player */}
-              <video 
+              <video
                 key={item.id}
                 ref={videoRef}
                 className="w-full h-full object-cover cursor-pointer"
@@ -211,13 +236,16 @@ export const DictionaryDetail: React.FC = () => {
 
               {/* Advanced Video Controls Mock (Simplified for real playback) */}
               {!isPlaying && (
-                <div 
+                <div
                   onClick={togglePlay}
                   className="absolute inset-0 bg-black/20 flex items-center justify-center cursor-pointer transition-opacity duration-500"
                 >
                   <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-2xl">
                     <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-inner">
-                      <Play size={32} className="text-primary-600 fill-current ml-1" />
+                      <Play
+                        size={32}
+                        className="text-primary-600 fill-current ml-1"
+                      />
                     </div>
                   </div>
                 </div>
@@ -227,20 +255,24 @@ export const DictionaryDetail: React.FC = () => {
                 <div className="space-y-4">
                   {/* Progress Bar */}
                   <div className="flex items-center gap-3">
-                    <span className="text-white text-xs font-medium min-w-[40px]">{formatTime(currentTime)}</span>
-                    <div 
+                    <span className="text-white text-xs font-medium min-w-[40px]">
+                      {formatTime(currentTime)}
+                    </span>
+                    <div
                       ref={progressRef}
                       onClick={handleProgressClick}
                       className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden cursor-pointer group/progress hover:h-3 transition-all"
                     >
-                      <div 
+                      <div
                         className="h-full bg-gradient-to-r from-primary-500 to-primary-400 relative transition-all"
                         style={{ width: `${progress}%` }}
                       >
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg scale-0 group-hover/progress:scale-100 transition-transform"></div>
                       </div>
                     </div>
-                    <span className="text-white text-xs font-medium min-w-[40px]">{formatTime(duration)}</span>
+                    <span className="text-white text-xs font-medium min-w-[40px]">
+                      {formatTime(duration)}
+                    </span>
                   </div>
 
                   {/* Control Buttons */}
@@ -248,22 +280,30 @@ export const DictionaryDetail: React.FC = () => {
                     {/* Left Controls */}
                     <div className="flex items-center gap-4">
                       {/* Play/Pause */}
-                      <button 
-                        onClick={togglePlay} 
+                      <button
+                        onClick={togglePlay}
                         className="p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-                        title={isPlaying ? 'Tạm dừng' : 'Phát'}
+                        title={isPlaying ? "Tạm dừng" : "Phát"}
                       >
-                        {isPlaying ? <Pause size={20} className="fill-current" /> : <Play size={20} className="fill-current ml-0.5" />}
+                        {isPlaying ? (
+                          <Pause size={20} className="fill-current" />
+                        ) : (
+                          <Play size={20} className="fill-current ml-0.5" />
+                        )}
                       </button>
 
                       {/* Volume Control */}
                       <div className="flex items-center gap-2 group/volume">
-                        <button 
-                          onClick={toggleMute} 
+                        <button
+                          onClick={toggleMute}
                           className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                          title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+                          title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
                         >
-                          {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                          {isMuted ? (
+                            <VolumeX size={20} />
+                          ) : (
+                            <Volume2 size={20} />
+                          )}
                         </button>
                         <input
                           type="range"
@@ -286,7 +326,7 @@ export const DictionaryDetail: React.FC = () => {
                     <div className="flex items-center gap-3">
                       {/* Speed Control */}
                       <div className="relative">
-                        <button 
+                        <button
                           onClick={() => setShowSpeedMenu(!showSpeedMenu)}
                           className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold transition-colors"
                           title="Tốc độ phát"
@@ -300,7 +340,9 @@ export const DictionaryDetail: React.FC = () => {
                                 key={option.value}
                                 onClick={() => handleSpeedChange(option.value)}
                                 className={`w-full px-4 py-2.5 text-left text-sm font-medium hover:bg-white/10 transition-colors whitespace-nowrap ${
-                                  playbackSpeed === option.value ? 'text-primary-400 bg-white/5' : 'text-white'
+                                  playbackSpeed === option.value
+                                    ? "text-primary-400 bg-white/5"
+                                    : "text-white"
                                 }`}
                               >
                                 {option.label} ({option.value}x)
@@ -311,7 +353,7 @@ export const DictionaryDetail: React.FC = () => {
                       </div>
 
                       {/* Fullscreen */}
-                      <button 
+                      <button
                         onClick={handleFullscreen}
                         className="p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
                         title="Phóng to"
@@ -332,18 +374,19 @@ export const DictionaryDetail: React.FC = () => {
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary-700 rounded-lg text-[10px] font-black uppercase tracking-[0.2em]">
                   {item.category}
                 </div>
-                
+
                 <div>
                   <h1 className="text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-tight mb-2 italic">
                     {item.word}
                   </h1>
                   <p className="text-sm text-gray-400 font-medium leading-relaxed">
-                    Từ vựng phổ biến trong bộ ngôn ngữ ký hiệu chủ đề {item.category}.
+                    Từ vựng phổ biến trong bộ ngôn ngữ ký hiệu chủ đề{" "}
+                    {item.category}.
                   </p>
                 </div>
               </div>
-              
-              <div className="space-y-6">
+
+              {/* <div className="space-y-6">
                 <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-[24px] hover:bg-white hover:shadow-xl transition-all duration-500 border border-transparent hover:border-gray-100 group/item">
                   <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center group-hover/item:scale-110 transition-transform">
                     <Award size={24} className="text-amber-500" />
@@ -363,7 +406,7 @@ export const DictionaryDetail: React.FC = () => {
                     <p className="font-bold text-gray-800 italic">Top 10%</p>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="space-y-4 pt-10 relative z-10">
@@ -386,40 +429,58 @@ export const DictionaryDetail: React.FC = () => {
       {/* Navigation: Previous / Next Word */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8">
         {prevItem ? (
-          <Link 
+          <Link
             href={`/dictionary/${prevItem.id}`}
             className="group relative overflow-hidden bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:border-primary-200 transition-all duration-300"
           >
             <div className="relative z-10 flex items-center gap-6">
               <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-primary-600 transition-colors duration-300">
-                <ArrowLeft size={28} className="text-gray-400 group-hover:text-white group-hover:-translate-x-1 transition-all" />
+                <ArrowLeft
+                  size={28}
+                  className="text-gray-400 group-hover:text-white group-hover:-translate-x-1 transition-all"
+                />
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-1 group-hover:text-primary-600 transition-colors">Trước đó</span>
-                <span className="text-2xl md:text-3xl font-black text-gray-900 leading-tight">{prevItem.word}</span>
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-1 group-hover:text-primary-600 transition-colors">
+                  Trước đó
+                </span>
+                <span className="text-2xl md:text-3xl font-black text-gray-900 leading-tight">
+                  {prevItem.word}
+                </span>
               </div>
             </div>
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50 rounded-full translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           </Link>
-        ) : <div />}
+        ) : (
+          <div />
+        )}
 
         {nextItem ? (
-          <Link 
+          <Link
             href={`/dictionary/${nextItem.id}`}
             className="group relative overflow-hidden bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:border-primary-200 transition-all duration-300 text-right"
           >
             <div className="relative z-10 flex items-center justify-end gap-6">
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-1 group-hover:text-primary-600 transition-colors">Tiếp theo</span>
-                <span className="text-2xl md:text-3xl font-black text-gray-900 leading-tight">{nextItem.word}</span>
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-1 group-hover:text-primary-600 transition-colors">
+                  Tiếp theo
+                </span>
+                <span className="text-2xl md:text-3xl font-black text-gray-900 leading-tight">
+                  {nextItem.word}
+                </span>
               </div>
               <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-primary-600 transition-colors duration-300">
-                <ArrowRight size={28} className="text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                <ArrowRight
+                  size={28}
+                  className="text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all"
+                />
               </div>
             </div>
             <div className="absolute top-0 left-0 w-32 h-32 bg-primary-50 rounded-full -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           </Link>
-        ) : <div />}
+        ) : (
+          <div />
+        )}
       </div>
     </div>
   );
