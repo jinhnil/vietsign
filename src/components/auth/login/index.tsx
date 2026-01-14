@@ -61,11 +61,36 @@ const Login: React.FC = () => {
     loginMutation.mutate(values);
   };
 
-  const handleDemoFill = (demoEmail: string, demoPass: string) => {
-    form.setFieldsValue({
-      email: demoEmail,
-      password: demoPass,
-    });
+  // DEMO MODE: Đăng nhập trực tiếp không qua API
+  const handleDemoLogin = (acc: typeof DEMO_ACCOUNTS[0]) => {
+    // Tạo mock user data dựa trên role của demo account
+    const roleCodeMap: Record<string, string> = {
+      Admin: "ADMIN",
+      FacilityManager: "FACILITY_MANAGER",
+      Teacher: "TEACHER",
+      Student: "STUDENT",
+      User: "USER",
+    };
+
+    const mockUser = {
+      id: Math.floor(Math.random() * 1000) + 1,
+      email: acc.email,
+      name: `${acc.label} (Demo)`,
+      code: roleCodeMap[acc.role] || "USER",
+      role: mapRoleCode(roleCodeMap[acc.role] || "USER"),
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${acc.role}`,
+    };
+
+    // Set local storage
+    localStorage.setItem("access_token", `demo_token_${acc.role.toLowerCase()}`);
+    localStorage.setItem("user", JSON.stringify(mockUser));
+
+    // Dispatch login action
+    dispatch(login(mockUser));
+
+    // Notify and redirect
+    message.success(`Đăng nhập Demo: ${acc.label} thành công!`);
+    router.push("/home");
   };
 
   const handleBypassLogin = () => {
@@ -204,14 +229,14 @@ const Login: React.FC = () => {
             {DEMO_ACCOUNTS.map((acc, index) => (
               <button
                 key={index}
-                onClick={() => handleDemoFill(acc.email, acc.password)}
+                onClick={() => handleDemoLogin(acc)}
                 className={`flex items-center justify-between p-3 rounded-xl border transition-all hover:shadow-md hover:scale-[1.02] ${acc.color} bg-opacity-30 border-opacity-50`}
               >
                 <div className="text-left">
                   <p className="font-bold text-sm">{acc.label}</p>
                   <p className="text-xs opacity-80">{acc.email}</p>
                 </div>
-                <Copy size={16} className="opacity-60" />
+                <CheckCircle size={16} className="opacity-60" />
               </button>
             ))}
 
