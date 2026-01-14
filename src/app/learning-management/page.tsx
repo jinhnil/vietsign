@@ -3,12 +3,11 @@ import DashboardLayout from "@/src/components/layout/authlayout";
 import { LearningManagement } from "@/src/components/learning";
 
 export const metadata: Metadata = {
-  title: "Quản lý học tập - VietSignSchool",
-  description: "Quản lý nội dung học tập VietSignSchool",
-  
+  title: "Quản lý khóa học - VietSignSchool",
+  description: "Quản lý khóa học VietSignSchool",
 };
 
-export default function LearningPage() {
+export default function LearningManagementPage() {
   return (
     <DashboardLayout>
       <LearningManagement />
