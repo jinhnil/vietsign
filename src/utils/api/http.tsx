@@ -38,9 +38,12 @@ http.interceptors.response.use(
     ) {
       const apiToken = localStorage.getItem("access_token");
 
-      // Ignore 401 if using bypass token
-      if (apiToken === "mock_token_bypass_api") {
-        console.warn("API 401 ignored due to bypass mode");
+      // Ignore 401 if using demo/mock token (bypass mode)
+      if (apiToken && (
+        apiToken.startsWith("demo_token_") ||
+        apiToken.startsWith("mock_token_")
+      )) {
+        console.warn("API 401 ignored due to demo/bypass mode");
         return Promise.reject(error);
       }
 

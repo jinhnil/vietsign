@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { redirect } from "next/navigation";
 import { useSelector } from "react-redux";
 import { Header } from "./header-auth/index";
 import { Footer } from "./footer/index";
+import Loader from "@/src/components/UI/Loader";
 
 interface LearnLayoutProps {
   children: React.ReactNode;
@@ -12,12 +13,39 @@ interface LearnLayoutProps {
 
 export const LearnLayout: React.FC<LearnLayoutProps> = ({ children }) => {
   const isAuthenticated = useSelector((state: any) => state.admin.isAuthenticated);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthed, setIsAuthed] = useState(false);
 
-  if (!isAuthenticated) {
-    redirect("/login");
-  }
+  useEffect(() => {
+    // Check localStorage directly for token (support demo mode)
+    const accessToken = localStorage.getItem("access_token");
+    const user = localStorage.getItem("user");
+
+    if (accessToken && user) {
+      setIsAuthed(true);
+      setIsLoading(false);
+    } else if (!isAuthenticated) {
+      // No token and not authenticated, redirect to login
+      redirect("/login");
+    } else {
+      setIsAuthed(true);
+      setIsLoading(false);
+    }
+  }, [isAuthenticated]);
+
+  // Update isAuthed when Redux state changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      setIsAuthed(true);
+      setIsLoading(false);
+    }
+  }, [isAuthenticated]);
 
   const toggleSidebar = () => { };
+
+  if (isLoading || !isAuthed) {
+    return <Loader />;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -36,3 +64,4 @@ export const LearnLayout: React.FC<LearnLayoutProps> = ({ children }) => {
     </div>
   );
 };
+
