@@ -132,8 +132,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         "ADMIN",
         "FACILITY_MANAGER",
         "TEACHER",
-        "STUDENT",
-        "USER",
         "TEST",
       ],
     },
@@ -176,8 +174,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         "ADMIN",
         "FACILITY_MANAGER",
         "TEACHER",
-        "STUDENT",
-        "USER",
         "TEST",
       ],
     },
@@ -341,25 +337,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
               href={item.path}
               className={`
                 flex items-center rounded-xl transition-colors duration-200 group
-                ${
-                  showExpanded
-                    ? "flex-row px-3 py-2.5 gap-4 justify-start" // Expanded: horizontal
-                    : "flex-col justify-center items-center py-3 gap-0 h-20" // Collapsed: vertical, centered
+                ${showExpanded
+                  ? "flex-row px-3 py-2.5 gap-4 justify-start" // Expanded: horizontal
+                  : "flex-col justify-center items-center py-3 gap-0 h-20" // Collapsed: vertical, centered
                 }
-                ${
-                  active
-                    ? "bg-primary-50 text-primary-700"
-                    : "text-gray-700 hover:bg-gray-100"
+                ${active
+                  ? "bg-primary-50 text-primary-700"
+                  : "text-gray-700 hover:bg-gray-100"
                 }
               `}
               title={!showExpanded ? item.label : ""}
             >
               <div
-                className={`${
-                  active
+                className={`${active
                     ? "text-primary-600"
                     : "text-gray-500 group-hover:text-gray-900"
-                } flex-shrink-0`}
+                  } flex-shrink-0`}
               >
                 {item.icon}
               </div>
@@ -367,11 +360,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span
                 className={`
                 transition-all duration-200 leading-tight text-center
-                ${
-                  showExpanded
+                ${showExpanded
                     ? "text-sm font-medium w-auto whitespace-nowrap opacity-100" // Open: show text
                     : "text-xs font-medium opacity-100" // Closed: show text small
-                }
+                  }
               `}
               >
                 {item.label}
