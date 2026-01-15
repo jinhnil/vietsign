@@ -88,7 +88,7 @@ export function ClassesManagement() {
   const getFacilityName = (facilityId: number | null): string => {
     if (facilityId === null) return "Online";
     const facility = getFacilityById(facilityId);
-    return facility?.name || "Không xác định";
+    return facility?.name || "Không xác định";``
   };
 
   const filteredClasses = classes.filter((cls) => {
@@ -113,13 +113,13 @@ export function ClassesManagement() {
 
   // Mở trang chi tiết
   const openDetailPage = (cls: ClassItem) => {
-    router.push(`/classes/${cls.id}`);
+    router.push(`/classes-management/${cls.id}`);
   };
 
   // Mở trang chi tiết ở chế độ sửa
   const openEditPage = (cls: ClassItem, e: React.MouseEvent) => {
     e.stopPropagation();
-    router.push(`/classes/${cls.id}`);
+    router.push(`/classes-management/${cls.id}`);
   };
 
   // Mở modal xác nhận xóa

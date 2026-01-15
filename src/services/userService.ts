@@ -10,6 +10,9 @@ import {
   roleLabels,
   roleColors,
   userStatusConfig,
+  mockUsers,
+  getUserById as getMockUserById,
+  getUsersByRole as getMockUsersByRole,
 } from "@/src/data/usersData";
 
 // Re-export types và constants
@@ -44,7 +47,7 @@ export interface UserListResponse {
 }
 
 /**
- * Lấy tất cả users từ API
+ * Lấy tất cả users từ API, nếu không thành công sử dụng mock data
  */
 export async function fetchAllUsers(query?: any): Promise<UserListResponse> {
   try {
@@ -70,12 +73,40 @@ export async function fetchAllUsers(query?: any): Promise<UserListResponse> {
     };
   } catch (error) {
     console.error("Error fetching users from API", error);
-    return { users: [], total: 0, page: 1, limit: 10, totalPages: 0 };
+    console.warn("Using mock user data as fallback");
+
+    // Use mock data as fallback
+    let filteredUsers = [...mockUsers];
+
+    // Apply filters if provided
+    if (query?.role) {
+      filteredUsers = filteredUsers.filter(u => u.role === query.role);
+    }
+    if (query?.facilityId) {
+      filteredUsers = filteredUsers.filter(u => u.facilityId === query.facilityId);
+    }
+    if (query?.status) {
+      filteredUsers = filteredUsers.filter(u => u.status === query.status);
+    }
+
+    // Pagination
+    const page = query?.page || 1;
+    const limit = query?.limit || 10;
+    const startIndex = (page - 1) * limit;
+    const paginatedUsers = filteredUsers.slice(startIndex, startIndex + limit);
+
+    return {
+      users: paginatedUsers,
+      total: filteredUsers.length,
+      page,
+      limit,
+      totalPages: Math.ceil(filteredUsers.length / limit),
+    };
   }
 }
 
 /**
- * Lấy user theo ID từ API
+ * Lấy user theo ID từ API, nếu không thành công sử dụng mock data
  */
 export async function fetchUserById(id: number): Promise<UserItem | undefined> {
   try {
@@ -86,22 +117,27 @@ export async function fetchUserById(id: number): Promise<UserItem | undefined> {
     return undefined;
   } catch (error) {
     console.error(`Error fetching user ${id} from API`, error);
-    return undefined;
+    console.warn(`Using mock user data for user ${id} as fallback`);
+
+    // Use mock data as fallback
+    return getMockUserById(id);
   }
 }
 
 /**
- * Lấy users theo role
- */
-/**
- * Lấy users theo role
+ *nếu không thành công sử dụng mock data
  */
 export async function fetchUsersByRole(role: string): Promise<UserItem[]> {
-  const result = await fetchAllUsers({ role });
-  // API filters by role if passed in query, but if fetchAllUsers ignores query or simply returns paginated, we filter locally if needed
-  // But strictly, fetchAllUsers({ role }) should return filtered list effectively.
-  // However, result is { users: ... }.
-  return result.users;
+  try {
+    const result = await fetchAllUsers({ role });
+    return result.users;
+  } catch (error) {
+    console.error(`Error fetching users by role ${role}`, error);
+    console.warn(`Using mock user data for role ${role} as fallback`);
+
+    // Use mock data as fallback
+    return getMockUsersByRole(role);
+  }
 }
 
 /**
@@ -115,14 +151,14 @@ export async function fetchUsersByFacility(
 }
 
 /**
- * Lấy danh sách facility managers
+ * Lấy danh sách facility managers, nếu không thành công sử dụng mock data
  */
 export async function fetchFacilityManagers(): Promise<UserItem[]> {
   return fetchUsersByRole("FACILITY_MANAGER");
 }
 
 /**
- * Lấy pending users (chờ phê duyệt)
+ * Lấy danh sách pending users, nếu không thành công sử dụng mock data
  */
 export async function fetchPendingUsers(): Promise<UserItem[]> {
   try {
@@ -133,7 +169,10 @@ export async function fetchPendingUsers(): Promise<UserItem[]> {
     return [];
   } catch (error) {
     console.error("Error fetching pending users:", error);
-    return [];
+    console.warn("Using mock user data as fallback for pending users");
+
+    // Return mock users that are inactive (as mock pending users)
+    return mockUsers.filter(u => u.status === "inactive");
   }
 }
 
