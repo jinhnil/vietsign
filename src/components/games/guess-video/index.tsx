@@ -237,7 +237,7 @@ export const GuessVideoGame: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 min-h-[500px]">
         {/* Left: Video */}
         <div className="bg-black rounded-3xl overflow-hidden shadow-2xl relative order-first ring-4 ring-gray-900/5 aspect-video lg:aspect-auto">
-          {renderVideo(currentQ.targetItem.videoUrl)}
+          {renderVideo(currentQ.targetItem.videoUrl || "")}
           <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-3xl pointer-events-none"></div>
         </div>
 

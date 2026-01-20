@@ -1,233 +1,220 @@
-import { ReactNode } from "react";
+// Games data - Simplified structure for managing game levels and questions
+
+export interface GameAnswerOption {
+  id: string | number;
+  text: string;
+  isCorrect: boolean;
+}
+
+export interface GameQuestion {
+  id: number;
+  content: string;
+  videoUrl?: string;
+  imageUrl?: string;
+  options?: GameAnswerOption[];
+  correctAnswer?: string; // Cho game điền từ/nhập liệu
+  timeLimit?: number; // Giới hạn thời gian (giây)
+  points?: number;
+}
+
+export interface GameLevel {
+  level: number;
+  difficulty: "Dễ" | "Trung bình" | "Khó";
+  detail: string;
+  requiredScore?: number; // Điểm cần để qua màn
+  questions: GameQuestion[];
+}
 
 export interface GameItem {
   id: number;
   name: string;
   description: string;
-  level: string;
-  colorClass: string;
-  players?: number;
-  rating?: number;
-  category?: string;
-  isActive: boolean; // Trạng thái bật/tắt game
+  levels: GameLevel[];
+  icongame: string;
+  isActive: boolean;
 }
 
-export interface GameSection {
-  title: string;
-  iconName: string;
-  games: GameItem[];
-}
-
-export const gameSections: GameSection[] = [
+// Mock question data for games
+const mockGameQuestions: GameQuestion[] = [
+  // Questions for Game 1, Level 1
   {
-    title: "Trò chơi phổ biến",
-    iconName: "Flame",
-    games: [
-      {
-        id: 1,
-        name: "Đoán Ký Hiệu",
-        description: "Xem video và chọn từ vựng tương ứng.",
-        colorClass: "bg-orange-500",
-        level: "Dễ",
-        players: 15420,
-        rating: 4.8,
-        category: "Từ vựng",
-        isActive: true,
-      },
-      {
-        id: 2,
-        name: "Vua Tốc Độ",
-        description: "Thử thách phản xạ với chuỗi ký hiệu.",
-        colorClass: "bg-blue-500",
-        level: "Khó",
-        players: 8930,
-        rating: 4.6,
-        category: "Phản xạ",
-        isActive: true,
-      },
-      {
-        id: 3,
-        name: "Ký Hiệu Hàng Ngày",
-        description: "Thử thách mới mỗi ngày.",
-        colorClass: "bg-yellow-500",
-        level: "Dễ",
-        players: 25680,
-        rating: 4.9,
-        category: "Hàng ngày",
-        isActive: true,
-      },
+    id: 1,
+    content: "Ký hiệu này có nghĩa là gì?",
+    videoUrl:
+      "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    points: 100,
+    timeLimit: 15,
+    options: [
+      { id: "a", text: "Xin chào", isCorrect: true },
+      { id: "b", text: "Tạm biệt", isCorrect: false },
+      { id: "c", text: "Cảm ơn", isCorrect: false },
+      { id: "d", text: "Xin lỗi", isCorrect: false },
     ],
   },
   {
-    title: "Rèn luyện trí não",
-    iconName: "Brain",
-    games: [
-      {
-        id: 4,
-        name: "Xếp Hình Ký Hiệu",
-        description: "Ghép các mảnh ghép tạo thành ký hiệu.",
-        colorClass: "bg-purple-500",
-        level: "Trung bình",
-        players: 7820,
-        rating: 4.5,
-        category: "Puzzle",
-        isActive: true,
-      },
-      {
-        id: 5,
-        name: "Nhớ Cặp Đôi",
-        description: "Tìm các cặp hình ảnh và ký hiệu.",
-        colorClass: "bg-green-500",
-        level: "Dễ",
-        players: 11250,
-        rating: 4.7,
-        category: "Trí nhớ",
-        isActive: true,
-      },
+    id: 2,
+    content: "Ký hiệu này có nghĩa là gì?",
+    videoUrl:
+      "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    points: 100,
+    timeLimit: 15,
+    options: [
+      { id: "a", text: "Ăn cơm", isCorrect: true },
+      { id: "b", text: "Uống nước", isCorrect: false },
+      { id: "c", text: "Ngủ", isCorrect: false },
+      { id: "d", text: "Đi", isCorrect: false },
     ],
   },
   {
-    title: "Học qua chơi",
-    iconName: "BookOpen",
-    games: [
-      {
-        id: 6,
-        name: "Câu Chuyện Ký Hiệu",
-        description: "Học ký hiệu qua các câu chuyện thú vị.",
-        colorClass: "bg-teal-500",
-        level: "Dễ",
-        players: 18950,
-        rating: 4.8,
-        category: "Câu chuyện",
-        isActive: true,
-      },
-      {
-        id: 7,
-        name: "Đố Vui Ký Hiệu",
-        description: "Trả lời các câu đố về ký hiệu.",
-        colorClass: "bg-amber-500",
-        level: "Dễ",
-        players: 14320,
-        rating: 4.7,
-        category: "Đố vui",
-        isActive: true,
-      },
-    ],
-  },
-  {
-    title: "Trò chơi cho trẻ em",
-    iconName: "Sparkles",
-    games: [
-      {
-        id: 8,
-        name: "Bé Học Ký Hiệu",
-        description: "Trò chơi đơn giản cho bé 4-6 tuổi.",
-        colorClass: "bg-lime-500",
-        level: "Rất dễ",
-        players: 21450,
-        rating: 4.9,
-        category: "Trẻ em",
-        isActive: true,
-      },
-      {
-        id: 9,
-        name: "Động Vật Ký Hiệu",
-        description: "Học ký hiệu các con vật qua trò chơi.",
-        colorClass: "bg-orange-400",
-        level: "Rất dễ",
-        players: 19320,
-        rating: 4.9,
-        category: "Động vật",
-        isActive: true,
-      },
-    ],
-  },
-  {
-    title: "Sáng tạo & Kỹ năng",
-    iconName: "Zap",
-    games: [
-      {
-        id: 10,
-        name: "Ngón Tay Thần Tốc",
-        description: "Luyện tập đánh vần ngón tay tốc độ cao.",
-        colorClass: "bg-red-500",
-        level: "Khó",
-        players: 5600,
-        rating: 4.5,
-        category: "Chữ cái",
-        isActive: true,
-      },
-      {
-        id: 11,
-        name: "Điền Từ Còn Thiếu",
-        description: "Chọn ký hiệu phù hợp để hoàn thành câu.",
-        colorClass: "bg-indigo-500",
-        level: "Trung bình",
-        players: 12300,
-        rating: 4.8,
-        category: "Ngữ pháp",
-        isActive: true,
-      },
-      {
-        id: 12,
-        name: "Âm Nhạc Ký Hiệu",
-        description: "Học bài hát yêu thích qua ngôn ngữ ký hiệu.",
-        colorClass: "bg-pink-500",
-        level: "Dễ",
-        players: 15600,
-        rating: 4.9,
-        category: "Âm nhạc",
-        isActive: true,
-      },
+    id: 3,
+    content: "Ký hiệu này có nghĩa là gì?",
+    videoUrl:
+      "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+    points: 100,
+    timeLimit: 15,
+    options: [
+      { id: "a", text: "Yêu", isCorrect: false },
+      { id: "b", text: "Thích", isCorrect: false },
+      { id: "c", text: "Cảm ơn", isCorrect: true },
+      { id: "d", text: "Ghét", isCorrect: false },
     ],
   },
 ];
 
-export const levelConfig: Record<string, { color: string }> = {
-  "Rất dễ": { color: "bg-lime-100 text-lime-700" },
-  Dễ: { color: "bg-green-100 text-green-700" },
-  "Trung bình": { color: "bg-yellow-100 text-yellow-700" },
-  Khó: { color: "bg-orange-100 text-orange-700" },
-  "Rất khó": { color: "bg-red-100 text-red-700" },
-};
-
-export const gameCategories = [
-  { id: "all", label: "Tất cả" },
-  { id: "vocabulary", label: "Từ vựng" },
-  { id: "memory", label: "Trí nhớ" },
-  { id: "puzzle", label: "Puzzle" },
-  { id: "kids", label: "Trẻ em" },
-  { id: "daily", label: "Hàng ngày" },
+export const gamesList: GameItem[] = [
+  {
+    id: 1,
+    name: "Đoán từ qua video",
+    description:
+      "Quan sát video chuyên gia thực hiện thủ ngữ và chọn từ tương ứng. Giúp nhận diện các ký hiệu từ vựng thông dụng trong đời sống.",
+    icongame: "/assets/games/guess-video.png",
+    isActive: true,
+    levels: [
+      {
+        level: 1,
+        difficulty: "Dễ",
+        detail:
+          "Các từ đơn giản (xin chào, cảm ơn, ăn cơm), tốc độ ký hiệu chậm.",
+        requiredScore: 300,
+        questions: mockGameQuestions.slice(0, 3),
+      },
+      {
+        level: 2,
+        difficulty: "Trung bình",
+        detail: "Các từ phức tạp hơn về chủ đề trường học, công việc.",
+        requiredScore: 400,
+        questions: [],
+      },
+      {
+        level: 3,
+        difficulty: "Khó",
+        detail:
+          "Các câu ngắn hoặc từ ghép, chuyên gia thực hiện ở tốc độ giao tiếp thực tế.",
+        requiredScore: 500,
+        questions: [],
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: "Lật bài trí nhớ",
+    description:
+      "Tìm cặp bài trùng khớp giữa hình ảnh minh họa và ký hiệu thủ ngữ. Rèn luyện khả năng ghi nhớ hình ảnh và ý nghĩa từ vựng.",
+    icongame: "/assets/games/memory-match.png",
+    isActive: true,
+    levels: [
+      {
+        level: 1,
+        difficulty: "Dễ",
+        detail: "Lưới 2x3 (3 cặp), không giới hạn thời gian.",
+        requiredScore: 300,
+        questions: [],
+      },
+      {
+        level: 2,
+        difficulty: "Trung bình",
+        detail: "Lưới 3x4 (6 cặp), giới hạn 60 giây.",
+        requiredScore: 400,
+        questions: [],
+      },
+      {
+        level: 3,
+        difficulty: "Khó",
+        detail:
+          "Lưới 4x5 (10 cặp), giới hạn thời gian và có các thẻ gây nhiễu.",
+        requiredScore: 500,
+        questions: [],
+      },
+    ],
+  },
+  {
+    id: 3,
+    name: "Thử thách Đánh vần",
+    description:
+      "Hệ thống hiển thị chuỗi hình ảnh các chữ cái ngón tay tạo thành một từ hoàn chỉnh. Người chơi nhìn hình và nhập lại từ đó bằng bàn phím.",
+    icongame: "/assets/games/spelling-bee.png",
+    isActive: true,
+    levels: [
+      {
+        level: 1,
+        difficulty: "Dễ",
+        detail:
+          "Từ có 2-3 chữ cái (VÍ, XE, CÁ), các hình ảnh hiện cùng một lúc.",
+        requiredScore: 300,
+        questions: [],
+      },
+      {
+        level: 2,
+        difficulty: "Trung bình",
+        detail:
+          "Từ có 4-5 chữ cái (SÁCH, BÀN), hình ảnh hiện lần lượt từng chữ.",
+        requiredScore: 400,
+        questions: [],
+      },
+      {
+        level: 3,
+        difficulty: "Khó",
+        detail:
+          "Từ dài trên 6 chữ cái (TRƯỜNG, THỦ NGỮ), tốc độ chuyển hình ảnh nhanh.",
+        requiredScore: 500,
+        questions: [],
+      },
+    ],
+  },
 ];
 
 // Helper functions
 export function getGameById(id: number): GameItem | undefined {
-  return gameSections.flatMap((s) => s.games).find((g) => g.id === id);
+  return gamesList.find((g) => g.id === id);
 }
 
 export function getAllGames(): GameItem[] {
-  return gameSections.flatMap((s) => s.games);
+  return gamesList;
 }
 
-import { removeVietnameseTones } from "@/src/utils/text";
+export function getActiveGames(): GameItem[] {
+  return gamesList.filter((g) => g.isActive);
+}
 
-export function getGamesByCategory(category: string): GameItem[] {
-  return gameSections
-    .flatMap((s) => s.games)
-    .filter((g) =>
-      removeVietnameseTones(g.category || "").includes(
-        removeVietnameseTones(category)
-      )
-    );
+export function getGameLevel(
+  gameId: number,
+  level: number
+): GameLevel | undefined {
+  const game = getGameById(gameId);
+  if (!game) return undefined;
+  return game.levels.find((l) => l.level === level);
 }
 
 export function getGamesStats() {
-  const allGames = getAllGames();
   return {
-    totalGames: allGames.length,
-    totalPlayers: allGames.reduce((sum, g) => sum + (g.players || 0), 0),
-    avgRating:
-      allGames.reduce((sum, g) => sum + (g.rating || 0), 0) / allGames.length,
-    sectionsCount: gameSections.length,
+    totalGames: gamesList.length,
+    totalLevels: gamesList.reduce((sum, g) => sum + g.levels.length, 0),
+    activeGames: gamesList.filter((g) => g.isActive).length,
   };
 }
+
+export const difficultyConfig: Record<string, { color: string }> = {
+  Dễ: { color: "bg-green-100 text-green-700" },
+  "Trung bình": { color: "bg-yellow-100 text-yellow-700" },
+  Khó: { color: "bg-red-100 text-red-700" },
+};

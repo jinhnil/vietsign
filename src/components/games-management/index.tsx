@@ -5,40 +5,35 @@ import {
   Search,
   Edit,
   Trash2,
-  Users,
-  Star,
-  Filter,
   ShieldAlert,
-  CheckCircle2,
-  XCircle,
+  ChevronRight,
+  Target,
+  Layers,
 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 import {
-  gameSections,
-  levelConfig,
-  gameCategories,
+  gamesList,
+  difficultyConfig,
   GameItem,
-} from "@/src/data";
+  getAllGames,
+  getGamesStats,
+} from "@/src/data/gamesData";
 import { Pagination, usePagination } from "@/src/components/common/Pagination";
 import { ConfirmModal } from "@/src/components/common/ConfirmModal";
+import { removeVietnameseTones } from "@/src/utils/text";
 
 const ITEMS_PER_PAGE = 8;
-
-import { removeVietnameseTones } from "@/src/utils/text";
 
 export function GamesManagementComponent() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterCategory, setFilterCategory] = useState("all");
   const { user } = useSelector((state: RootState) => state.admin);
 
-  // State để quản lý dữ liệu (mock)
-  const [allGames, setAllGames] = useState<GameItem[]>(
-    gameSections.flatMap((section) => section.games)
-  );
+  // State để quản lý dữ liệu
+  const [allGames, setAllGames] = useState<GameItem[]>(gamesList);
 
   // State cho modal xác nhận xóa
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -50,10 +45,7 @@ export function GamesManagementComponent() {
     const matchesSearch =
       removeVietnameseTones(game.name).includes(normalizedQuery) ||
       removeVietnameseTones(game.description).includes(normalizedQuery);
-    const matchesCategory =
-      filterCategory === "all" ||
-      game.category?.toLowerCase().includes(filterCategory.toLowerCase());
-    return matchesSearch && matchesCategory;
+    return matchesSearch;
   });
 
   // Use pagination
@@ -66,14 +58,9 @@ export function GamesManagementComponent() {
   } = usePagination(filteredGames, ITEMS_PER_PAGE);
 
   // Stats
-  const totalPlayers = allGames.reduce((sum, g) => sum + (g.players || 0), 0);
-  const avgRating =
-    allGames.reduce((sum, g) => sum + (g.rating || 0), 0) /
-    (allGames.length || 1);
+  const stats = getGamesStats();
 
   // Check Admin permission
-  // Check Admin permission
-  // Handle inconsistent role data structure (string vs object vs code)
   const userRoleStr =
     user?.code ||
     (typeof user?.role === "string" ? user.role : user?.role?.role) ||
@@ -83,14 +70,8 @@ export function GamesManagementComponent() {
     userRoleStr.toUpperCase() === "ADMIN" ||
     userRoleStr.toUpperCase() === "TEST";
 
-  // Mở trang chi tiết
+  // Mở trang chi tiết (quản lý câu hỏi)
   const openDetailPage = (game: GameItem) => {
-    router.push(`/games-management/${game.id}`);
-  };
-
-  // Mở trang chi tiết ở chế độ sửa
-  const openEditPage = (game: GameItem, e: React.MouseEvent) => {
-    e.stopPropagation();
     router.push(`/games-management/${game.id}`);
   };
 
@@ -141,10 +122,10 @@ export function GamesManagementComponent() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
             <Gamepad2 className="w-8 h-8 text-primary-600" />
-            Quản lý trò chơi ({allGames.length})
+            Quản lý trò chơi
           </h1>
           <p className="text-gray-600 mt-1">
-            Quản lý các trò chơi học tập và giải trí
+            Quản lý nội dung câu hỏi và cấp độ cho các game học tập
           </p>
         </div>
       </div>
@@ -152,141 +133,131 @@ export function GamesManagementComponent() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <Gamepad2 className="w-8 h-8 text-primary-600 mb-2" />
           <p className="text-sm text-gray-500">Tổng trò chơi</p>
-          <p className="text-2xl font-bold text-gray-900">{allGames.length}</p>
+          <p className="text-2xl font-bold text-gray-900">{stats.totalGames}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <p className="text-sm text-gray-500">Đang hoạt động</p>
+          <Layers className="w-8 h-8 text-green-600 mb-2" />
+          <p className="text-sm text-gray-500">Tổng cấp độ</p>
           <p className="text-2xl font-bold text-green-600">
-            {allGames.filter((g) => g.isActive).length}
+            {stats.totalLevels}
           </p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <p className="text-sm text-gray-500">Tổng người chơi</p>
-          <p className="text-2xl font-bold text-primary-600">
-            {totalPlayers.toLocaleString()}
+          <Target className="w-8 h-8 text-blue-600 mb-2" />
+          <p className="text-sm text-gray-500">Đang hoạt động</p>
+          <p className="text-2xl font-bold text-blue-600">
+            {stats.activeGames}
           </p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <p className="text-sm text-gray-500">Đánh giá TB</p>
-          <p className="text-2xl font-bold text-amber-600 flex items-center gap-1">
-            <Star size={20} className="fill-amber-400 text-amber-400" />
-            {avgRating.toFixed(1)}
+          <ChevronRight className="w-8 h-8 text-purple-600 mb-2" />
+          <p className="text-sm text-gray-500">Câu hỏi</p>
+          <p className="text-2xl font-bold text-purple-600">
+            {allGames.reduce(
+              (sum, g) =>
+                sum +
+                g.levels.reduce(
+                  (levelSum, l) => levelSum + l.questions.length,
+                  0
+                ),
+              0
+            )}
           </p>
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Search */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-            <input
-              type="text"
-              placeholder="Tìm kiếm trò chơi..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Filter size={20} className="text-gray-400" />
-            <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-4 py-2.5 border border-gray-200 rounded-xl outline-none bg-white min-w-[160px] transition-all focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="all">Tất cả thể loại</option>
-              {gameCategories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.label}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="relative">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            size={20}
+          />
+          <input
+            type="text"
+            placeholder="Tìm kiếm trò chơi..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+          />
         </div>
       </div>
 
-      {/* Games List with Pagination */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Games List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {paddedItems.map((game, index) =>
           game ? (
             <div
               key={game.id}
               className={`bg-white rounded-2xl shadow-sm border ${
                 !game.isActive
-                  ? "opacity-75 grayscale-[0.5] border-dashed"
+                  ? "opacity-75 border-dashed border-gray-300"
                   : "border-gray-100"
               } overflow-hidden hover:shadow-md transition-all group cursor-pointer`}
               onClick={() => openDetailPage(game)}
             >
-              <div
-                className={`aspect-video ${
-                  game.isActive ? game.colorClass : "bg-gray-400"
-                } flex items-center justify-center relative`}
-              >
-                <Gamepad2 className="w-12 h-12 text-white/50 group-hover:scale-110 transition-transform" />
-                <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
-                  <span
-                    className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-white/90 shadow-sm ${
-                      levelConfig[game.level]?.color.replace("bg-", "text-") ||
-                      "text-gray-600"
-                    }`}
-                  >
-                    {game.level}
-                  </span>
-                  {!game.isActive && (
-                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-red-500 text-white shadow-sm">
+              {/* Game Header */}
+              <div className="h-32 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center relative">
+                <Gamepad2 className="w-16 h-16 text-white/50" />
+                {!game.isActive && (
+                  <div className="absolute top-3 right-3">
+                    <span className="px-2 py-1 text-xs font-bold uppercase rounded bg-red-500 text-white shadow-sm">
                       Vô hiệu hóa
                     </span>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-1">
-                  <h3
-                    className={`font-semibold text-sm transition-colors uppercase ${
-                      game.isActive
-                        ? "text-gray-900 group-hover:text-primary-600"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    {game.name}
-                  </h3>
-                </div>
-                <p className="text-[11px] text-gray-500 mb-3 line-clamp-2 min-h-[32px]">
+
+              {/* Game Info */}
+              <div className="p-6">
+                <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">
+                  {game.name}
+                </h3>
+                <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                   {game.description}
                 </p>
 
-                <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
-                  <div className="flex items-center gap-3 text-[11px] text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <Users size={12} className="text-gray-400" />
-                      {(game.players || 0).toLocaleString()}
+                {/* Levels */}
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    {game.levels.length} Cấp độ
+                  </p>
+                  {game.levels.map((level) => (
+                    <div
+                      key={level.level}
+                      className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-gray-700">
+                          Màn {level.level}
+                        </span>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full ${
+                            difficultyConfig[level.difficulty]?.color ||
+                            "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {level.difficulty}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {level.questions.length} câu hỏi
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Star
-                        size={12}
-                        className="text-amber-400 fill-amber-400"
-                      />
-                      {game.rating}
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">
-                    {game.category}
-                  </span>
+                  ))}
                 </div>
               </div>
+
+              {/* Actions */}
               <div
-                className="px-4 py-2.5 bg-gray-50 border-t border-gray-100 flex items-center justify-between"
+                className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center gap-2">
                   <span
-                    className={`text-[11px] font-medium ${
+                    className={`text-xs font-medium ${
                       game.isActive ? "text-green-600" : "text-gray-400"
                     }`}
                   >
@@ -307,18 +278,18 @@ export function GamesManagementComponent() {
                 </div>
                 <div className="flex gap-1">
                   <button
-                    className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                    onClick={(e) => openEditPage(game, e)}
-                    title="Chỉnh sửa"
+                    className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                    onClick={() => openDetailPage(game)}
+                    title="Quản lý câu hỏi"
                   >
-                    <Edit size={14} />
+                    <Edit size={16} />
                   </button>
                   <button
-                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     onClick={(e) => openDeleteModal(game, e)}
                     title="Xóa"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </div>
@@ -328,10 +299,7 @@ export function GamesManagementComponent() {
               key={`empty-${index}`}
               className="opacity-0 pointer-events-none"
               aria-hidden="true"
-            >
-              <div className="aspect-video" />
-              <div className="p-4 h-[120px]" />
-            </div>
+            />
           )
         )}
       </div>

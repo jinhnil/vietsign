@@ -16,6 +16,8 @@ import { fetchUsersByRole } from "@/src/services/userService";
 import { mockOrganizations } from "@/src/data/organizationsData";
 import Link from "next/link";
 
+import { ClassRegistrationModal } from "./ClassRegistrationModal";
+
 // Helper to get facility name
 const getFacilityName = (facilityId: number | null) => {
   if (facilityId === null) return "Online";
@@ -29,6 +31,7 @@ export const Study: React.FC = () => {
   const [registeredClasses, setRegisteredClasses] = useState<ClassItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [teachersMap, setTeachersMap] = useState<Record<number, string>>({});
+  const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -68,6 +71,14 @@ export const Study: React.FC = () => {
     return teachersMap[teacherId] || `GV ID: ${teacherId}`;
   };
 
+  const handleRegisterSuccess = (newClass: ClassItem) => {
+    // Check if class already exists
+    if (!registeredClasses.some((c) => c.id === newClass.id)) {
+      setRegisteredClasses([...registeredClasses, newClass]);
+    }
+    setIsRegistrationModalOpen(false);
+  };
+
   return (
     <div className="animate-in fade-in duration-500 space-y-8">
       {/* Header */}
@@ -82,13 +93,13 @@ export const Study: React.FC = () => {
             lớp)
           </p>
         </div>
-        <Link
-          href="/class-registration"
+        <button
+          onClick={() => setIsRegistrationModalOpen(true)}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm"
         >
           Đăng ký lớp mới
           <ChevronRight size={18} />
-        </Link>
+        </button>
       </div>
 
       {/* Class List */}
@@ -137,10 +148,13 @@ export const Study: React.FC = () => {
                 </div>
 
                 <div className="pt-4 border-t border-gray-100">
-                  <button className="w-full py-2.5 bg-gray-50 text-primary-600 font-medium rounded-xl hover:bg-primary-50 transition-colors flex items-center justify-center gap-2 group-hover:bg-primary-600 group-hover:text-white">
+                  <Link
+                    href={`/study/${cls.id}`}
+                    className="w-full py-2.5 bg-gray-50 text-primary-600 font-medium rounded-xl hover:bg-primary-50 transition-colors flex items-center justify-center gap-2 group-hover:bg-primary-600 group-hover:text-white"
+                  >
                     Vào lớp học
                     <ChevronRight size={16} />
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -154,15 +168,22 @@ export const Study: React.FC = () => {
             <p className="text-gray-500 mb-6">
               Bạn chưa đăng ký lớp học nào. Hãy đăng ký ngay!
             </p>
-            <Link
-              href="/class-registration"
+            <button
+              onClick={() => setIsRegistrationModalOpen(true)}
               className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium"
             >
               Đăng ký lớp học
-            </Link>
+            </button>
           </div>
         )}
       </div>
+
+      {/* Registration Modal */}
+      <ClassRegistrationModal
+        isOpen={isRegistrationModalOpen}
+        onClose={() => setIsRegistrationModalOpen(false)}
+        onRegister={handleRegisterSuccess}
+      />
     </div>
   );
 };

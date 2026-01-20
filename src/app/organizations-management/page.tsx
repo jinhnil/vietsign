@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import DashboardLayout from "@/src/components/layout/authlayout";
-import { OrganizationsManagement } from "@/src/components/organizations";
+import { OrganizationsManagement } from "@/src/components/organizations-management";
 
 export const metadata: Metadata = {
   title: "Quản lý tổ chức - VietSignSchool",

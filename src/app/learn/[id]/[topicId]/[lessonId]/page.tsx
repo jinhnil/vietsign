@@ -1,14 +1,13 @@
-import React from "react";
 import { Metadata } from "next";
 import DashboardLayout from "@/src/components/layout/authlayout";
 import { LessonDetail } from "@/src/components/learn/lesson";
 
 export const metadata: Metadata = {
-  title: "Bài học chi tiết - VietSignSchool",
-  description: "Vietnamese Sign Language Lesson",
+  title: "Chi tiết bài học - VietSignSchool",
+  description: "Nội dung bài học tự học ngôn ngữ ký hiệu",
 };
 
-export default function LessonPage() {
+export default function LearnLessonPage() {
   return (
     <DashboardLayout>
       <LessonDetail />

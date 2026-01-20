@@ -122,20 +122,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: <Building size={22} />,
       label: "Quản lý tổ chức",
       path: "/organizations-management",
-      allowedRoles: ["ADMIN", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEST"],
     },
     {
       icon: <GraduationCap size={22} />,
       label: "Quản lý học tập",
       path: "/learning-management",
-      allowedRoles: [
-        "ADMIN",
-        "FACILITY_MANAGER",
-        "TEACHER",
-        "STUDENT",
-        "USER",
-        "TEST",
-      ],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "TEST"],
     },
     {
       icon: <BookOpenCheck size={22} />,
@@ -160,7 +153,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: <Wrench size={22} />,
       label: "Quản lý công cụ",
       path: "/tools",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEST"],
+      allowedRoles: ["ADMIN", "TEST"],
     },
     {
       icon: <ClipboardCheck size={22} />,
@@ -172,26 +165,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: <BarChart3 size={22} />,
       label: "Thống kê",
       path: "/statistics",
-      allowedRoles: [
-        "ADMIN",
-        "FACILITY_MANAGER",
-        "TEACHER",
-        "STUDENT",
-        "USER",
-        "TEST",
-      ],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "TEST"],
     },
     {
       icon: <Library size={22} />,
       label: "Quản lý từ điển",
       path: "/dictionary-management",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEST"],
+      allowedRoles: ["ADMIN", "TEST"],
     },
     {
       icon: <Gamepad2 size={22} />,
       label: "Quản lý trò chơi",
       path: "/games-management",
-      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEST"],
+      allowedRoles: ["ADMIN", "TEST"],
     },
     {
       icon: <HelpCircle size={22} />,
@@ -248,7 +234,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: <PenLine size={22} />,
       label: "Chấm điểm",
       path: "/grading",
-      allowedRoles: ["TEACHER", "TEST"],
+      allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEACHER", "TEST"],
     },
 
     // === CHỈ STUDENT & USER ===
@@ -256,19 +242,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: <FileEdit size={22} />,
       label: "Làm bài kiểm tra",
       path: "/take-exam",
-      allowedRoles: ["STUDENT", "USER", "TEST"],
+      allowedRoles: ["STUDENT", "TEST"],
     },
     {
       icon: <BookOpenCheck size={22} />,
-      label: "Lớp học",
+      label: "Lớp học của tôi",
       path: "/study",
-      allowedRoles: ["STUDENT", "USER", "TEST"],
-    },
-    {
-      icon: <UserPlus size={22} />,
-      label: "Đăng ký lớp học",
-      path: "/class-registration",
-      allowedRoles: ["STUDENT", "USER", "TEST"],
+      allowedRoles: ["STUDENT", "TEST"],
     },
 
     // === TRANG BỔ SUNG ===

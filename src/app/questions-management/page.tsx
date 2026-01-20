@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import DashboardLayout from "@/src/components/layout/authlayout";
-import { QuestionsManagement } from "@/src/components/questions";
+import { QuestionsManagement } from "@/src/components/questions-management";
 
 export const metadata: Metadata = {
   title: "Quản lý câu hỏi - VietSignSchool",

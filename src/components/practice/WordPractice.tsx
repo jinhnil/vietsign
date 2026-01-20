@@ -44,7 +44,7 @@ export function WordPractice() {
         word: d.word,
         description: `Ký hiệu "${d.word}" - thuộc danh mục ${d.category}.`,
         category: d.category,
-        videoUrl: d.videoUrl,
+        videoUrl: d.videoUrl!, // Non-null assertion since we filter above
         instructions: `Thực hiện ký hiệu cho từ "${d.word}"`,
         source: "dictionary" as const,
         views: d.views,

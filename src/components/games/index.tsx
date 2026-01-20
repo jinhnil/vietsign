@@ -1,39 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import {
-  Gamepad2,
-  Trophy,
-  Flame,
-  Zap,
-  Brain,
-  BookOpen,
-  Sparkles,
-  Play,
-  Users,
-  Star,
-} from "lucide-react";
-import {
-  gameSections as mockSections,
-  levelConfig,
-  GameItem,
-  GameSection,
-} from "@/src/data/gamesData";
-import { fetchAllGames } from "@/src/services/gameService";
+import { Gamepad2, Play } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { gamesList, GameItem, getActiveGames } from "@/src/data/gamesData";
 
-// Icon mapping
-const iconMap: Record<
-  string,
-  React.ComponentType<{ className?: string; size?: number }>
-> = {
-  Flame,
-  Brain,
-  BookOpen,
-  Sparkles,
-};
-
-export const Games: React.FC = () => {
-  const [sections, setSections] = useState<GameSection[]>(mockSections);
+export function Games() {
+  const router = useRouter();
   const [games, setGames] = useState<GameItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -41,28 +14,12 @@ export const Games: React.FC = () => {
     const loadGames = async () => {
       setIsLoading(true);
       try {
-        const fetchedGames = await fetchAllGames();
-        setGames(fetchedGames);
-
-        // Update sections with fetched games (retaining structure)
-        // This assumes fetchedGames contains all games.
-        // Ideally backend should return structure or we map by category/id
-
-        // For now, let's map back to sections based on IDs or Categories if possible
-        // Or simply replace the games list in existing sections
-
-        const updatedSections = mockSections.map((section) => ({
-          ...section,
-          games: section.games
-            .map((staticGame) => {
-              const found = fetchedGames.find((g) => g.id === staticGame.id);
-              return found || staticGame; // Update if found, else keep static (or filter out)
-            })
-            .filter((g) => g.isActive), // Ensure client side active check
-        }));
-        setSections(updatedSections);
+        // Lấy danh sách game đang active
+        const activeGames = getActiveGames();
+        setGames(activeGames);
       } catch (error) {
         console.error("Failed to load games", error);
+        setGames(gamesList);
       } finally {
         setIsLoading(false);
       }
@@ -70,174 +27,107 @@ export const Games: React.FC = () => {
     loadGames();
   }, []);
 
-  const stats = {
-    totalGames: games.length,
-    totalPlayers: games.reduce((sum, g) => sum + (g.players || 0), 0),
-    avgRating: games.length
-      ? games.reduce((sum, g) => sum + (g.rating || 0), 0) / games.length
-      : 0,
-    sectionsCount: sections.length,
+  const handleGameClick = (gameId: number) => {
+    router.push(`/games/${gameId}`);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Đang tải game...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Trung tâm trò chơi
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <Gamepad2 className="w-8 h-8 text-primary-600" />
+            Trò chơi học tập
           </h1>
-          <p className="text-gray-500">
-            Vừa học vừa chơi với {stats.totalGames} thử thách thú vị.
+          <p className="text-gray-600 mt-1">
+            Học ngôn ngữ ký hiệu qua các trò chơi thú vị
           </p>
-        </div>
-        <div className="flex gap-3">
-          <div className="px-4 py-2 bg-yellow-50 text-yellow-700 rounded-lg flex items-center gap-2 font-medium">
-            <Trophy size={18} />
-            <span>Hạng: Đồng</span>
-          </div>
-          <div className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg flex items-center gap-2 font-medium">
-            <Zap size={18} />
-            <span>Điểm: 1250</span>
-          </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
-          <Gamepad2 className="w-8 h-8 text-primary-600 mx-auto mb-2" />
-          <p className="text-2xl font-bold text-gray-900">{stats.totalGames}</p>
-          <p className="text-sm text-gray-500">Trò chơi</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
-          <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
-          <p className="text-2xl font-bold text-gray-900">
-            {(stats.totalPlayers / 1000).toFixed(0)}K
-          </p>
-          <p className="text-sm text-gray-500">Người chơi</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
-          <Star className="w-8 h-8 text-amber-500 mx-auto mb-2" />
-          <p className="text-2xl font-bold text-gray-900">
-            {stats.avgRating.toFixed(1)}
-          </p>
-          <p className="text-sm text-gray-500">Đánh giá</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
-          <Trophy className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-          <p className="text-2xl font-bold text-gray-900">
-            {stats.sectionsCount}
-          </p>
-          <p className="text-sm text-gray-500">Danh mục</p>
-        </div>
-      </div>
-
-      {/* Game Sections */}
-      {sections.map((section, idx) => {
-        const IconComponent = iconMap[section.iconName];
-        const activeGames = section.games.filter((g) => g.isActive);
-
-        if (activeGames.length === 0) return null;
-
-        return (
-          <div key={idx}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-white border border-gray-100 rounded-lg shadow-sm">
-                {IconComponent && (
-                  <IconComponent className="text-primary-600" size={24} />
-                )}
-              </div>
-              <h2 className="text-xl font-bold text-gray-900">
-                {section.title}
-              </h2>
-              <span className="text-sm text-gray-500">
-                ({activeGames.length})
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {activeGames.map((game) => (
-                <div
-                  key={game.id}
-                  onClick={() => {
-                    const routes: Record<number, string> = {
-                      1: "/games/guess-video",
-                      2: "/games/speed-king",
-                      3: "/games/daily-challenge",
-                      4: "/games/puzzle",
-                      5: "/games/memory-match",
-                      6: "/games/story-sign",
-                      7: "/games/quiz",
-                      8: "/games/kids-learning",
-                      9: "/games/animal-signs",
-                      10: "/games/fingerspelling-rush",
-                      11: "/games/fill-blank",
-                      12: "/games/music-sign",
-                    };
-                    const route = routes[game.id];
-                    if (route) {
-                      // Note: In a real app we would use router.push(route)
-                      window.location.href = route;
-                    }
-                  }}
-                  className="group bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer hover:-translate-y-1"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div
-                      className={`w-12 h-12 rounded-xl ${game.colorClass} flex items-center justify-center shadow-sm`}
-                    >
-                      <Gamepad2 size={24} className="text-white" />
-                    </div>
-                    <span
-                      className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                        levelConfig[game.level]?.color ||
-                        "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {game.level}
-                    </span>
-                  </div>
-
-                  <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors uppercase">
-                    {game.name}
-                  </h3>
-                  <p className="text-gray-500 text-sm mb-3 line-clamp-2">
-                    {game.description}
-                  </p>
-
-                  {game.category && (
-                    <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-700 mb-3">
-                      {game.category}
-                    </span>
-                  )}
-
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                    <div className="flex items-center gap-1">
-                      <Users size={14} />
-                      {(game.players || 0).toLocaleString()} người chơi
-                    </div>
-                    {(game.rating || 0) > 0 && (
-                      <div className="flex items-center gap-1">
-                        <Star
-                          size={14}
-                          className="text-amber-400 fill-amber-400"
-                        />
-                        {game.rating}
-                      </div>
-                    )}
-                  </div>
-
-                  <button className="w-full py-2 bg-gray-50 text-gray-600 font-medium rounded-lg group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors flex items-center justify-center gap-2 text-sm">
-                    <Play size={16} />
-                    Chơi ngay
-                  </button>
+      {/* Game List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {games.map((game) => (
+          <div
+            key={game.id}
+            onClick={() => handleGameClick(game.id)}
+            className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
+          >
+            {/* Game Icon/Image */}
+            <div className="h-48 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center relative overflow-hidden">
+              {game.icongame ? (
+                <img
+                  src={game.icongame}
+                  alt={game.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Gamepad2 className="w-24 h-24 text-white opacity-50" />
+              )}
+              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors"></div>
+              <div className="absolute bottom-4 right-4">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <Play className="w-6 h-6 text-primary-600 fill-current ml-0.5" />
                 </div>
-              ))}
+              </div>
+            </div>
+
+            {/* Game Info */}
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">
+                {game.name}
+              </h3>
+              <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                {game.description}
+              </p>
+
+              {/* Levels */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  {game.levels.length} Cấp độ
+                </p>
+                <div className="flex gap-2">
+                  {game.levels.map((level) => (
+                    <div
+                      key={level.level}
+                      className="flex-1 bg-gray-100 rounded-lg p-2 text-center"
+                    >
+                      <div className="text-xs font-bold text-gray-700">
+                        {level.difficulty}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-0.5">
+                        Màn {level.level}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-        );
-      })}
+        ))}
+      </div>
+
+      {games.length === 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+          <Gamepad2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Chưa có trò chơi nào
+          </h3>
+          <p className="text-gray-500">Các trò chơi sẽ sớm được cập nhật</p>
+        </div>
+      )}
     </div>
   );
-};
+}

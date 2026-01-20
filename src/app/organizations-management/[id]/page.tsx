@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import DashboardLayout from "@/src/components/layout/authlayout";
-import { OrganizationDetail } from "@/src/components/organizations/detail";
+import { OrganizationDetail } from "@/src/components/organizations-management/detail";
 
 export async function generateMetadata({
   params,
