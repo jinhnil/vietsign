@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { GamesManagementComponent } from "@/src/components/games-management";
+import { DashboardLayout } from "@/shared/components/layout";
+import { GamesManagementComponent } from "@/features/games-management";
 
 export const metadata: Metadata = {
   title: "Quản lý trò chơi - VietSignSchool",

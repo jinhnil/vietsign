@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import AuthLayout from "@/src/components/layout/authlayout";
-import { Messages } from "@/src/components/messages";
+import { DashboardLayout } from "@/shared/components/layout";
+import { Messages } from "@/features/messages";
 
 export const metadata: Metadata = {
   title: "Tin nhắn - VietSignSchool",

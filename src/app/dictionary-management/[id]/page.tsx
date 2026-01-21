@@ -1,7 +1,7 @@
 import { Metadata } from "next";
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { DictionaryManagementDetail } from "@/src/components/dictionary-management/detail";
-import { dictionaryItems } from "@/src/data";
+import { DashboardLayout } from "@/shared/components/layout";
+import { DictionaryManagementDetail } from "@/features/dictionary-management/detail";
+import { dictionaryItems } from "@/data";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id: idParam } = await params;

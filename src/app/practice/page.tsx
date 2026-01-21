@@ -1,5 +1,5 @@
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { PracticeModeSelection } from "@/src/components/practice";
+import { DashboardLayout } from "@/shared/components/layout";
+import { PracticeModeSelection } from "@/features/practice";
 
 export const metadata = {
   title: "Luyện tập | VietSign",

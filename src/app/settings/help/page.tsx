@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import HomeLayout from "@/src/components/layout/authlayout";
-import { HelpSettings } from "@/src/components/settings/help";
+import { DashboardLayout } from "@/shared/components/layout";
+import { HelpSettings } from "@/features/settings/help";
 
 export const metadata: Metadata = {
   title: "Trợ giúp & Hỗ trợ - VietSignSchool",

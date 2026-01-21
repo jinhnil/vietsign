@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import DefaultLayout from "@/src/components/layout/defaultlayout";
-import Register from "@/src/components/auth/register";
+import { DefaultLayout } from "@/shared/components/layout";
+import Register from "@/features/auth/register";
 
 export const metadata: Metadata = {
   title: "Register - VietSignSchool",

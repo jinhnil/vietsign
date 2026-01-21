@@ -1,6 +1,6 @@
 //"use client"
 import "./globals.css";
-import StoreProvider from "@/src/store/StoreProvider";
+import StoreProvider from "@/core/store/StoreProvider";
 import QueryProvider from "../providers/query-provider";
 import { ThemeProvider } from "../providers/ThemeProvider";
 

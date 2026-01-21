@@ -24,7 +24,25 @@
     ],
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
+      ],
+      "@/features/*": [
+        "./src/features/*"
+      ],
+      "@/shared/*": [
+        "./src/shared/*"
+      ],
+      "@/core/*": [
+        "./src/core/*"
+      ],
+      "@/domain/*": [
+        "./src/domain/*"
+      ],
+      "@/data/*": [
+        "./src/data/*"
+      ],
+      "@/services/*": [
+        "./src/services/*"
       ]
     }
   },

@@ -1,7 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { GamePlaceholder } from "@/src/components/games/common/GamePlaceholder";
+import { DashboardLayout } from "@/shared/components/layout";
+import { GamePlaceholder } from "@/features/games/common/GamePlaceholder";
 
 export const metadata: Metadata = {
   title: "Ký Hiệu Hàng Ngày - VietSignSchool",

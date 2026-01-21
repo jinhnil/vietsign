@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { ClassesManagement } from "@/src/components/classes-management";
+import { DashboardLayout } from "@/shared/components/layout";
+import { ClassesManagement } from "@/features/management/classes";
 
 export const metadata: Metadata = {
   title: "Quản lý lớp học - VietSignSchool",

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { GradingManagement } from "@/src/components/grading";
+import { DashboardLayout } from "@/shared/components/layout";
+import { GradingManagement } from "@/features/management/grading";
 
 export const metadata: Metadata = {
   title: "Chấm điểm - VietSignSchool",

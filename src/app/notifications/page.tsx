@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { NotificationsManagement } from "@/src/components/notifications";
+import { DashboardLayout } from "@/shared/components/layout";
+import { NotificationsManagement } from "@/features/notifications";
 
 export const metadata: Metadata = {
   title: "Thông báo - VietSignSchool",

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import HomeLayout from "@/src/components/layout/authlayout";
-import { LanguageSettings } from "@/src/components/settings/language";
+import { DashboardLayout } from "@/shared/components/layout";
+import { LanguageSettings } from "@/features/settings/language";
 
 export const metadata: Metadata = {
   title: "Cài đặt ngôn ngữ - VietSignSchool",

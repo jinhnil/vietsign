@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import HomeLayout from "@/src/components/layout/authlayout";
-import { PrivacySettings } from "@/src/components/settings/privacy";
+import { DashboardLayout } from "@/shared/components/layout";
+import { PrivacySettings } from "@/features/settings/privacy";
 
 export const metadata: Metadata = {
   title: "Cài đặt quyền riêng tư - VietSignSchool",

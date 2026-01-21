@@ -1,7 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { Games } from "@/src/components/games";
+import { DashboardLayout } from "@/shared/components/layout";
+import { Games } from "@/features/games";
 
 export const metadata: Metadata = {
   title: "Trò Chơi - VietSignSchool",

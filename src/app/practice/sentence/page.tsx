@@ -1,5 +1,5 @@
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { SentencePractice } from "@/src/components/practice/SentencePractice";
+import { DashboardLayout } from "@/shared/components/layout";
+import { SentencePractice } from "@/features/practice/SentencePractice";
 
 export const metadata = {
   title: "Luyện tập theo câu | VietSign",

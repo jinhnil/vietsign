@@ -1,7 +1,7 @@
 import { Metadata } from "next";
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { LearningManagementDetail } from "@/src/components/learning-management/detail";
-import { learnCategories } from "@/src/data/learnData";
+import { DashboardLayout } from "@/shared/components/layout";
+import { LearningManagementDetail } from "@/features/learning-management/detail";
+import { learnCategories } from "@/data/learnData";
 
 function getAllLearningItems() {
   return learnCategories.flatMap((category) =>

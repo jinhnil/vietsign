@@ -1,5 +1,5 @@
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { AiPractice } from "@/src/components/practice/AiPractice";
+import { DashboardLayout } from "@/shared/components/layout";
+import { AiPractice } from "@/features/practice/AiPractice";
 
 export const metadata = {
   title: "Luyện tập AI | VietSign",

@@ -1,7 +1,7 @@
 import { Metadata } from "next";
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { ExamManagementDetail } from "@/src/components/exams-management/detail";
-import { mockExams } from "@/src/data";
+import { DashboardLayout } from "@/shared/components/layout";
+import { ExamManagementDetail } from "@/features/management/exams/detail";
+import { mockExams } from "@/data";
 
 export async function generateMetadata({
   params,

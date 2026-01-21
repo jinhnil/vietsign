@@ -1,7 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { Dictionary } from "@/src/components/dictionary";
+import { DashboardLayout } from "@/shared/components/layout";
+import { Dictionary } from "@/features/dictionary";
 
 export const metadata: Metadata = {
   title: "Từ Điển - VietSignSchool",

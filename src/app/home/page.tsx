@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import HomeLayout from "@/src/components/layout/authlayout";
-import { Home } from "@/src/components/home";
+import { DashboardLayout } from "@/shared/components/layout";
+import { Home } from "@/features/home";
 
 export const metadata: Metadata = {
   title: "Home - VietSignSchool",

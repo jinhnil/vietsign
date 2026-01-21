@@ -1,7 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
-import DashboardLayout from "@/src/components/layout/authlayout";
-import { GuessVideoGame } from "@/src/components/games/guess-video";
+import { DashboardLayout } from "@/shared/components/layout";
+import { GuessVideoGame } from "@/features/games/guess-video";
 
 export const metadata: Metadata = {
   title: "Đoán Ký Hiệu - VietSignSchool",

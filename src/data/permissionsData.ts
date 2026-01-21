@@ -1,4 +1,4 @@
-import { Permission, Role } from "@/src/model/Permission";
+import { Permission, Role } from "@/model/Permission";
 
 // Default permissions list
 // Default permissions list (Mock data removed)
