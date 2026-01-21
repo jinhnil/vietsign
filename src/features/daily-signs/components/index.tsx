@@ -14,7 +14,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { dailySignSchedule } from "@/data/dailySignsData";
-import { fetchWordById, fetchAllWords } from "@/services/dictionaryService";
+import {
+  fetchWordById,
+  fetchAllWords,
+} from "@/features/dictionary/services/dictionaryService";
 import { DictionaryItem } from "@/data/dictionaryData";
 
 export function DailySigns() {
@@ -63,7 +66,7 @@ export function DailySigns() {
         // 4. Fetch Recent Signs (last 5 days)
         // Simplified logic: just take previous entries from schedule
         const todayIndex = dailySignSchedule.findIndex(
-          (e) => e.date === dateStr
+          (e) => e.date === dateStr,
         );
         if (todayIndex > 0) {
           const recentIndices = [];
@@ -73,7 +76,7 @@ export function DailySigns() {
           }
 
           const recents = await Promise.all(
-            recentIndices.map((e) => fetchWordById(e.dictionaryItemId))
+            recentIndices.map((e) => fetchWordById(e.dictionaryItemId)),
           );
           setRecentSigns(recents.filter(Boolean) as DictionaryItem[]);
         } else {

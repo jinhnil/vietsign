@@ -1,11 +1,10 @@
 import { Metadata } from "next";
 import { DefaultLayout } from "@/shared/components/layout";
-import Login from "@/features/auth/login";
+import Login from "@/features/auth/components/login";
 
 export const metadata: Metadata = {
   title: "Login - VietSignSchool",
   description: "Login page for VietSignSchool",
-  
 };
 
 export default function LoginPage() {

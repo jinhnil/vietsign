@@ -23,7 +23,7 @@ const Login: React.FC = () => {
 
   const loginMutation = useMutation({
     mutationFn: Auth.login,
-    onSuccess: async (res) => {
+    onSuccess: async (res: any) => {
       console.log("Login response:", res); // Debug
 
       // Backend chỉ trả về accessToken

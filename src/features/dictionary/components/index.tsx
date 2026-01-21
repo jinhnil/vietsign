@@ -20,8 +20,11 @@ import {
   categories,
   DictionaryItem,
 } from "@/data/dictionaryData";
-import { fetchAllWords } from "@/services/dictionaryService";
-import { Pagination, usePagination } from "@/shared/components/common/Pagination";
+import { fetchAllWords } from "../services/dictionaryService";
+import {
+  Pagination,
+  usePagination,
+} from "@/shared/components/common/Pagination";
 import Link from "next/link";
 
 const ITEMS_PER_PAGE = 12;
@@ -87,7 +90,7 @@ export const Dictionary: React.FC = () => {
     if (query.trim()) {
       const normalizedQuery = removeVietnameseTones(query);
       const filteredSuggestions = items.filter((item) =>
-        removeVietnameseTones(item.word).includes(normalizedQuery)
+        removeVietnameseTones(item.word).includes(normalizedQuery),
       );
       setSuggestions(filteredSuggestions);
       setShowSuggestions(true);
@@ -166,7 +169,7 @@ export const Dictionary: React.FC = () => {
             </span>
           ) : (
             <span key={i}>{part}</span>
-          )
+          ),
         )}
       </span>
     );
@@ -322,7 +325,7 @@ export const Dictionary: React.FC = () => {
                   className="opacity-0 pointer-events-none h-[160px]"
                   aria-hidden="true"
                 />
-              )
+              ),
             )}
           </div>
 
