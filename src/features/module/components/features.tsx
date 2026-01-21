@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { PlayCircle, BrainCircuit, Clock, Target, Sparkles, Heart } from "lucide-react";
-import { FeatureCardProps } from "../../types";
+import { FeatureCardProps } from "@/shared/types";
 
 const FeatureItem: React.FC<FeatureCardProps> = ({
   icon,

@@ -29,7 +29,7 @@ import {
   Hand,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "@/store/slices/adminSlice";
+import { logout } from "@/core/store/slices/adminSlice";
 
 interface SidebarProps {
   isOpen: boolean;

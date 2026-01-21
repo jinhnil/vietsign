@@ -11,7 +11,7 @@ import {
   Users,
   Award,
 } from "lucide-react";
-import { LearningToolProps, DictionaryMode } from "../../types";
+import { LearningToolProps, DictionaryMode } from "@/shared/types";
 
 interface HeroProps {
   onOpenTool: (mode: DictionaryMode) => void;

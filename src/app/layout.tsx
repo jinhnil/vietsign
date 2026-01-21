@@ -1,8 +1,8 @@
 //"use client"
 import "./globals.css";
 import StoreProvider from "@/core/store/StoreProvider";
-import QueryProvider from "../providers/query-provider";
-import { ThemeProvider } from "../providers/ThemeProvider";
+import QueryProvider from "@/core/providers/QueryProvider";
+import { ThemeProvider } from "@/core/providers/ThemeProvider";
 
 export const metadata = {
   title: "VietSignSchool App",

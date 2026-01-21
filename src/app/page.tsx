@@ -1,8 +1,8 @@
 "use client";
 
-import LandingPage from "../components/landing/index";
-import SmartLayout from "../components/layout/smartlayout";
-import { Home } from "../components/home";
+import { LandingPage } from "@/features/landing";
+import { SmartLayout } from "@/shared/components/layout";
+import { Home } from "@/features/home";
 
 export default function HomePage() {
   return (
