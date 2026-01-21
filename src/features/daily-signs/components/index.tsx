@@ -14,10 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { dailySignSchedule } from "@/data/dailySignsData";
-import {
-  fetchWordById,
-  fetchAllWords,
-} from "@/features/dictionary/services/dictionaryService";
+import { fetchWordById, fetchAllWords } from "@/features/dictionary";
 import { DictionaryItem } from "@/data/dictionaryData";
 
 export function DailySigns() {
