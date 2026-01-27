@@ -13,7 +13,7 @@ import {
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-import { RootState } from "@/store";
+import { RootState } from "@/core/store";
 import {
   gamesList,
   difficultyConfig,
@@ -21,7 +21,10 @@ import {
   getAllGames,
   getGamesStats,
 } from "@/data/gamesData";
-import { Pagination, usePagination } from "@/shared/components/common/Pagination";
+import {
+  Pagination,
+  usePagination,
+} from "@/shared/components/common/Pagination";
 import { ConfirmModal } from "@/shared/components/common/ConfirmModal";
 import { removeVietnameseTones } from "@/shared/utils/text";
 
@@ -95,7 +98,7 @@ export function GamesManagementComponent() {
   const toggleGameActive = (game: GameItem, e: React.MouseEvent) => {
     e.stopPropagation();
     setAllGames((prev) =>
-      prev.map((g) => (g.id === game.id ? { ...g, isActive: !g.isActive } : g))
+      prev.map((g) => (g.id === game.id ? { ...g, isActive: !g.isActive } : g)),
     );
   };
 
@@ -160,9 +163,9 @@ export function GamesManagementComponent() {
                 sum +
                 g.levels.reduce(
                   (levelSum, l) => levelSum + l.questions.length,
-                  0
+                  0,
                 ),
-              0
+              0,
             )}
           </p>
         </div>
@@ -300,7 +303,7 @@ export function GamesManagementComponent() {
               className="opacity-0 pointer-events-none"
               aria-hidden="true"
             />
-          )
+          ),
         )}
       </div>
 

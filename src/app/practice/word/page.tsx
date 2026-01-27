@@ -1,5 +1,5 @@
 import { DashboardLayout } from "@/shared/components/layout";
-import { WordPractice } from "@/features/practice/WordPractice";
+import { WordPractice } from "@/features/practice";
 
 export const metadata = {
   title: "Luyện tập theo từ | VietSign",

@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Play, Video, ArrowLeft, Search, RefreshCw, Type } from "lucide-react";
+import { Play, Video, ArrowLeft, Search, Type } from "lucide-react";
 import { mockQuestions } from "@/data/questionsData";
 import { dictionaryItems } from "@/data/dictionaryData";
 import { removeVietnameseTones } from "@/shared/utils/text";
 import { useCamera, useAiCheck, CameraView } from "./shared";
+import { VideoPlayer } from "@/shared/components/common";
 
 interface PracticeItem {
   id: string;
@@ -24,7 +25,6 @@ export function WordPractice() {
   const [selectedItem, setSelectedItem] = useState<PracticeItem | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const { isCameraOn, cameraRef, startCamera, stopCamera } = useCamera();
   const {
@@ -80,10 +80,10 @@ export function WordPractice() {
       const normalizedQuery = removeVietnameseTones(searchQuery.toLowerCase());
       const matchesSearch =
         removeVietnameseTones(item.word.toLowerCase()).includes(
-          normalizedQuery
+          normalizedQuery,
         ) ||
         removeVietnameseTones(item.category.toLowerCase()).includes(
-          normalizedQuery
+          normalizedQuery,
         );
       const matchesCategory =
         filterCategory === "all" || item.category === filterCategory;
@@ -98,13 +98,6 @@ export function WordPractice() {
       resetAiResult();
     } else {
       router.push("/practice");
-    }
-  };
-
-  const handleReplayVideo = () => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play();
     }
   };
 
@@ -137,23 +130,15 @@ export function WordPractice() {
                 <Video className="w-5 h-5 text-primary-600" />
                 <span className="font-medium text-gray-900">Video mẫu</span>
               </div>
-              <button
-                onClick={handleReplayVideo}
-                className="text-sm text-primary-600 hover:bg-primary-50 px-3 py-1.5 rounded-lg flex items-center gap-1"
-              >
-                <RefreshCw size={16} />
-                Phát lại
-              </button>
             </div>
-            <div className="aspect-video bg-gray-900">
-              <video
-                ref={videoRef}
-                src={selectedItem.videoUrl}
-                controls
-                autoPlay
-                className="w-full h-full object-contain"
-              />
-            </div>
+            <VideoPlayer
+              videoUrl={selectedItem.videoUrl}
+              title={selectedItem.word}
+              autoPlay={true}
+              loop={true}
+              showControls={true}
+              className="rounded-none"
+            />
             <div className="p-4">
               <div className="p-4 bg-primary-50 rounded-xl">
                 <h4 className="font-medium text-gray-900 mb-1">Ý nghĩa</h4>

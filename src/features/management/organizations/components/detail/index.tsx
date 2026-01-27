@@ -23,6 +23,8 @@ import { getUserById } from "@/data/usersData";
 import {
   fetchProvinces,
   fetchProvinceById,
+  type Province,
+  type Commune,
 } from "@/services/vietnamLocationsApi";
 import { ConfirmModal } from "@/shared/components/common/ConfirmModal";
 import {
@@ -62,7 +64,7 @@ export function OrganizationDetail() {
       if (!provinceCode || provinceCode <= 0) return;
 
       const provinces = await fetchProvinces();
-      const province = provinces.find((p) => parseInt(p.id) === provinceCode);
+      const province = provinces.find((p: Province) => p.id === provinceCode);
       if (province) {
         setProvinceName(province.name);
 
@@ -70,7 +72,7 @@ export function OrganizationDetail() {
         const provinceDetail = await fetchProvinceById(provinceCode);
         if (provinceDetail?.communes) {
           const ward = provinceDetail.communes.find(
-            (c) => parseInt(c.id) === wardCode
+            (c: Commune) => Number(c.id) === wardCode,
           );
           if (ward) setWardName(ward.name);
         }
@@ -92,7 +94,7 @@ export function OrganizationDetail() {
           onError: (error: any) => {
             message.error(error.message || "Cập nhật thất bại");
           },
-        }
+        },
       );
     }
   };

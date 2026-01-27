@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { DashboardLayout } from "@/shared/components/layout";
-import { NotificationsSettings } from "@/features/settings/notifications";
+import { NotificationsSettings } from "@/features/settings/components/notifications";
 
 export const metadata: Metadata = {
   title: "Cài đặt thông báo - VietSignSchool",
@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function NotificationsSettingsPage() {
   return (
-    <HomeLayout>
+    <DashboardLayout>
       <NotificationsSettings />
-    </HomeLayout>
+    </DashboardLayout>
   );
 }

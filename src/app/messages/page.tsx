@@ -5,13 +5,12 @@ import { Messages } from "@/features/messages";
 export const metadata: Metadata = {
   title: "Tin nhắn - VietSignSchool",
   description: "Trang tin nhắn của VietSignSchool",
-  
 };
 
 export default function MessagesPage() {
   return (
-    <AuthLayout hideFooter>
+    <DashboardLayout hideFooter>
       <Messages />
-    </AuthLayout>
+    </DashboardLayout>
   );
 }

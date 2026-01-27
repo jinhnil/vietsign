@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { DashboardLayout } from "@/shared/components/layout";
-import { LearningManagementDetail } from "@/features/learning-management/detail";
+import { LearningManagementDetail } from "@/features/management/learning";
 import { learnCategories } from "@/data/learnData";
 
 function getAllLearningItems() {
@@ -8,7 +8,7 @@ function getAllLearningItems() {
     category.items.map((item) => ({
       ...item,
       categoryTitle: category.title,
-    }))
+    })),
   );
 }
 

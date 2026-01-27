@@ -20,7 +20,7 @@ import {
   categories,
   DictionaryItem,
 } from "@/data/dictionaryData";
-import { fetchAllWords } from "../services/dictionaryService";
+import { fetchAllWords } from "@/services/dictionaryService";
 import {
   Pagination,
   usePagination,

@@ -36,7 +36,10 @@ import {
   mockOrganizations,
 } from "@/data/organizationsData";
 import { gradeLevels, type GradeLevel } from "@/data/classesData";
-import { Pagination, usePagination } from "@/shared/components/common/Pagination";
+import {
+  Pagination,
+  usePagination,
+} from "@/shared/components/common/Pagination";
 import { Modal } from "@/shared/components/common/Modal";
 import { ConfirmModal } from "@/shared/components/common/ConfirmModal";
 import { removeVietnameseTones } from "@/shared/utils/text";
@@ -138,7 +141,7 @@ export function QuestionsManagement() {
   // Pagination
   const questionsPagination = usePagination(
     filteredQuestions,
-    QUESTIONS_PER_PAGE
+    QUESTIONS_PER_PAGE,
   );
   const setsPagination = usePagination(filteredQuestionSets, SETS_PER_PAGE);
 
@@ -370,9 +373,7 @@ export function QuestionsManagement() {
                   <th className="text-left py-4 px-4 text-sm font-semibold text-gray-700 w-[140px]">
                     Loại
                   </th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-gray-700 w-[100px]">
-                    Lớp
-                  </th>
+
                   <th className="text-left py-4 px-4 text-sm font-semibold text-gray-700 w-[180px]">
                     Người tạo
                   </th>
@@ -393,7 +394,7 @@ export function QuestionsManagement() {
                     question,
                     userId,
                     userRole,
-                    userOrgId
+                    userOrgId,
                   );
 
                   return (
@@ -413,14 +414,7 @@ export function QuestionsManagement() {
                           {typeInfo.label}
                         </span>
                       </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-2">
-                          <GraduationCap size={14} className="text-gray-400" />
-                          <span className="text-sm text-gray-600">
-                            {question.gradeLevel || "-"}
-                          </span>
-                        </div>
-                      </td>
+
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
                           <User size={14} className="text-gray-400" />
@@ -475,13 +469,13 @@ export function QuestionsManagement() {
                   length: Math.max(
                     0,
                     QUESTIONS_PER_PAGE -
-                      questionsPagination.paginatedItems.length
+                      questionsPagination.paginatedItems.length,
                   ),
                 }).map((_, idx) => (
                   <tr key={`empty-${idx}`} className="h-16 invisible">
                     <td className="py-4 px-6">Placeholder</td>
                     <td className="py-4 px-4">Placeholder</td>
-                    <td className="py-4 px-4">Placeholder</td>
+
                     <td className="py-4 px-4">Placeholder</td>
                     {(userRole === "ADMIN" || userRole === "TEST") && (
                       <td className="py-4 px-4">Placeholder</td>
@@ -523,7 +517,7 @@ export function QuestionsManagement() {
               set,
               userId,
               userRole,
-              userOrgId
+              userOrgId,
             );
             const questionsInSet = getQuestionsInSet(set.id);
             const typeInfo = questionTypeConfig[set.type];
@@ -624,7 +618,7 @@ export function QuestionsManagement() {
           {Array.from({
             length: Math.max(
               0,
-              SETS_PER_PAGE - setsPagination.paginatedItems.length
+              SETS_PER_PAGE - setsPagination.paginatedItems.length,
             ),
           }).map((_, idx) => (
             <div

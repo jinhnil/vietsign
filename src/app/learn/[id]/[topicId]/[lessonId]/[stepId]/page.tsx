@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { DashboardLayout } from "@/shared/components/layout";
-import { StepDetail } from "@/features/learn/step";
+import { StepDetail } from "@/features/learn";
 
 export const metadata: Metadata = {
   title: "Học bài - VietSignSchool",

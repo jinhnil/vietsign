@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { DashboardLayout } from "@/shared/components/layout";
-import { GameManagementDetail } from "@/features/games-management/detail";
+import { GameManagementDetail } from "@/features/management/games";
 import { gamesList } from "@/data";
 
 export async function generateMetadata({

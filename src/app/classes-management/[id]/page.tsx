@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { DashboardLayout } from "@/shared/components/layout";
-import { ClassManagementDetail } from "@/features/management/classes/detail";
+import { ClassManagementDetail } from "@/features/management/classes";
 import { mockClasses } from "@/data";
 
 export async function generateMetadata({

@@ -4,4 +4,4 @@
  */
 
 export * from "./components";
-export * from "./services/dictionaryService";
+export * from "@/services/dictionaryService";

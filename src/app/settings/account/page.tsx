@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { DashboardLayout } from "@/shared/components/layout";
-import { AccountSettings } from "@/features/settings/account";
+import { AccountSettings } from "@/features/settings/components/account";
 
 export const metadata: Metadata = {
   title: "Cài đặt tài khoản - VietSignSchool",
@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function AccountSettingsPage() {
   return (
-    <HomeLayout>
+    <DashboardLayout>
       <AccountSettings />
-    </HomeLayout>
+    </DashboardLayout>
   );
 }

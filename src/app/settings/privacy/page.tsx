@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { DashboardLayout } from "@/shared/components/layout";
-import { PrivacySettings } from "@/features/settings/privacy";
+import { PrivacySettings } from "@/features/settings/components/privacy";
 
 export const metadata: Metadata = {
   title: "Cài đặt quyền riêng tư - VietSignSchool",
@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function PrivacySettingsPage() {
   return (
-    <HomeLayout>
+    <DashboardLayout>
       <PrivacySettings />
-    </HomeLayout>
+    </DashboardLayout>
   );
 }

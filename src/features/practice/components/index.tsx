@@ -14,6 +14,11 @@ import {
 import { mockQuestions } from "@/data/questionsData";
 import { dictionaryItems } from "@/data/dictionaryData";
 
+export * from "./AiPractice";
+export * from "./SentencePractice";
+export * from "./SpellingPractice";
+export * from "./WordPractice";
+
 // Sample sentences count
 const sampleSentencesCount = 10;
 
@@ -26,7 +31,7 @@ export function PracticeModeSelection() {
 
   // Count alphabet letters
   const alphabetLettersCount = dictionaryItems.filter(
-    (d) => d.category === "Chữ cái" && d.videoUrl
+    (d) => d.category === "Chữ cái" && d.videoUrl,
   ).length;
 
   return (

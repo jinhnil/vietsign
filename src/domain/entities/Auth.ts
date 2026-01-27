@@ -13,6 +13,17 @@ const Auth = {
     const response = await http.get("/auth/verify");
     return response.data;
   },
+  forgotPassword: async (email: string) => {
+    const response = await http.post("/auth/forgot-password", { email });
+    return response.data;
+  },
+  resetPassword: async (token: string, password: string) => {
+    const response = await http.post("/auth/reset-password", {
+      token,
+      password,
+    });
+    return response.data;
+  },
 };
 
 export default Auth;

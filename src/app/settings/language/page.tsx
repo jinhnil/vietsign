@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { DashboardLayout } from "@/shared/components/layout";
-import { LanguageSettings } from "@/features/settings/language";
+import { LanguageSettings } from "@/features/settings/components/language";
 
 export const metadata: Metadata = {
   title: "Cài đặt ngôn ngữ - VietSignSchool",
@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function LanguageSettingsPage() {
   return (
-    <HomeLayout>
+    <DashboardLayout>
       <LanguageSettings />
-    </HomeLayout>
+    </DashboardLayout>
   );
 }

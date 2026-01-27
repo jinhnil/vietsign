@@ -5,13 +5,12 @@ import { Home } from "@/features/home";
 export const metadata: Metadata = {
   title: "Home - VietSignSchool",
   description: "Home page for VietSignSchool",
-  
 };
 
 export default function HomePage() {
   return (
-    <HomeLayout>
+    <DashboardLayout>
       <Home />
-    </HomeLayout>
+    </DashboardLayout>
   );
 }

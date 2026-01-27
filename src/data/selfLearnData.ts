@@ -1,7 +1,7 @@
 // Self-learning courses data for /learn page (học viên tự do không thuộc trường/cơ sở)
 // Based on: B2026. Khung Nội dung hỗ trợ dạy và học ký hiệu.xlsx
 
-import { BaseStepItem, StepType } from "@/components/common/step/types";
+import { BaseStepItem, StepType } from "@/shared/components/common/step";
 
 // Course structure for self-learning
 export interface SelfLearnCourse {

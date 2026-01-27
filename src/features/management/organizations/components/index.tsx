@@ -29,7 +29,10 @@ import {
   type Commune,
 } from "@/services/vietnamLocationsApi";
 import { fetchUsersByRole } from "@/services/userService";
-import { Pagination, usePagination } from "@/shared/components/common/Pagination";
+import {
+  Pagination,
+  usePagination,
+} from "@/shared/components/common/Pagination";
 import { Modal } from "@/shared/components/common/Modal";
 import { ConfirmModal } from "@/shared/components/common/ConfirmModal";
 import {
@@ -113,8 +116,9 @@ export function OrganizationsManagement() {
 
         // Lưu tên tỉnh vào cache
         const provinceNames: Record<number, string> = {};
-        data.forEach((p) => {
-          provinceNames[parseInt(p.id)] = p.name;
+        data.forEach((p: Province) => {
+          provinceNames[typeof p.id === "string" ? parseInt(p.id) : p.id] =
+            p.name;
         });
 
         // Cập nhật tên tỉnh vào cache
@@ -149,7 +153,7 @@ export function OrganizationsManagement() {
               const wardCode = parseInt(commune.id);
               // Kiểm tra xem ward này có trong danh sách cơ sở không
               const organizationWithWard = organizations.find(
-                (f) => f.wardCode === wardCode
+                (f) => f.wardCode === wardCode,
               );
               if (organizationWithWard) {
                 wardNames[wardCode] = commune.name;
@@ -159,7 +163,7 @@ export function OrganizationsManagement() {
         } catch (error) {
           console.error(
             `Failed to load wards for province ${provinceCode}:`,
-            error
+            error,
           );
         }
       }
@@ -220,7 +224,7 @@ export function OrganizationsManagement() {
 
   // Xử lý khi chọn tỉnh trong modal
   const handleProvinceChange = async (
-    e: React.ChangeEvent<HTMLSelectElement>
+    e: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const provinceCode = e.target.value;
     setSelectedModalProvince(provinceCode ? Number(provinceCode) : "");
@@ -249,7 +253,7 @@ export function OrganizationsManagement() {
   // Mở trang chi tiết ở chế độ sửa
   const openEditPage = (
     organization: OrganizationItem,
-    e: React.MouseEvent
+    e: React.MouseEvent,
   ) => {
     e.stopPropagation();
     router.push(`/organizations-management/${organization.id}`);
@@ -258,7 +262,7 @@ export function OrganizationsManagement() {
   // Mở modal xác nhận xóa
   const openDeleteModal = (
     organization: OrganizationItem,
-    e: React.MouseEvent
+    e: React.MouseEvent,
   ) => {
     e.stopPropagation();
     setOrganizationToDelete(organization);
@@ -413,7 +417,7 @@ export function OrganizationsManagement() {
               value={filterProvince}
               onChange={(e) =>
                 setFilterProvince(
-                  e.target.value === "all" ? "all" : Number(e.target.value)
+                  e.target.value === "all" ? "all" : Number(e.target.value),
                 )
               }
               className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all bg-white min-w-[180px]"

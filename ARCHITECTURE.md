@@ -47,136 +47,7 @@
 
 ---
 
-## 📂 Cấu Trúc Hiện Tại
-
-```
-vietsign/
-├── .env.local                    # Environment variables
-├── package.json                  # Dependencies
-├── tailwind.config.js            # Tailwind configuration
-├── tsconfig.json                 # TypeScript configuration
-│
-├── public/                       # Static assets
-│   ├── images/
-│   └── ...
-│
-└── src/                          # Source code (237 files)
-    ├── app/                      # Next.js App Router (76 items)
-    │   ├── (auth)/               # Auth route group
-    │   │   ├── login/
-    │   │   ├── register/
-    │   │   └── ...
-    │   ├── dashboard/
-    │   ├── study/                # Học theo lớp
-    │   ├── learn/                # Tự học
-    │   ├── games/                # Trò chơi
-    │   ├── practice/             # Luyện tập
-    │   ├── dictionary/           # Từ điển
-    │   ├── messages/             # Tin nhắn
-    │   ├── settings/             # Cài đặt
-    │   ├── *-management/         # Các trang quản lý
-    │   ├── layout.tsx            # Root layout
-    │   └── globals.css           # Global styles
-    │
-    ├── components/               # React Components (95 items - 31 folders)
-    │   ├── UI/                   # Basic UI components
-    │   ├── auth/                 # Auth components
-    │   ├── common/               # Shared components
-    │   │   ├── step/             # Step components (11 files)
-    │   │   ├── VideoPlayer.tsx
-    │   │   ├── Modal.tsx
-    │   │   └── Pagination.tsx
-    │   ├── layout/               # Layout components
-    │   │   ├── header/
-    │   │   ├── footer/
-    │   │   ├── sidebar/
-    │   │   ├── authlayout.tsx
-    │   │   └── ...
-    │   ├── study/                # Study feature components
-    │   ├── learn/                # Learn feature components
-    │   ├── games/                # Games components
-    │   ├── practice/             # Practice components
-    │   ├── dictionary/           # Dictionary components
-    │   └── *-management/         # Management components
-    │
-    ├── data/                     # Mock Data (18 files)
-    │   ├── classesData.ts
-    │   ├── dictionaryData.ts
-    │   ├── gamesData.ts
-    │   ├── learnData.ts
-    │   ├── lessonsData.ts
-    │   ├── messagesData.ts
-    │   └── ...
-    │
-    ├── model/                    # Domain Models (15 files)
-    │   ├── User.ts
-    │   ├── Class.ts
-    │   ├── Lesson.ts
-    │   ├── Dictionary.ts
-    │   └── ...
-    │
-    ├── services/                 # API Services (12 files)
-    │   ├── userService.ts
-    │   ├── classService.ts
-    │   ├── lessonService.ts
-    │   └── ...
-    │
-    ├── hooks/                    # Custom Hooks (4 files)
-    │   ├── useAuth.ts
-    │   ├── useUsers.ts
-    │   └── useOrganizations.ts
-    │
-    ├── store/                    # Redux Store
-    │   ├── index.ts
-    │   ├── StoreProvider.tsx
-    │   └── slices/
-    │
-    ├── providers/                # Context Providers
-    │   ├── query-provider.tsx
-    │   └── ThemeProvider.tsx
-    │
-    ├── config/                   # Configuration
-    │   ├── api.ts
-    │   ├── firebase.ts
-    │   └── mockdata.ts
-    │
-    ├── utils/                    # Utility Functions
-    │   ├── api/
-    │   ├── validation/
-    │   └── ...
-    │
-    └── types.ts                  # Global types
-```
-
----
-
-## 📊 Đánh Giá Cấu Trúc Hiện Tại
-
-### ✅ Điểm Mạnh
-
-| Điểm mạnh            | Mô tả                                    |
-| -------------------- | ---------------------------------------- |
-| **App Router**       | Sử dụng Next.js 16 App Router đúng chuẩn |
-| **Route Groups**     | Có `(auth)` group để tách auth routes    |
-| **Data Layer**       | Mock data tách riêng, dễ thay thế API    |
-| **Models**           | Type definitions rõ ràng cho entities    |
-| **Services**         | Service layer cho API calls              |
-| **State Management** | Redux + React Query đã setup             |
-
-### ⚠️ Điểm Yếu
-
-| Vấn đề                  | Mức độ  | Mô tả                                          |
-| ----------------------- | ------- | ---------------------------------------------- |
-| **Components phân tán** | 🔴 Cao  | 31 folders trong `/components`, khó tìm kiếm   |
-| **Trùng lặp cấu trúc**  | 🔴 Cao  | `/components/study` ↔ `/app/study` dễ nhầm lẫn |
-| **Common quá lớn**      | 🟡 TB   | `/components/common/step` có 11 files          |
-| **Thiếu phân tầng**     | 🟡 TB   | Không phân biệt shared vs feature-specific     |
-| **Hooks ít**            | 🟡 TB   | Chỉ có 4 hooks, nhiều logic có thể tái sử dụng |
-| **Thiếu constants**     | 🟢 Thấp | Không có nơi chứa constants chung              |
-
----
-
-## 🆕 Cấu Trúc Đề Xuất Mới
+## 🆕 Cấu Trúc Đề Xuất
 
 ### Nguyên Tắc Thiết Kế
 
@@ -186,7 +57,7 @@ vietsign/
 4. **Single Responsibility**: Mỗi module làm một việc
 5. **DRY (Don't Repeat Yourself)**: Tái sử dụng code tối đa
 
-### Cấu Trúc Mới Chi Tiết
+### Cấu Trúc Chi Tiết
 
 ```
 vietsign/

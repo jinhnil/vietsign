@@ -1,163 +1,18 @@
 "use client";
 
 import React from "react";
-import {
-  ArrowLeft,
-  BookOpen,
-  Star,
-  Share2,
-  Play,
-  Pause,
-  Eye,
-  Calendar,
-  Award,
-  TrendingUp,
-  Info,
-  ArrowRight,
-  Volume2,
-  VolumeX,
-  Maximize,
-} from "lucide-react";
+import { ArrowLeft, Star, Share2, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { dictionaryItems } from "@/data";
 import { useParams, useRouter } from "next/navigation";
+import { VideoPlayer } from "@/shared/components/common";
 
 export const DictionaryDetail: React.FC = () => {
   const params = useParams();
   const router = useRouter();
-  const videoRef = React.useRef<HTMLVideoElement>(null);
-  const progressRef = React.useRef<HTMLDivElement>(null);
-  const [isPlaying, setIsPlaying] = React.useState(false);
-  const [volume, setVolume] = React.useState(0.5);
-  const [isMuted, setIsMuted] = React.useState(true);
-  const [currentTime, setCurrentTime] = React.useState(0);
-  const [duration, setDuration] = React.useState(0);
-  const [progress, setProgress] = React.useState(0);
-  const [playbackSpeed, setPlaybackSpeed] = React.useState(1);
-  const [showSpeedMenu, setShowSpeedMenu] = React.useState(false);
   const id = Number(params.id);
 
   const item = dictionaryItems.find((i) => i.id === id);
-
-  // Format time display (mm:ss)
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
-
-  // Handle video autoplay when component mounts or item changes
-  React.useEffect(() => {
-    const video = videoRef.current;
-    if (video && item) {
-      video.load();
-      video.volume = volume;
-      video.muted = isMuted;
-      video.playbackRate = playbackSpeed;
-
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => setIsPlaying(true))
-          .catch(() => setIsPlaying(false));
-      }
-    }
-  }, [item?.id]);
-
-  // Update progress bar as video plays
-  React.useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime);
-      setProgress((video.currentTime / video.duration) * 100);
-    };
-
-    const handleLoadedMetadata = () => {
-      setDuration(video.duration);
-    };
-
-    video.addEventListener("timeupdate", handleTimeUpdate);
-    video.addEventListener("loadedmetadata", handleLoadedMetadata);
-
-    return () => {
-      video.removeEventListener("timeupdate", handleTimeUpdate);
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-    };
-  }, []);
-
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        const playPromise = videoRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise
-            .then(() => setIsPlaying(true))
-            .catch(() => setIsPlaying(false));
-        }
-      }
-    }
-  };
-
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
-
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseFloat(e.target.value);
-    setVolume(newVolume);
-    if (videoRef.current) {
-      videoRef.current.volume = newVolume;
-      if (newVolume === 0) {
-        setIsMuted(true);
-        videoRef.current.muted = true;
-      } else if (isMuted) {
-        setIsMuted(false);
-        videoRef.current.muted = false;
-      }
-    }
-  };
-
-  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (progressRef.current && videoRef.current) {
-      const rect = progressRef.current.getBoundingClientRect();
-      const clickPosition = (e.clientX - rect.left) / rect.width;
-      const newTime = clickPosition * duration;
-      videoRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-      setProgress(clickPosition * 100);
-    }
-  };
-
-  const handleSpeedChange = (speed: number) => {
-    setPlaybackSpeed(speed);
-    if (videoRef.current) {
-      videoRef.current.playbackRate = speed;
-    }
-    setShowSpeedMenu(false);
-  };
-
-  const handleFullscreen = () => {
-    if (videoRef.current) {
-      if (videoRef.current.requestFullscreen) {
-        videoRef.current.requestFullscreen();
-      }
-    }
-  };
-
-  const speedOptions = [
-    { label: "Rất nhanh", value: 2 },
-    { label: "Nhanh", value: 1.5 },
-    { label: "Bình thường", value: 1 },
-    { label: "Chậm", value: 0.5 },
-  ];
 
   if (!item) {
     return (
@@ -216,176 +71,34 @@ export const DictionaryDetail: React.FC = () => {
       <div className="bg-white rounded-[40px] shadow-2xl border border-gray-100 overflow-hidden">
         <div className="flex flex-col lg:flex-row">
           {/* Media Section: 3/4 Width */}
-          <div className="lg:w-3/4 bg-gray-900 relative group">
-            <div className="aspect-[16/9] lg:aspect-auto lg:h-[600px] w-full relative overflow-hidden bg-black">
-              {item.videoUrl ? (
-                <>
-                  <video
-                    key={item.id}
-                    ref={videoRef}
-                    className="w-full h-full object-cover cursor-pointer"
-                    poster={`https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&q=90&sig=${item.id}`}
-                    controls={false}
-                    muted
-                    loop
-                    playsInline
-                    onClick={togglePlay}
-                  >
-                    <source src={item.videoUrl} type="video/mp4" />
-                    Trình duyệt của bạn không hỗ trợ video.
-                  </video>
-
-                  {/* Play Overlay */}
-                  {!isPlaying && (
-                    <div
-                      onClick={togglePlay}
-                      className="absolute inset-0 bg-black/20 flex items-center justify-center cursor-pointer transition-opacity duration-500"
-                    >
-                      <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-2xl">
-                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-inner">
-                          <Play
-                            size={32}
-                            className="text-primary-600 fill-current ml-1"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Video Controls */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/95 via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <div className="space-y-4">
-                      {/* Progress Bar */}
-                      <div className="flex items-center gap-3">
-                        <span className="text-white text-xs font-medium min-w-[40px]">
-                          {formatTime(currentTime)}
-                        </span>
-                        <div
-                          ref={progressRef}
-                          onClick={handleProgressClick}
-                          className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden cursor-pointer group/progress hover:h-3 transition-all"
-                        >
-                          <div
-                            className="h-full bg-gradient-to-r from-primary-500 to-primary-400 relative transition-all"
-                            style={{ width: `${progress}%` }}
-                          >
-                            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg scale-0 group-hover/progress:scale-100 transition-transform"></div>
-                          </div>
-                        </div>
-                        <span className="text-white text-xs font-medium min-w-[40px]">
-                          {formatTime(duration)}
-                        </span>
-                      </div>
-
-                      {/* Control Buttons */}
-                      <div className="flex items-center justify-between text-white">
-                        {/* Left Controls */}
-                        <div className="flex items-center gap-4">
-                          {/* Play/Pause */}
-                          <button
-                            onClick={togglePlay}
-                            className="p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-                            title={isPlaying ? "Tạm dừng" : "Phát"}
-                          >
-                            {isPlaying ? (
-                              <Pause size={20} className="fill-current" />
-                            ) : (
-                              <Play size={20} className="fill-current ml-0.5" />
-                            )}
-                          </button>
-
-                          {/* Volume Control */}
-                          <div className="flex items-center gap-2 group/volume">
-                            <button
-                              onClick={toggleMute}
-                              className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                              title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
-                            >
-                              {isMuted ? (
-                                <VolumeX size={20} />
-                              ) : (
-                                <Volume2 size={20} />
-                              )}
-                            </button>
-                            <input
-                              type="range"
-                              min="0"
-                              max="1"
-                              step="0.1"
-                              value={isMuted ? 0 : volume}
-                              onChange={handleVolumeChange}
-                              className="w-0 group-hover/volume:w-20 transition-all duration-300 h-1 bg-white/30 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
-                            />
-                          </div>
-
-                          {/* Time Display */}
-                          <span className="text-sm font-medium opacity-80">
-                            {formatTime(currentTime)} / {formatTime(duration)}
-                          </span>
-                        </div>
-
-                        {/* Right Controls */}
-                        <div className="flex items-center gap-3">
-                          {/* Speed Control */}
-                          <div className="relative">
-                            <button
-                              onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                              className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold transition-colors"
-                              title="Tốc độ phát"
-                            >
-                              {playbackSpeed}x
-                            </button>
-                            {showSpeedMenu && (
-                              <div className="absolute bottom-full right-0 mb-2 bg-gray-900/95 backdrop-blur-md rounded-xl overflow-hidden shadow-2xl border border-white/10">
-                                {speedOptions.map((option) => (
-                                  <button
-                                    key={option.value}
-                                    onClick={() =>
-                                      handleSpeedChange(option.value)
-                                    }
-                                    className={`w-full px-4 py-2.5 text-left text-sm font-medium hover:bg-white/10 transition-colors whitespace-nowrap ${
-                                      playbackSpeed === option.value
-                                        ? "text-primary-400 bg-white/5"
-                                        : "text-white"
-                                    }`}
-                                  >
-                                    {option.label} ({option.value}x)
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Fullscreen */}
-                          <button
-                            onClick={handleFullscreen}
-                            className="p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-                            title="Phóng to"
-                          >
-                            <Maximize size={18} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : item.imageUrl ? (
-                <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.imageUrl}
-                    alt={item.word}
-                    className="w-full h-full object-contain"
-                  />
+          <div className="lg:w-3/4">
+            {item.videoUrl ? (
+              <VideoPlayer
+                key={item.id}
+                videoUrl={item.videoUrl}
+                title={item.word}
+                autoPlay={true}
+                loop={true}
+                showControls={true}
+                height="600px"
+                className="rounded-none lg:rounded-l-[40px]"
+              />
+            ) : item.imageUrl ? (
+              <div className="w-full h-[600px] flex items-center justify-center bg-gray-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={item.imageUrl}
+                  alt={item.word}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            ) : (
+              <div className="w-full h-[600px] flex items-center justify-center text-gray-400 font-medium bg-gray-900">
+                <div className="text-center">
+                  <p>Không có video hoặc hình ảnh minh họa</p>
                 </div>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400 font-medium">
-                  <div className="text-center">
-                    <p>Không có video hoăc hình ảnh minh họa</p>
-                  </div>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Info Section: 1/4 Width */}
@@ -406,28 +119,6 @@ export const DictionaryDetail: React.FC = () => {
                   </p>
                 </div>
               </div>
-
-              {/* <div className="space-y-6">
-                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-[24px] hover:bg-white hover:shadow-xl transition-all duration-500 border border-transparent hover:border-gray-100 group/item">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center group-hover/item:scale-110 transition-transform">
-                    <Award size={24} className="text-amber-500" />
-                  </div>
-                  <div>
-                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Độ khó</h4>
-                    <p className="font-bold text-gray-800 italic">Cơ bản 1/5</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-[24px] hover:bg-white hover:shadow-xl transition-all duration-500 border border-transparent hover:border-gray-100 group/item">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center group-hover/item:scale-110 transition-transform">
-                    <TrendingUp size={24} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phổ biến</h4>
-                    <p className="font-bold text-gray-800 italic">Top 10%</p>
-                  </div>
-                </div>
-              </div> */}
             </div>
 
             <div className="space-y-4 pt-10 relative z-10">

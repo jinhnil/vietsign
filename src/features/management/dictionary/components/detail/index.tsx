@@ -1,38 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import {
-  ArrowLeft,
-  Edit,
-  Trash2,
-  Save,
-  X,
-  Video,
-  Eye,
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-  Maximize,
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ArrowLeft, Edit, Trash2, Save, X, Video, Eye } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { dictionaryItems, DictionaryItem } from "@/data";
 import { ConfirmModal } from "@/shared/components/common/ConfirmModal";
+import { VideoPlayer } from "@/shared/components/common";
 
 export function DictionaryManagementDetail() {
   const params = useParams();
   const router = useRouter();
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const id = Number(params.id);
   const [item, setItem] = useState<DictionaryItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<DictionaryItem>>({});
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-  // Video controls
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
 
   // Load data
   useEffect(() => {
@@ -56,25 +39,6 @@ export function DictionaryManagementDetail() {
     router.push("/dictionary-management");
   };
 
-  // Video controls
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
-
   if (!item) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
@@ -92,8 +56,11 @@ export function DictionaryManagementDetail() {
   }
 
   const allCategories = Array.from(
-    new Set(dictionaryItems.map((w) => w.category))
+    new Set(dictionaryItems.map((w) => w.category)),
   );
+
+  const currentVideoUrl = isEditing ? editForm.videoUrl : item.videoUrl;
+  const currentImageUrl = isEditing ? editForm.imageUrl : item.imageUrl;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -114,80 +81,32 @@ export function DictionaryManagementDetail() {
       {/* Content */}
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
         {/* Video Section */}
-        <div className="bg-gray-900 relative group">
-          <div className="aspect-video max-h-[500px] w-full relative overflow-hidden bg-black flex items-center justify-center">
-            {(isEditing ? editForm.videoUrl : item.videoUrl) ? (
-              <>
-                <video
-                  ref={videoRef}
-                  className="w-full h-full object-contain cursor-pointer"
-                  controls={false}
-                  muted
-                  loop
-                  playsInline
-                  onClick={togglePlay}
-                >
-                  <source
-                    src={isEditing ? editForm.videoUrl : item.videoUrl}
-                    type="video/mp4"
-                  />
-                </video>
-
-                {/* Play overlay */}
-                {!isPlaying && (
-                  <div
-                    onClick={togglePlay}
-                    className="absolute inset-0 bg-black/30 flex items-center justify-center cursor-pointer"
-                  >
-                    <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
-                      <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center">
-                        <Play
-                          size={28}
-                          className="text-primary-600 fill-current ml-1"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Controls */}
-                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={togglePlay}
-                      className="p-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors"
-                    >
-                      {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-                    </button>
-                    <button
-                      onClick={toggleMute}
-                      className="p-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors"
-                    >
-                      {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                    </button>
-                  </div>
-                  <button
-                    onClick={() => videoRef.current?.requestFullscreen()}
-                    className="p-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors"
-                  >
-                    <Maximize size={20} />
-                  </button>
-                </div>
-              </>
-            ) : (isEditing ? editForm.imageUrl : item.imageUrl) ? (
-              // eslint-disable-next-line @next/next/no-img-element
+        <div className="aspect-video max-h-[500px] w-full">
+          {currentVideoUrl ? (
+            <VideoPlayer
+              key={currentVideoUrl}
+              videoUrl={currentVideoUrl}
+              title={item.word}
+              autoPlay={false}
+              loop={true}
+              showControls={true}
+              className="rounded-t-3xl"
+            />
+          ) : currentImageUrl ? (
+            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={isEditing ? editForm.imageUrl : item.imageUrl}
+                src={currentImageUrl}
                 alt={item.word}
                 className="w-full h-full object-contain"
               />
-            ) : (
-              <div className="flex flex-col items-center justify-center text-gray-500">
-                <Video size={48} className="mb-2 opacity-50" />
-                <p>Chưa có video hoặc hình ảnh</p>
-              </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 bg-gray-900">
+              <Video size={48} className="mb-2 opacity-50" />
+              <p>Chưa có video hoặc hình ảnh</p>
+            </div>
+          )}
         </div>
 
         {/* Info Section */}

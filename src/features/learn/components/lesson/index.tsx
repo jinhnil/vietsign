@@ -21,7 +21,11 @@ import {
   SelfLearnTopic,
   SelfLearnLesson,
 } from "@/data/selfLearnData";
-import { BaseStepItem, stepTypeConfig } from "@/shared/components/common/step";
+import {
+  BaseStepItem,
+  stepTypeConfig,
+  stepTypeMeta,
+} from "@/shared/components/common/step";
 import Link from "next/link";
 
 export function LessonDetail() {
@@ -159,7 +163,7 @@ export function LessonDetail() {
         <div className="divide-y divide-gray-100">
           {steps.map((step, index) => {
             const typeConfig =
-              stepTypeConfig[step.type] || stepTypeConfig.vocabulary;
+              stepTypeMeta[step.type] || stepTypeMeta.vocabulary;
             const TypeIcon = getIconForType(step.type);
 
             return (
