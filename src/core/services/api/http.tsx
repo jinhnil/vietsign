@@ -8,8 +8,14 @@ export const injectStore = (_store: Store) => {
   store = _store;
 };
 
-export const defaultHttp = axios.create();
-const http = axios.create();
+export const defaultHttp = axios.create({
+  baseURL:
+    process.env.NEXT_PUBLIC_API_ROOT_NODE || process.env.NEXT_PUBLIC_API_ROOT,
+});
+const http = axios.create({
+  baseURL:
+    process.env.NEXT_PUBLIC_API_ROOT_NODE || process.env.NEXT_PUBLIC_API_ROOT,
+});
 
 http.interceptors.request.use(
   (config) => {

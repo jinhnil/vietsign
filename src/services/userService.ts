@@ -51,7 +51,22 @@ export interface UserListResponse {
  */
 export async function fetchAllUsers(query?: any): Promise<UserListResponse> {
   try {
-    const response = await UserModel.getAllUsers(query);
+    // Map frontend query params to backend params
+    const apiQuery = {
+      ...query,
+      q: query?.search,
+      school_id: query?.facilityId, // Map facilityId to school_id
+    };
+
+    let response;
+    if (query?.role === "TEACHER") {
+      response = await UserModel.getTeachers(apiQuery);
+    } else if (query?.role === "STUDENT") {
+      response = await UserModel.getStudents(apiQuery);
+    } else {
+      response = await UserModel.getAllUsers(apiQuery);
+    }
+
     let users: UserItem[] = [];
 
     if (response.users && Array.isArray(response.users)) {
@@ -164,8 +179,16 @@ export async function fetchUsersByRole(role: string): Promise<UserItem[]> {
 export async function fetchUsersByFacility(
   facilityId: number,
 ): Promise<UserItem[]> {
-  const result = await fetchAllUsers({ facilityId });
-  return result.users;
+  try {
+    const [teachersRes, studentsRes] = await Promise.all([
+      fetchAllUsers({ role: "TEACHER", facilityId }),
+      fetchAllUsers({ role: "STUDENT", facilityId }),
+    ]);
+    return [...teachersRes.users, ...studentsRes.users];
+  } catch (error) {
+    console.error("Error fetching users by facility:", error);
+    return [];
+  }
 }
 
 /**

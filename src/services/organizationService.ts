@@ -11,6 +11,7 @@ import {
   OrganizationItem,
   organizationStatusConfig,
 } from "@/data/organizationsData";
+import { fetchUsersByFacility } from "./userService";
 
 // Re-export types và constants
 export { organizationStatusConfig } from "@/data/organizationsData";
@@ -49,7 +50,7 @@ function convertApiToOrganizationItem(apiOrg: any): OrganizationItem {
  * Lấy tất cả organizations từ API
  */
 export async function fetchAllOrganizations(
-  query?: any
+  query?: any,
 ): Promise<OrganizationItem[]> {
   if (!USE_API) {
     return mockOrganizations;
@@ -67,7 +68,7 @@ export async function fetchAllOrganizations(
   } catch (error) {
     console.error(
       "Error fetching organizations from API, falling back to mock data:",
-      error
+      error,
     );
     return mockOrganizations;
   }
@@ -77,7 +78,7 @@ export async function fetchAllOrganizations(
  * Lấy organization theo ID
  */
 export async function fetchOrganizationById(
-  id: number
+  id: number,
 ): Promise<OrganizationItem | undefined> {
   if (!USE_API) {
     return mockOrganizations.find((o) => o.id === id);
@@ -87,7 +88,19 @@ export async function fetchOrganizationById(
     const response = await OrganizationModel.getById(id);
     const data = response?.organization || response;
     if (data) {
-      return convertApiToOrganizationItem(data);
+      const orgItem = convertApiToOrganizationItem(data);
+      // Enrich with users (managers, teachers, students)
+      try {
+        const users = await fetchUsersByFacility(id);
+        orgItem.managers = users.filter((u) => u.role === "FACILITY_MANAGER");
+        orgItem.teachers = users.filter((u) => u.role === "TEACHER");
+        orgItem.students = users.filter((u) => u.role === "STUDENT");
+        orgItem.teacherCount = orgItem.teachers.length;
+        orgItem.studentCount = orgItem.students.length;
+      } catch (e) {
+        console.warn("Failed to fetch users for organization enrichment", e);
+      }
+      return orgItem;
     }
     return undefined;
   } catch (error) {
@@ -100,7 +113,7 @@ export async function fetchOrganizationById(
  * Tạo organization mới
  */
 export async function createOrganization(
-  data: Partial<OrganizationItem>
+  data: Partial<OrganizationItem>,
 ): Promise<OrganizationItem | null> {
   try {
     const response = await OrganizationModel.create(data);
@@ -119,7 +132,7 @@ export async function createOrganization(
  */
 export async function updateOrganization(
   id: number,
-  data: Partial<OrganizationItem>
+  data: Partial<OrganizationItem>,
 ): Promise<OrganizationItem | null> {
   try {
     const response = await OrganizationModel.update(id, data);
@@ -156,7 +169,7 @@ export function getActiveOrganizations(): OrganizationItem[] {
 }
 
 export function getOrganizationsByProvince(
-  provinceCode: number
+  provinceCode: number,
 ): OrganizationItem[] {
   return mockOrganizations.filter((o) => o.provinceCode === provinceCode);
 }

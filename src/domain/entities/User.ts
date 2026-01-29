@@ -90,7 +90,20 @@ class UserModelClass extends Base {
 
   // ==================== ADMIN FUNCTIONS ====================
 
+  // GET /user/teachers - Lấy danh sách giáo viên
+  getTeachers = async (query?: any): Promise<any> => {
+    const res = await this.apiGet("/teachers", query);
+    return res.data;
+  };
+
+  // GET /user/students - Lấy danh sách học sinh
+  getStudents = async (query?: any): Promise<any> => {
+    const res = await this.apiGet("/students", query);
+    return res.data;
+  };
+
   // GET /user/all - Lấy danh sách tất cả user (Admin only)
+  // Note: Backend might not have generic /users endpoint yet.
   getAllUsers = async (query?: any): Promise<any> => {
     const res = await this.apiGet("", query);
     return res.data;
@@ -129,7 +142,7 @@ class UserModelClass extends Base {
   // PUT /user/:userId/reset-password - Reset mật khẩu user (Admin only)
   resetUserPassword = async (
     userId: number,
-    newPassword: string
+    newPassword: string,
   ): Promise<any> => {
     const res = await this.apiPut(`/${userId}/reset-password`, { newPassword });
     return res.data;
