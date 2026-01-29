@@ -5,6 +5,5 @@
 
 export * from "./components";
 export * from "./components/course";
-export * from "./components/topic";
 export * from "./components/lesson";
 export * from "./components/step";

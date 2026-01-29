@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
@@ -9,6 +9,7 @@ import { Button, Form, Input, message } from "antd";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import Auth from "@/domain/entities/Auth";
 import Loader from "@/shared/components/ui/Loader";
+import { supabase } from "@/core/lib/supabaseClient";
 
 export const ResetPassword: React.FC = () => {
   const [form] = Form.useForm();
@@ -16,13 +17,45 @@ export const ResetPassword: React.FC = () => {
   const searchParams = useSearchParams();
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState("checking"); // checking, success, error, ready
 
-  // Lấy token từ URL query params
-  const token = searchParams.get("token");
+  useEffect(() => {
+    const initializeResetFlow = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        setStatus("ready");
+        return;
+      }
+      const queryParam = new URLSearchParams(window.location.search);
+      const code = queryParam.get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          setError(error.message);
+          setStatus("error");
+          return;
+        } else {
+          setStatus("ready");
+        }
+      } else {
+        setStatus("error");
+      }
+    };
+
+    initializeResetFlow();
+  }, []);
 
   const resetPasswordMutation = useMutation({
-    mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) =>
-      Auth.resetPassword(token, newPassword),
+    mutationFn: ({
+      token,
+      newPassword,
+    }: {
+      token: string;
+      newPassword: string;
+    }) => Auth.resetPassword(token, newPassword),
     onSuccess: (res) => {
       setIsSuccess(true);
       setError(null);
@@ -37,19 +70,17 @@ export const ResetPassword: React.FC = () => {
     },
   });
 
-  const handleSubmit = (values: any) => {
-    if (!token) {
-      setError("Token không hợp lệ. Vui lòng yêu cầu đặt lại mật khẩu mới.");
-      return;
-    }
+  const handleSubmit = async (values: any) => {
+    const newPassword = values.password;
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
 
-    if (values.password !== values.confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp!");
-      return;
+    if (error) {
+      setError(error.message);
+      message.error(error.message);
+    } else {
+      setIsSuccess(true);
+      message.success("Mật khẩu đã được cập nhật thành công!");
     }
-
-    setError(null);
-    resetPasswordMutation.mutate({ token, newPassword: values.password });
   };
 
   if (resetPasswordMutation.isPending) {
@@ -69,7 +100,8 @@ export const ResetPassword: React.FC = () => {
               Thành công!
             </h2>
             <p className="text-gray-500 mb-8">
-              Mật khẩu của bạn đã được cập nhật. Bạn có thể đăng nhập với mật khẩu mới.
+              Mật khẩu của bạn đã được cập nhật. Bạn có thể đăng nhập với mật
+              khẩu mới.
             </p>
           </div>
 
@@ -87,7 +119,7 @@ export const ResetPassword: React.FC = () => {
   }
 
   // Kiểm tra token không hợp lệ
-  if (!token) {
+  if (status === "error") {
     return (
       <div className="min-h-screen pt-20 flex items-center justify-center bg-gray-50 px-4">
         <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 animate-in fade-in slide-in-from-bottom-2">
@@ -180,7 +212,9 @@ export const ResetPassword: React.FC = () => {
                   if (!value || getFieldValue("password") === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error("Mật khẩu xác nhận không khớp!"));
+                  return Promise.reject(
+                    new Error("Mật khẩu xác nhận không khớp!"),
+                  );
                 },
               }),
             ]}

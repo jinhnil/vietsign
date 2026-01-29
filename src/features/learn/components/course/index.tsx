@@ -13,9 +13,9 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import {
   getSelfLearnCourseById,
-  getTopicsByCourseId,
+  getLessonsByCourseId,
   SelfLearnCourse,
-  SelfLearnTopic,
+  SelfLearnLesson,
 } from "@/data/selfLearnData";
 import Link from "next/link";
 
@@ -25,7 +25,7 @@ export function CourseDetail() {
   const courseId = Number(params.id);
 
   const [course, setCourse] = useState<SelfLearnCourse | null>(null);
-  const [topics, setTopics] = useState<SelfLearnTopic[]>([]);
+  const [lessons, setLessons] = useState<SelfLearnLesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -36,8 +36,8 @@ export function CourseDetail() {
         setCourse(foundCourse || null);
 
         if (foundCourse) {
-          const courseTopics = getTopicsByCourseId(courseId);
-          setTopics(courseTopics);
+          const courseLessons = getLessonsByCourseId(courseId);
+          setLessons(courseLessons);
         }
       } catch (error) {
         console.error("Failed to load course", error);
@@ -70,8 +70,8 @@ export function CourseDetail() {
     );
   }
 
-  const completedTopics = topics.filter((t) => t.completed).length;
-  const progress = Math.round((completedTopics / topics.length) * 100) || 0;
+  const completedLessons = lessons.filter((l) => l.completed).length;
+  const progress = Math.round((completedLessons / lessons.length) * 100) || 0;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
@@ -117,11 +117,11 @@ export function CourseDetail() {
               <div className="flex flex-wrap gap-6 text-sm">
                 <div className="flex items-center gap-2">
                   <BookOpen size={18} className="opacity-80" />
-                  <span>{course.totalLessons} bài học</span>
+                  <span>{lessons.length} bài học</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <BarChart size={18} className="opacity-80" />
-                  <span>{topics.length} chủ đề</span>
+                  <span>{completedLessons} đã hoàn thành</span>
                 </div>
               </div>
             </div>
@@ -136,35 +136,35 @@ export function CourseDetail() {
           </div>
         </div>
 
-        {/* Header for Topics section */}
+        {/* Header for Lessons section */}
         <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-100 bg-gray-50/50">
           <BookOpen size={18} className="text-primary-600" />
           <span className="text-sm font-medium text-gray-900">
-            Chủ đề học tập
+            Danh sách bài học
           </span>
           <span className="px-2 py-0.5 rounded-full text-xs bg-primary-100 text-primary-700">
-            {topics.length}
+            {lessons.length}
           </span>
         </div>
       </div>
 
-      {/* Topics List */}
+      {/* Lessons List */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="divide-y divide-gray-100">
-          {topics.map((topic, index) => (
+          {lessons.map((lesson, index) => (
             <Link
-              key={topic.id}
-              href={`/learn/${courseId}/${topic.id}`}
+              key={lesson.id}
+              href={`/learn/${courseId}/${lesson.id}`}
               className="p-5 flex items-center gap-4 hover:bg-gray-50 transition-colors cursor-pointer group"
             >
               <div
                 className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                  topic.completed
+                  lesson.completed
                     ? "bg-green-100 text-green-600"
                     : "bg-primary-50 text-primary-600"
                 }`}
               >
-                {topic.completed ? (
+                {lesson.completed ? (
                   <CheckCircle size={24} />
                 ) : (
                   <span className="font-bold text-lg">{index + 1}</span>
@@ -174,21 +174,21 @@ export function CourseDetail() {
               <div className="flex-1 min-w-0">
                 <h3
                   className={`font-medium truncate ${
-                    topic.completed ? "text-gray-900" : "text-gray-700"
+                    lesson.completed ? "text-gray-900" : "text-gray-700"
                   }`}
                 >
-                  {topic.title}
+                  {lesson.title}
                 </h3>
                 <p className="text-sm text-gray-500 truncate">
-                  {topic.subtitle} • {topic.lessonsCount} bài học
+                  {lesson.description} • {lesson.stepsCount} bước học
                 </p>
               </div>
 
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <Play size={14} className="text-primary-500" />
+                  <Clock size={14} className="text-gray-400" />
                   <span className="text-sm text-gray-500">
-                    {topic.lessonsCount} bài
+                    {lesson.duration}
                   </span>
                 </div>
                 <ChevronRight
@@ -200,6 +200,21 @@ export function CourseDetail() {
           ))}
         </div>
       </div>
+
+      {/* Start Learning Button */}
+      {lessons.length > 0 && (
+        <div className="text-center">
+          <Link
+            href={`/learn/${courseId}/${
+              lessons.find((l) => !l.completed)?.id || lessons[0].id
+            }`}
+            className="inline-flex items-center gap-2 px-8 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-semibold shadow-lg shadow-primary-600/25"
+          >
+            <Play size={20} fill="white" />
+            {completedLessons > 0 ? "Tiếp tục học" : "Bắt đầu học"}
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

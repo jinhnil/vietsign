@@ -7,20 +7,59 @@ const supabaseAnonKey =
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export type Message = {
-  id: string;
+/**
+ * Types cho Database (theo schema Supabase của bạn)
+ */
+
+// Bảng rooms - Phòng chat
+export type Room = {
+  id: string; // uuid
+  name: string | null;
+  is_group: boolean;
   created_at: string;
-  content: string;
-  sender_id: string;
-  receiver_id: string;
-  conversation_id?: string;
-  is_read: boolean;
+  pinned_message_id: string | null; // uuid
 };
 
-export type Conversation = {
-  id: string;
+// Bảng room_participants - Thành viên trong phòng
+export type RoomParticipant = {
+  room_id: string; // uuid
+  user_id: string; // text (ID từ hệ thống của bạn)
+  joined_at: string;
+};
+
+// Bảng messages - Tin nhắn
+export type Message = {
+  id: string; // uuid
+  room_id: string; // uuid
+  user_id: string; // text (ID người gửi)
+  content: string;
+  created_at: string;
+  reply_to: string | null; // uuid (tin nhắn đang reply)
+  is_edited: boolean;
+  is_deleted: boolean;
+  type: string; // "text", "image", "file", etc.
+};
+
+// Bảng message_statuses - Trạng thái đọc tin nhắn
+export type MessageStatus = {
+  message_id: string; // uuid
+  user_id: string; // text
+  status: string; // "sent", "delivered", "read"
+  updated_at: string;
+};
+
+// Bảng blocks - Chặn người dùng
+export type Block = {
+  blocker_id: string; // text
+  blocked_id: string; // text
+  created_at: string;
+};
+
+// Bảng user_device_tokens - Token thiết bị cho Push Notification
+export type UserDeviceToken = {
+  user_id: string; // text
+  fcm_token: string; // text
+  device_type: string; // "ios", "android", "web"
   created_at: string;
   updated_at: string;
-  participant_ids: string[];
-  last_message?: string;
 };

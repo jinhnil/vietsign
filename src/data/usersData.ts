@@ -152,8 +152,10 @@ const generateMockUsers = (count: number): UserItem[] => {
     let role = "STUDENT";
     const rand = Math.random();
     if (rand < 0.05) role = "ADMIN";
-    else if (rand < 0.1) role = "FACILITY_MANAGER";
-    else if (rand < 0.25) role = "TEACHER";
+    else if (rand < 0.15)
+      role = "FACILITY_MANAGER"; // Increased chance
+    else if (rand < 0.35)
+      role = "TEACHER"; // Increased chance from 0.25
     else if (rand < 0.9) role = "STUDENT";
     else if (rand < 0.95) role = "TESTER";
     else role = "USER";
@@ -163,6 +165,13 @@ const generateMockUsers = (count: number): UserItem[] => {
     const emailName = removeVietnameseTones(fullName)
       .toLowerCase()
       .replace(/\s+/g, ".");
+
+    // Assign facility to Managers, Teachers, AND Students
+    // Facilities IDs are 1-16
+    const facilityId =
+      role === "FACILITY_MANAGER" || role === "TEACHER" || role === "STUDENT"
+        ? Math.floor(Math.random() * 16) + 1
+        : undefined;
 
     return {
       id,
@@ -177,15 +186,12 @@ const generateMockUsers = (count: number): UserItem[] => {
       createdAt: new Date(
         Date.now() - Math.floor(Math.random() * 31536000000),
       ).toISOString(), // Last year
-      facilityId:
-        role === "FACILITY_MANAGER" || role === "TEACHER"
-          ? Math.floor(Math.random() * 5) + 1
-          : undefined,
+      facilityId: facilityId,
     };
   });
 };
 
-export const mockUsers: UserItem[] = generateMockUsers(300);
+export const mockUsers: UserItem[] = generateMockUsers(500); // Increased from 300 to 500
 
 // Helper functions
 export function getUserById(id: number): UserItem | undefined {

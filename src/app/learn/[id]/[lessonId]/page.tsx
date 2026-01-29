@@ -4,7 +4,7 @@ import { LessonDetail } from "@/features/learn";
 
 export const metadata: Metadata = {
   title: "Chi tiết bài học - VietSignSchool",
-  description: "Nội dung bài học tự học ngôn ngữ ký hiệu",
+  description: "Learn Vietnamese Sign Language Lesson Detail",
 };
 
 export default function LearnLessonPage() {

@@ -15,21 +15,10 @@ export interface SelfLearnCourse {
   duration: string;
   level: string;
   progress?: number;
-  topics: SelfLearnTopic[];
-}
-
-export interface SelfLearnTopic {
-  id: number;
-  courseId: number;
-  title: string;
-  subtitle: string;
-  lessonsCount: number;
-  completed?: boolean;
 }
 
 export interface SelfLearnLesson {
   id: number;
-  topicId: number;
   courseId: number;
   title: string;
   description: string;
@@ -63,7 +52,7 @@ const vocabularyWords = [
   { word: "Hoa", videoUrl: "https://player.vimeo.com/video/824804225" },
 ];
 
-// All courses data based on Excel file
+// All courses data
 export const selfLearnCourses: SelfLearnCourse[] = [
   {
     id: 1,
@@ -73,33 +62,10 @@ export const selfLearnCourses: SelfLearnCourse[] = [
       "Học làm chữ cái ngón tay, dấu thanh và số theo mẫu. Bao gồm các hoạt động nối/ghép và lật thẻ tranh.",
     colorClass: "bg-gradient-to-r from-rose-500 to-pink-600",
     textClass: "text-rose-600",
-    totalLessons: 30,
+    totalLessons: 12,
     duration: "5 giờ",
     level: "Cơ bản",
     progress: 0,
-    topics: [
-      {
-        id: 101,
-        courseId: 1,
-        title: "Chữ cái ngón tay A-M",
-        subtitle: "Học 13 chữ cái đầu",
-        lessonsCount: 10,
-      },
-      {
-        id: 102,
-        courseId: 1,
-        title: "Chữ cái ngón tay N-Z",
-        subtitle: "Học 13 chữ cái cuối",
-        lessonsCount: 10,
-      },
-      {
-        id: 103,
-        courseId: 1,
-        title: "Số tự nhiên 0-20",
-        subtitle: "Học đếm từ 0 đến 20",
-        lessonsCount: 10,
-      },
-    ],
   },
   {
     id: 2,
@@ -109,40 +75,10 @@ export const selfLearnCourses: SelfLearnCourse[] = [
       "Học về các bộ phận cơ thể, hoạt động hàng ngày, thế giới cảm xúc và sở thích.",
     colorClass: "bg-gradient-to-r from-amber-500 to-orange-600",
     textClass: "text-amber-600",
-    totalLessons: 18,
+    totalLessons: 10,
     duration: "3 giờ",
     level: "Cơ bản",
     progress: 0,
-    topics: [
-      {
-        id: 201,
-        courseId: 2,
-        title: "Cơ thể của em",
-        subtitle: "Các bộ phận cơ thể",
-        lessonsCount: 5,
-      },
-      {
-        id: 202,
-        courseId: 2,
-        title: "Hoạt động hàng ngày",
-        subtitle: "Các hoạt động thường ngày",
-        lessonsCount: 5,
-      },
-      {
-        id: 203,
-        courseId: 2,
-        title: "Thế giới cảm xúc",
-        subtitle: "Diễn đạt cảm xúc",
-        lessonsCount: 4,
-      },
-      {
-        id: 204,
-        courseId: 2,
-        title: "Sở thích và ước mơ",
-        subtitle: "Nói về sở thích",
-        lessonsCount: 4,
-      },
-    ],
   },
   {
     id: 3,
@@ -152,33 +88,10 @@ export const selfLearnCourses: SelfLearnCourse[] = [
       "Học về các thành viên gia đình, ngôi nhà và cách thể hiện yêu thương.",
     colorClass: "bg-gradient-to-r from-emerald-500 to-teal-600",
     textClass: "text-emerald-600",
-    totalLessons: 18,
+    totalLessons: 10,
     duration: "3 giờ",
     level: "Cơ bản",
     progress: 0,
-    topics: [
-      {
-        id: 301,
-        courseId: 3,
-        title: "Người thân của em",
-        subtitle: "Các thành viên gia đình",
-        lessonsCount: 6,
-      },
-      {
-        id: 302,
-        courseId: 3,
-        title: "Ngôi nhà của em",
-        subtitle: "Đồ vật trong nhà",
-        lessonsCount: 6,
-      },
-      {
-        id: 303,
-        courseId: 3,
-        title: "Yêu thương và Chia sẻ",
-        subtitle: "Thể hiện tình cảm",
-        lessonsCount: 6,
-      },
-    ],
   },
   {
     id: 4,
@@ -188,40 +101,10 @@ export const selfLearnCourses: SelfLearnCourse[] = [
       "Học về môi trường học đường, giao tiếp lịch sự và an toàn giao thông.",
     colorClass: "bg-gradient-to-r from-blue-500 to-indigo-600",
     textClass: "text-blue-600",
-    totalLessons: 17,
+    totalLessons: 8,
     duration: "3 giờ",
     level: "Cơ bản",
     progress: 0,
-    topics: [
-      {
-        id: 401,
-        courseId: 4,
-        title: "Trường học vui vẻ",
-        subtitle: "Từ vựng về trường học",
-        lessonsCount: 5,
-      },
-      {
-        id: 402,
-        courseId: 4,
-        title: "Giao tiếp lịch sự",
-        subtitle: "Cách giao tiếp tốt",
-        lessonsCount: 4,
-      },
-      {
-        id: 403,
-        courseId: 4,
-        title: "Mọi người ở quanh em",
-        subtitle: "Người xung quanh",
-        lessonsCount: 4,
-      },
-      {
-        id: 404,
-        courseId: 4,
-        title: "Giao thông và an toàn",
-        subtitle: "An toàn giao thông",
-        lessonsCount: 4,
-      },
-    ],
   },
   {
     id: 5,
@@ -231,44 +114,76 @@ export const selfLearnCourses: SelfLearnCourse[] = [
       "Khám phá thiên nhiên kỳ thú, đất nước tươi đẹp và bảo vệ môi trường.",
     colorClass: "bg-gradient-to-r from-green-500 to-lime-600",
     textClass: "text-green-600",
-    totalLessons: 17,
+    totalLessons: 8,
     duration: "3 giờ",
     level: "Cơ bản",
     progress: 0,
-    topics: [
-      {
-        id: 501,
-        courseId: 5,
-        title: "Thiên nhiên kỳ thú",
-        subtitle: "Động vật, thực vật",
-        lessonsCount: 5,
-      },
-      {
-        id: 502,
-        courseId: 5,
-        title: "Đất nước tươi đẹp",
-        subtitle: "Địa danh Việt Nam",
-        lessonsCount: 4,
-      },
-      {
-        id: 503,
-        courseId: 5,
-        title: "Uống nước nhớ nguồn",
-        subtitle: "Truyền thống văn hóa",
-        lessonsCount: 4,
-      },
-      {
-        id: 504,
-        courseId: 5,
-        title: "Trái đất xanh",
-        subtitle: "Bảo vệ môi trường",
-        lessonsCount: 4,
-      },
-    ],
   },
 ];
 
-// Generate steps for a self-learn lesson with all step types from Excel
+// Lesson titles for each course
+const lessonTitlesPerCourse: Record<number, string[]> = {
+  1: [
+    "Chữ cái A-E",
+    "Chữ cái F-J",
+    "Chữ cái K-O",
+    "Chữ cái P-T",
+    "Chữ cái U-Z",
+    "Dấu thanh cơ bản",
+    "Số 0-5",
+    "Số 6-10",
+    "Số 11-15",
+    "Số 16-20",
+    "Ôn tập chữ cái",
+    "Ôn tập số",
+  ],
+  2: [
+    "Khuôn mặt",
+    "Bàn tay và chân",
+    "Các bộ phận cơ thể khác",
+    "Hoạt động buổi sáng",
+    "Hoạt động buổi chiều",
+    "Cảm xúc vui buồn",
+    "Cảm xúc khác",
+    "Sở thích cá nhân",
+    "Ước mơ của em",
+    "Ôn tập tổng hợp",
+  ],
+  3: [
+    "Bố và Mẹ",
+    "Anh chị em",
+    "Ông bà",
+    "Các phòng trong nhà",
+    "Đồ dùng phòng khách",
+    "Đồ dùng phòng ngủ",
+    "Đồ dùng nhà bếp",
+    "Yêu thương gia đình",
+    "Chia sẻ và giúp đỡ",
+    "Ôn tập gia đình",
+  ],
+  4: [
+    "Lớp học",
+    "Đồ dùng học tập",
+    "Thầy cô giáo",
+    "Bạn bè",
+    "Chào hỏi lịch sự",
+    "Xin phép và cảm ơn",
+    "Phương tiện giao thông",
+    "An toàn giao thông",
+  ],
+  5: [
+    "Động vật nuôi",
+    "Động vật hoang dã",
+    "Cây cối và hoa",
+    "Địa danh nổi tiếng",
+    "Lễ hội Việt Nam",
+    "Văn hóa dân tộc",
+    "Bảo vệ môi trường",
+    "Trái đất xanh",
+  ],
+};
+
+// Generate steps for a self-learn lesson
 const generateStepsForSelfLearnLesson = (
   lessonId: number,
   lessonOrder: number,
@@ -280,7 +195,7 @@ const generateStepsForSelfLearnLesson = (
   const startIdx = (lessonOrder * 2) % vocabularyWords.length;
   const vocabCount = 3;
 
-  // === STEP 1: Vocabulary - Quan sát video và làm ký hiệu theo mẫu ===
+  // Step 1-3: Vocabulary
   for (let i = 0; i < vocabCount; i++) {
     const vocab = vocabularyWords[(startIdx + i) % vocabularyWords.length];
     steps.push({
@@ -296,7 +211,7 @@ const generateStepsForSelfLearnLesson = (
     stepOrder++;
   }
 
-  // === STEP 2: Sentence - Cấu trúc câu ===
+  // Step 4: Sentence
   const sentenceWords = vocabularyWords
     .slice(startIdx, startIdx + 3)
     .map((v) => ({
@@ -315,25 +230,7 @@ const generateStepsForSelfLearnLesson = (
   });
   stepOrder++;
 
-  // === STEP 3: Match Video to Text - Nối kí hiệu với từ (2.5) ===
-  const matchPairs = vocabularyWords
-    .slice(startIdx, startIdx + 4)
-    .map((v, idx) => ({
-      id: idx + 1,
-      videoUrl: v.videoUrl,
-      matchText: v.word,
-    }));
-  steps.push({
-    id: lessonId * 100 + stepOrder,
-    title: "Nối kí hiệu với từ tương ứng",
-    type: "match-video-to-text" as StepType,
-    order: stepOrder,
-    completed: false,
-    matchPairs: matchPairs,
-  });
-  stepOrder++;
-
-  // === STEP 4: Quiz Video to Text - Xem kí hiệu chọn từ (2.4) ===
+  // Step 5: Quiz Video to Text
   const quizVocab = vocabularyWords[(startIdx + 1) % vocabularyWords.length];
   const wrongOptions = vocabularyWords
     .filter((_, i) => i !== (startIdx + 1) % vocabularyWords.length)
@@ -355,41 +252,7 @@ const generateStepsForSelfLearnLesson = (
   });
   stepOrder++;
 
-  // === STEP 5: Flip Card - Lật mở ô cửa (3.4) ===
-  const flipCards = vocabularyWords
-    .slice(startIdx, startIdx + 4)
-    .map((v, idx) => ({
-      id: idx + 1,
-      videoUrl: v.videoUrl,
-      matchText: v.word,
-    }));
-  steps.push({
-    id: lessonId * 100 + stepOrder,
-    title: "Lật mở ô cửa",
-    type: "flip-card" as StepType,
-    order: stepOrder,
-    completed: false,
-    flipCards: flipCards,
-  });
-  stepOrder++;
-
-  // === STEP 6: True/False - Đúng sai (3.5) ===
-  const trueFalseVocab =
-    vocabularyWords[(startIdx + 2) % vocabularyWords.length];
-  const isTrue = lessonOrder % 2 === 0; // Alternate between true/false
-  steps.push({
-    id: lessonId * 100 + stepOrder,
-    title: "Kiểm tra: Đúng hay Sai?",
-    type: "true-false" as StepType,
-    order: stepOrder,
-    completed: false,
-    statement: isTrue ? trueFalseVocab.word : wrongOptions[0]?.word || "Khác",
-    statementVideoUrl: trueFalseVocab.videoUrl,
-    isTrue: isTrue,
-  });
-  stepOrder++;
-
-  // === STEP 7: Quiz Input - Tự gõ đáp án ===
+  // Step 6: Quiz Input
   steps.push({
     id: lessonId * 100 + stepOrder,
     title: "Kiểm tra: Gõ đáp án",
@@ -404,24 +267,24 @@ const generateStepsForSelfLearnLesson = (
   return steps;
 };
 
-// Generate lessons for a topic
-const generateLessonsForTopic = (topic: SelfLearnTopic): SelfLearnLesson[] => {
+// Generate lessons for a course
+const generateLessonsForCourse = (courseId: number): SelfLearnLesson[] => {
+  const lessonTitles = lessonTitlesPerCourse[courseId] || [];
   const lessons: SelfLearnLesson[] = [];
 
-  for (let i = 0; i < topic.lessonsCount; i++) {
-    const lessonId = topic.id * 10 + i + 1;
+  lessonTitles.forEach((title, index) => {
+    const lessonId = courseId * 100 + index + 1;
     lessons.push({
       id: lessonId,
-      topicId: topic.id,
-      courseId: topic.courseId,
-      title: `Bài ${i + 1}: ${topic.title}`,
-      description: `Học ${topic.subtitle.toLowerCase()} - phần ${i + 1}`,
-      duration: "10 phút",
-      order: i + 1,
-      completed: i === 0,
+      courseId: courseId,
+      title: `Bài ${index + 1}: ${title}`,
+      description: `Học về ${title.toLowerCase()}`,
+      duration: "15 phút",
+      order: index + 1,
+      completed: index < 2, // First 2 lessons marked as completed
       stepsCount: 6,
     });
-  }
+  });
 
   return lessons;
 };
@@ -442,40 +305,20 @@ export const getSelfLearnCourseById = (
   return selfLearnCourses.find((c) => c.id === courseId);
 };
 
-// Get topics by course ID
-export const getTopicsByCourseId = (courseId: number): SelfLearnTopic[] => {
-  const course = selfLearnCourses.find((c) => c.id === courseId);
-  return course?.topics || [];
-};
-
-// Get topic by ID
-export const getTopicById = (topicId: number): SelfLearnTopic | undefined => {
-  for (const course of selfLearnCourses) {
-    const topic = course.topics.find((t) => t.id === topicId);
-    if (topic) return topic;
+// Get lessons by course ID
+export const getLessonsByCourseId = (courseId: number): SelfLearnLesson[] => {
+  if (!lessonsCache[courseId]) {
+    lessonsCache[courseId] = generateLessonsForCourse(courseId);
   }
-  return undefined;
-};
-
-// Get lessons by topic ID
-export const getLessonsByTopicId = (topicId: number): SelfLearnLesson[] => {
-  if (!lessonsCache[topicId]) {
-    const topic = getTopicById(topicId);
-    if (topic) {
-      lessonsCache[topicId] = generateLessonsForTopic(topic);
-    } else {
-      lessonsCache[topicId] = [];
-    }
-  }
-  return lessonsCache[topicId];
+  return lessonsCache[courseId];
 };
 
 // Get lesson by ID
 export const getSelfLearnLessonById = (
   lessonId: number,
 ): SelfLearnLesson | undefined => {
-  const topicId = Math.floor(lessonId / 10);
-  const lessons = getLessonsByTopicId(topicId);
+  const courseId = Math.floor(lessonId / 100);
+  const lessons = getLessonsByCourseId(courseId);
   return lessons.find((l) => l.id === lessonId);
 };
 
@@ -484,7 +327,7 @@ export const getSelfLearnStepsByLessonId = (
   lessonId: number,
 ): BaseStepItem[] => {
   if (!stepsCache[lessonId]) {
-    const lessonOrder = (lessonId % 10) - 1;
+    const lessonOrder = (lessonId % 100) - 1;
     stepsCache[lessonId] = generateStepsForSelfLearnLesson(
       lessonId,
       lessonOrder,

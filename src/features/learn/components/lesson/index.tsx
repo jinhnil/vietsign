@@ -14,29 +14,21 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import {
   getSelfLearnCourseById,
-  getTopicById,
   getSelfLearnLessonById,
   getSelfLearnStepsByLessonId,
   SelfLearnCourse,
-  SelfLearnTopic,
   SelfLearnLesson,
 } from "@/data/selfLearnData";
-import {
-  BaseStepItem,
-  stepTypeConfig,
-  stepTypeMeta,
-} from "@/shared/components/common/step";
+import { BaseStepItem, stepTypeMeta } from "@/shared/components/common/step";
 import Link from "next/link";
 
 export function LessonDetail() {
   const params = useParams();
   const router = useRouter();
   const courseId = Number(params.id);
-  const topicId = Number(params.topicId);
   const lessonId = Number(params.lessonId);
 
   const [course, setCourse] = useState<SelfLearnCourse | null>(null);
-  const [topic, setTopic] = useState<SelfLearnTopic | null>(null);
   const [lesson, setLesson] = useState<SelfLearnLesson | null>(null);
   const [steps, setSteps] = useState<BaseStepItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,9 +39,6 @@ export function LessonDetail() {
       try {
         const foundCourse = getSelfLearnCourseById(courseId);
         setCourse(foundCourse || null);
-
-        const foundTopic = getTopicById(topicId);
-        setTopic(foundTopic || null);
 
         const foundLesson = getSelfLearnLessonById(lessonId);
         setLesson(foundLesson || null);
@@ -65,7 +54,7 @@ export function LessonDetail() {
       }
     };
     loadData();
-  }, [courseId, topicId, lessonId]);
+  }, [courseId, lessonId]);
 
   if (isLoading) {
     return (
@@ -73,7 +62,7 @@ export function LessonDetail() {
     );
   }
 
-  if (!lesson || !course || !topic) {
+  if (!lesson || !course) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
@@ -118,7 +107,7 @@ export function LessonDetail() {
           <span>Quay lại khóa học</span>
         </button>
         <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">
-          {topic.title}
+          {course.title}
         </span>
       </div>
 
@@ -169,7 +158,7 @@ export function LessonDetail() {
             return (
               <Link
                 key={step.id}
-                href={`/learn/${courseId}/${topicId}/${lessonId}/${step.id}`}
+                href={`/learn/${courseId}/${lessonId}/${step.id}`}
                 className="p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors group"
               >
                 {/* Step Number */}
@@ -215,7 +204,7 @@ export function LessonDetail() {
       {steps.length > 0 && (
         <div className="mt-6 text-center">
           <Link
-            href={`/learn/${courseId}/${topicId}/${lessonId}/${
+            href={`/learn/${courseId}/${lessonId}/${
               steps.find((s) => !s.completed)?.id || steps[0].id
             }`}
             className="inline-flex items-center gap-2 px-8 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-semibold shadow-lg shadow-primary-600/25"

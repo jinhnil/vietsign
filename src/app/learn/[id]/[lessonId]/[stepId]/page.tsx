@@ -3,8 +3,8 @@ import { DashboardLayout } from "@/shared/components/layout";
 import { StepDetail } from "@/features/learn";
 
 export const metadata: Metadata = {
-  title: "Học bài - VietSignSchool",
-  description: "Học từ vựng và luyện tập ngôn ngữ ký hiệu",
+  title: "Chi tiết bước học - VietSignSchool",
+  description: "Learn Vietnamese Sign Language Step Detail",
 };
 
 export default function LearnStepPage() {

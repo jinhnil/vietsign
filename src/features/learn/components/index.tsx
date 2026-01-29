@@ -91,7 +91,7 @@ export const Learn: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <BarChart size={14} className="text-primary-500" />
-                    <span>{course.topics.length} chủ đề</span>
+                    <span>{course.level}</span>
                   </div>
                 </div>
 
@@ -114,7 +114,7 @@ export const Learn: React.FC = () => {
                 <div className="pt-4 border-t border-gray-100">
                   <Link
                     href={`/learn/${course.id}`}
-                    className="w-full py-2.5 bg-gray-50 text-primary-600 font-medium rounded-xl hover:bg-primary-50 transition-colors flex items-center justify-center gap-2 group-hover:bg-primary-600 group-hover:text-white"
+                    className="w-full py-2.5 bg-primary-50 text-primary-600 font-medium rounded-xl hover:bg-primary-600 hover:text-white transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
                   >
                     Bắt đầu học
                     <ChevronRight size={16} />

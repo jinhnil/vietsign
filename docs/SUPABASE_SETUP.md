@@ -1,52 +1,102 @@
-# Hướng dẫn tích hợp Supabase & Email
+# Hướng dẫn tích hợp Supabase Chat & Email
 
-## 1. Kiến trúc Authenticate & Chat
+## 1. Kiến trúc Hệ thống
 
-Vì bạn **KHÔNG** muốn đăng ký user vào Supabase Auth, chúng ta sẽ chia tách chức năng như sau:
-
-- **Authentication (Đăng ký/Login)**: Xử lý bởi Backend riêng của bạn (hoặc logic hiện tại).
-- **Email System**: Sử dụng **Nodemailer** (`src/services/mailService.ts`) để gửi email xác nhận. Supabase **không** tham gia vào việc gửi email này.
+- **Authentication**: Backend riêng của bạn (không dùng Supabase Auth để đăng ký).
 - **Chat System**: Sử dụng **Supabase Database & Realtime**.
+- **Email System**: Sử dụng **Nodemailer** cho email xác nhận/quên mật khẩu.
 
-## 2. Cập nhật Database cho Chat
+## 2. Schema Database (Đã có sẵn trong Supabase)
 
-Vì User không nằm trong bảng `auth.users` của Supabase, bạn cần sửa lại cấu trúc bảng để lưu `user_id` dưới dạng text (ID từ hệ thống của bạn).
+Bạn đã có các bảng sau:
 
-Chạy lệnh SQL sau trong **Supabase SQL Editor**:
+| Bảng                 | Mô tả                                |
+| -------------------- | ------------------------------------ |
+| `rooms`              | Phòng chat (1-1 hoặc nhóm)           |
+| `room_participants`  | Thành viên trong phòng               |
+| `messages`           | Tin nhắn                             |
+| `message_statuses`   | Trạng thái đọc (sent/delivered/read) |
+| `blocks`             | Danh sách chặn                       |
+| `user_device_tokens` | Token FCM cho push notification      |
+
+### Cấu trúc chi tiết:
+
+**rooms**
+
+- `id` (uuid) - Primary key
+- `name` (text) - Tên phòng (null nếu chat 1-1)
+- `is_group` (bool) - True nếu là nhóm
+- `created_at` (timestamptz)
+- `pinned_message_id` (uuid) - Tin nhắn được ghim
+
+**messages**
+
+- `id` (uuid) - Primary key
+- `room_id` (uuid) - FK đến rooms
+- `user_id` (text) - ID người gửi từ hệ thống của bạn
+- `content` (text) - Nội dung
+- `created_at` (timestamptz)
+- `reply_to` (uuid) - Tin nhắn đang reply
+- `is_edited` (bool)
+- `is_deleted` (bool)
+- `type` (text) - "text", "image", "file"...
+
+## 3. Bật Realtime trong Supabase
+
+Vào **Supabase Dashboard > Database > Replication**, bật Realtime cho bảng `messages`:
 
 ```sql
--- Xóa bảng cũ nếu đã lỡ tạo
-drop table if exists messages;
-drop table if exists conversations;
-
--- Tạo bảng conversations
-create table conversations (
-  id uuid default uuid_generate_v4() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  participant_ids text[] not null, -- ID từ hệ thống của bạn (VD: "user_123")
-  last_message text,
-  last_message_at timestamp with time zone
-);
-
--- Tạo bảng messages
-create table messages (
-  id uuid default uuid_generate_v4() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  content text not null,
-  sender_id text not null, -- ID từ hệ thống của bạn (không foreign key tới auth.users)
-  conversation_id uuid references conversations(id) on delete cascade,
-  is_read boolean default false
-);
-
--- Bật Realtime
 alter publication supabase_realtime add table messages;
 ```
 
-## 3. Cấu hình gửi Email (Nodemailer)
+## 4. Cách sử dụng Chat Service
 
-Hệ thống sử dụng Gmail hoặc SMTP bất kỳ để gửi mail.
-Cập nhật file `.env.local`:
+### Lấy danh sách phòng chat của user:
+
+```typescript
+import { chatService } from "@/services/chatService";
+
+const rooms = await chatService.getRoomsForUser("user_123");
+```
+
+### Tạo phòng chat 1-1:
+
+```typescript
+const room = await chatService.getOrCreateDirectRoom("user_123", "user_456");
+```
+
+### Gửi tin nhắn:
+
+```typescript
+await chatService.sendMessage(
+  roomId,
+  "user_123", // sender ID
+  "Xin chào!",
+  "text",
+);
+```
+
+### Nhận tin nhắn Realtime:
+
+```typescript
+const channel = chatService.subscribeToMessages(roomId, (newMessage) => {
+  console.log("Tin nhắn mới:", newMessage);
+  // Cập nhật UI
+});
+
+// Khi rời trang, hủy subscription
+chatService.unsubscribe(channel);
+```
+
+### Đánh dấu đã đọc:
+
+```typescript
+await chatService.markAllAsRead(roomId, "user_123");
+```
+
+## 5. Cấu hình Email (Nodemailer)
+
+Cập nhật `.env.local`:
 
 ```env
 SMTP_HOST=smtp.gmail.com
@@ -56,32 +106,8 @@ SMTP_PASS=your-app-password
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-_(Nếu dùng Gmail, bạn cần tạo "App Password" trong cài đặt bảo mật Google Account)_
+## 6. Types đã định nghĩa
 
-## 4. Cách sử dụng
+File `src/core/lib/supabaseClient.ts` đã export các types:
 
-### Gửi Email Xác thực (Server Side)
-
-Trong API Register của bạn:
-
-```typescript
-import { mailService } from "@/services/mailService";
-
-// logic tạo user...
-const token = generateToken(user.id); // Tạo token xác thực
-await mailService.sendAhthConfirmation(user.email, token);
-```
-
-### Sử dụng Chat (Client Side)
-
-Trong component Chat:
-
-```typescript
-import { chatService } from "@/services/chatService";
-
-// Lấy tin nhắn
-const messages = await chatService.getMessages(conversationId);
-
-// Gửi tin nhắn (Gửi ID của user hiện tại vào)
-await chatService.sendMessage("Hello", "user_current_id", conversationId);
-```
+- `Room`, `RoomParticipant`, `Message`, `MessageStatus`, `Block`, `UserDeviceToken`

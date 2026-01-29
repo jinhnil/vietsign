@@ -5,13 +5,11 @@ import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import {
   getSelfLearnCourseById,
-  getTopicById,
   getSelfLearnLessonById,
   getSelfLearnStepsByLessonId,
   getSelfLearnStepById,
-  getLessonsByTopicId,
+  getLessonsByCourseId,
   SelfLearnCourse,
-  SelfLearnTopic,
   SelfLearnLesson,
 } from "@/data/selfLearnData";
 import {
@@ -31,12 +29,10 @@ export function StepDetail() {
   const params = useParams();
   const router = useRouter();
   const courseId = Number(params.id);
-  const topicId = Number(params.topicId);
   const lessonId = Number(params.lessonId);
   const stepId = Number(params.stepId);
 
   const [course, setCourse] = useState<SelfLearnCourse | null>(null);
-  const [topic, setTopic] = useState<SelfLearnTopic | null>(null);
   const [lesson, setLesson] = useState<SelfLearnLesson | null>(null);
   const [currentStep, setCurrentStep] = useState<BaseStepItem | null>(null);
   const [steps, setSteps] = useState<BaseStepItem[]>([]);
@@ -48,9 +44,6 @@ export function StepDetail() {
       try {
         const foundCourse = getSelfLearnCourseById(courseId);
         setCourse(foundCourse || null);
-
-        const foundTopic = getTopicById(topicId);
-        setTopic(foundTopic || null);
 
         const foundLesson = getSelfLearnLessonById(lessonId);
         setLesson(foundLesson || null);
@@ -67,7 +60,7 @@ export function StepDetail() {
       }
     };
     loadData();
-  }, [courseId, topicId, lessonId, stepId]);
+  }, [courseId, lessonId, stepId]);
 
   const currentIndex = steps.findIndex((s) => s.id === stepId);
   const prevStep = currentIndex > 0 ? steps[currentIndex - 1] : null;
@@ -75,7 +68,7 @@ export function StepDetail() {
     currentIndex < steps.length - 1 ? steps[currentIndex + 1] : null;
 
   const navigateToStep = (step: BaseStepItem) => {
-    router.push(`/learn/${courseId}/${topicId}/${lessonId}/${step.id}`);
+    router.push(`/learn/${courseId}/${lessonId}/${step.id}`);
   };
 
   if (isLoading) {
@@ -84,16 +77,14 @@ export function StepDetail() {
     );
   }
 
-  if (!currentStep || !lesson || !course || !topic) {
+  if (!currentStep || !lesson || !course) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           Không tìm thấy bài học
         </h2>
         <button
-          onClick={() =>
-            router.push(`/learn/${courseId}/${topicId}/${lessonId}`)
-          }
+          onClick={() => router.push(`/learn/${courseId}/${lessonId}`)}
           className="px-6 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
         >
           Quay lại bài học
@@ -164,7 +155,7 @@ export function StepDetail() {
   };
 
   // Get next lesson info
-  const allLessons = getLessonsByTopicId(topicId);
+  const allLessons = getLessonsByCourseId(courseId);
   const currentLessonIndex = allLessons.findIndex((l) => l.id === lessonId);
   const nextLesson =
     currentLessonIndex !== -1 && currentLessonIndex < allLessons.length - 1
@@ -176,16 +167,16 @@ export function StepDetail() {
       const nextLessonSteps = getSelfLearnStepsByLessonId(nextLesson.id);
       if (nextLessonSteps.length > 0) {
         router.push(
-          `/learn/${courseId}/${topicId}/${nextLesson.id}/${nextLessonSteps[0].id}`,
+          `/learn/${courseId}/${nextLesson.id}/${nextLessonSteps[0].id}`,
         );
       } else {
-        router.push(`/learn/${courseId}/${topicId}/${nextLesson.id}`);
+        router.push(`/learn/${courseId}/${nextLesson.id}`);
       }
     }
   };
 
   const handleComplete = () => {
-    router.push(`/learn/${courseId}/${topicId}/${lessonId}`);
+    router.push(`/learn/${courseId}/${lessonId}`);
   };
 
   return (
@@ -193,9 +184,7 @@ export function StepDetail() {
       {/* Navigation Header */}
       <div className="flex items-center justify-between">
         <button
-          onClick={() =>
-            router.push(`/learn/${courseId}/${topicId}/${lessonId}`)
-          }
+          onClick={() => router.push(`/learn/${courseId}/${lessonId}`)}
           className="flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-colors font-medium group"
         >
           <ArrowLeft
