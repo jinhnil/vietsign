@@ -1,155 +1,483 @@
-# Cấu trúc API Backend & Phân tích thiếu hụt (Gap Analysis)
+# Cấu trúc BE API Request Body
 
-## Tổng quan
+Tài liệu này tổng hợp chi tiết cấu trúc `requestBody` cho tất cả các API endpoint được định nghĩa trong Backend (Vietsignschool_BE).
 
-Tài liệu này phác thảo cấu trúc API hiện tại của dự án `Vietsignschool_BE` và xác định các API còn thiếu mà ứng dụng Frontend yêu cầu.
+## 1. Authentication
 
-## 1. Các API Backend Hiện Có
+### `/auth/login` (POST)
 
-Backend được xây dựng với Node.js/Express và được tổ chức thành các route chính (core routes) và các route theo tính năng (Teaching Management).
+- **Summary**: User login
+- **Required**: `email`, `password`
+- **Body**:
+  ```json
+  {
+    "email": "hocsinh@gmai.com",
+    "password": "123456"
+  }
+  ```
 
-### Core Routes (Route cốt lõi)
+### `/auth/register` (POST)
 
-#### Xác thực (`/auth`)
+- **Summary**: Register a new user
+- **Required**: `email`, `password`, `name`
+- **Body**:
+  ```json
+  {
+    "email": "newuser@example.com",
+    "password": "password123",
+    "name": "Nguyễn Văn A"
+  }
+  ```
 
-- `POST /auth/login`: Đăng nhập người dùng
-- `POST /auth/register`: Đăng ký người dùng
+## 2. Users
 
-#### Quản lý Người dùng (`/users`)
+### `/users/profile` (PUT)
 
-- **Hồ sơ cá nhân**
-  - `GET /users/profile`: Lấy hồ sơ người dùng hiện tại
-  - `PUT /users/profile`: Cập nhật hồ sơ người dùng hiện tại
-- **Giáo viên**
-  - `GET /users/teachers`: Danh sách giáo viên
-  - `POST /users/teachers`: Tạo giáo viên mới
-  - `GET /users/teachers/:id`: Lấy chi tiết giáo viên
-  - `PUT /users/teachers/:id`: Cập nhật giáo viên
-  - `DELETE /users/teachers/:id`: Xóa giáo viên
-- **Học sinh**
-  - `GET /users/students`: Danh sách học sinh
-  - `POST /users/students`: Tạo học sinh mới
-  - `GET /users/students/:id`: Lấy chi tiết học sinh
-  - `PUT /users/students/:id`: Cập nhật học sinh
-  - `DELETE /users/students/:id`: Xóa học sinh
-- **Theo dõi học tập (Student Tracking)**
-  - `POST /users/students/tracking/view-lesson`: Ghi nhận đã xem bài học
-  - `POST /users/students/tracking/view-vocabulary`: Ghi nhận đã xem từ vựng
-  - `GET /users/students/progress/learning`: Lấy tiến độ học tập
+- **Summary**: Update personal profile information
+- **Required**: True (Body object is required, individual fields optional)
+- **Body**:
+  ```json
+  {
+    "name": "Nguyễn Văn B",
+    "email": "newemail@example.com",
+    "phone_number": "0123456789",
+    "gender": "Male",
+    "address": "123 Đường ABC, Quận 1, TP.HCM",
+    "avatar_location": "/images/avatar.jpg",
+    "birth_day": "1990-01-01",
+    "code": "ADMIN",
+    "school_id": "SCHOOL001"
+  }
+  ```
 
-#### Quản lý Tổ chức/Cơ sở (`/organizations`)
+### `/users/teachers` (POST)
 
-- `GET /organizations`: Danh sách tổ chức
-- `GET /organizations/:id`: Lấy chi tiết tổ chức
-- `POST /organizations`: Tạo tổ chức mới
-- `PUT /organizations/:id`: Cập nhật tổ chức
-- `DELETE /organizations/:id`: Xóa tổ chức
+- **Summary**: Create a new teacher
+- **Required**: `name`, `email`
+- **Body**:
+  ```json
+  {
+    "name": "Nguyễn Văn A",
+    "email": "teacher@example.com",
+    "phoneNumber": "0123456789",
+    "birthDay": "1985-05-15",
+    "address": "123 Đường ABC",
+    "classRoomName": "Lớp 10A1",
+    "schoolName": "Trường THPT Nguyễn Huệ"
+  }
+  ```
 
-#### Quản lý Cơ sở (`/organization-managers`)
+### `/users/teachers/{id}` (PUT)
 
-- `POST /organization-managers`: Gán quản lý cho tổ chức
-- `DELETE /organization-managers`: Gỡ bỏ vai trò quản lý
+- **Summary**: Update teacher information
+- **Required**: True
+- **Body**:
+  ```json
+  {
+    "name": "string",
+    "email": "string",
+    "phone_number": "string",
+    "gender": "string",
+    "birth_day": "2023-01-01",
+    "address": "string"
+  }
+  ```
 
-### Quản lý Giảng dạy (`/teaching-management`)
+### `/users/students` (POST)
 
-#### Lớp học (`/teaching-management/classrooms`)
+- **Summary**: Create a new student
+- **Required**: `name`, `email`
+- **Body**:
+  ```json
+  {
+    "name": "Nguyễn Văn B",
+    "email": "student@example.com",
+    "phoneNumber": "0987654321",
+    "birthDay": "2005-08-20",
+    "address": "456 Đường XYZ",
+    "classRoomName": "Lớp 10A1"
+  }
+  ```
 
-- `POST /`: Tạo lớp học
-- `GET /`: Lấy tất cả lớp học
-- `GET /:classroomId`: Lấy chi tiết lớp học
-- `PUT /:classroomId`: Cập nhật lớp học
-- `DELETE /:classroomId`: Xóa lớp học
-- `POST /:classroomId/students`: Thêm học sinh vào lớp
-- `GET /:classroomId/students`: Lấy danh sách học sinh trong lớp
-- `DELETE /:classroomId/students`: Xóa học sinh khỏi lớp
+### `/users/students/{id}` (PUT)
 
-#### Tiến độ (`/teaching-management/progress`)
+- **Summary**: Update student information
+- **Required**: True
+- **Body**:
+  ```json
+  {
+    "name": "string",
+    "email": "string",
+    "phone_number": "string",
+    "gender": "string",
+    "birth_day": "2023-01-01",
+    "address": "string"
+  }
+  ```
 
-- `GET /my-progress`: Lấy tiến độ của người dùng hiện tại
-- `GET /classroom/:classroomId/summary`: Tóm tắt tiến độ lớp học
-- `GET /student/:studentId`: Tiến độ của học sinh cụ thể
-- `GET /student/:studentId/exams`: Lịch sử làm bài kiểm tra
-- `GET /student/:studentId/lessons`: Tiến độ bài học
-- `GET /student/:studentId/vocabularies`: Tiến độ từ vựng
-- `GET /student/:studentId/trends`: Xu hướng học tập
+## 3. Organizations
 
-#### Bài kiểm tra (`/teaching-management/exams`)
+### `/organizations` (POST)
 
-- `POST /`: Tạo bài kiểm tra
-- `GET /`: Lấy tất cả bài kiểm tra
-- `GET /statistics`: Thống kê bài kiểm tra
-- `GET /classroom/:classroom_id`: Bài kiểm tra theo lớp học
-- `POST /:exam_id/submit`: Nộp bài kiểm tra
-- `GET /:exam_id/results`: Lấy kết quả bài kiểm tra
-- `GET /:exam_id`: Lấy chi tiết bài kiểm tra
+- **Summary**: Create a new organization
+- **Required**: `name`, `type`
+- **Body**:
+  ```json
+  {
+    "parent_id": "null - Bộ Giáo dục, 1 - Sở Giáo dục, 2 - Trường",
+    "name": "Trường THPT Nguyễn Huệ",
+    "type": "SCHOOL",
+    "address": "Số 12 Đường Nguyễn Huệ",
+    "city": "Thành phố Hà Nội",
+    "ward": "Quận Hoàn Kiếm",
+    "street": "Đường Nguyễn Huệ",
+    "phone": "024 3825 6789",
+    "email": "thptnguyenhue@edu.vn"
+  }
+  ```
 
-#### Các module giảng dạy khác (Suy luận)
+### `/organizations/{id}` (PUT)
 
-- **Bài học** (`/teaching-management/lessons`)
-- **Từ vựng** (`/teaching-management/vocabularies`)
-- **Chủ đề** (`/teaching-management/topics`)
-- **Câu hỏi** (`/teaching-management/questions`)
+- **Summary**: Update an existing organization
+- **Required**: True
+- **Body**:
+  ```json
+  {
+    "parent_id": "null - Bộ Giáo dục, 1 - Sở Giáo dục, 2 - Trường",
+    "name": "Trường THPT Nguyễn Huệ",
+    "type": "SCHOOL",
+    "address": "Số 12 Đường Nguyễn Huệ",
+    "city": "Thành phố Hà Nội",
+    "ward": "Quận Hoàn Kiếm",
+    "street": "Đường Nguyễn Huệ",
+    "phone": "024 3825 6789",
+    "email": "thptnguyenhue@edu.vn"
+  }
+  ```
 
----
+### `/organization-managers` (POST)
 
-## 2. Các API Còn Thiếu (Yêu cầu từ Frontend)
+- **Summary**: Assign organization management role to a user
+- **Required**: `organization_id`, `user_id`, `role_in_org`
+- **Body**:
+  ```json
+  {
+    "organization_id": "123",
+    "user_id": "456",
+    "role_in_org": "SUPER_ADMIN",
+    "is_primary": true
+  }
+  ```
 
-Dựa trên cấu trúc dữ liệu và tính năng của Frontend, các API sau đây có vẻ còn thiếu hoặc chưa đầy đủ trong Backend:
+### `/organization-managers` (DELETE)
 
-### 1. Hệ thống Trò chơi (`src/features/games`, `src/data/gamesData.ts`)
+- **Summary**: Revoke organization management role from a user
+- **Required**: `organization_id`, `user_id`
+- **Body**:
+  ```json
+  {
+    "organization_id": "12",
+    "user_id": "34"
+  }
+  ```
 
-Frontend có phần Trò chơi riêng với các cấp độ và tính điểm.
-**Các Endpoint còn thiếu:**
+## 4. Classrooms
 
-- `GET /games`: Lấy danh sách trò chơi
-- `GET /games/:id`: Lấy chi tiết và cấu hình trò chơi
-- `GET /games/:id/levels`: Lấy danh sách cấp độ (levels) cho trò chơi
-- `POST /games/:id/play`: Bắt đầu phiên chơi (tùy chọn)
-- `POST /games/:id/score`: Gửi điểm/kết quả chơi game
-- `GET /games/leaderboard`: Lấy bảng xếp hạng (toàn cầu hoặc theo game)
+### `/classrooms` (POST)
 
-### 2. Tự học / Khóa học công khai (`src/features/learn`, `src/data/selfLearnData.ts`)
+- **Summary**: Create a new classroom
+- **Required**: `name`, `classLevel`
+- **Body**:
+  ```json
+  {
+    "name": "Lớp 10A1",
+    "description": "Lớp học khối 10",
+    "classCode": "CLASS001",
+    "classLevel": "10",
+    "teacherId": "5",
+    "thumbnailPath": "/images/class.jpg",
+    "schoolId": "1"
+  }
+  ```
 
-FE phân biệt giữa `Học tập` (Study - theo lớp học có quản lý) và `Tự học` (Learn - công khai, tự do). BE `teaching-management` hiện tại có vẻ tập trung vào các lớp học được quản lý.
-**Các Endpoint còn thiếu:**
+### `/classrooms/{classroomId}` (PUT)
 
-- `GET /courses/public`: Danh sách khóa học tự học công khai
-- `GET /courses/public/:id`: Lấy chi tiết khóa học công khai
-- `POST /courses/public/:id/enroll`: Đăng ký tham gia khóa học công khai
-- `GET /courses/public/:id/progress`: Lấy tiến độ cho khóa học tự học cụ thể
+- **Summary**: Update classroom information
+- **Required**: True
+- **Body**:
+  ```json
+  {
+    "name": "string",
+    "description": "string",
+    "classCode": "string",
+    "classLevel": "string",
+    "teacherId": "string",
+    "thumbnailPath": "string",
+    "status": "ACTIVE"
+  }
+  ```
 
-### 3. Mỗi ngày một ký hiệu (`src/features/daily-signs`, `src/data/dailySignsData.ts`)
+### `/classrooms/{classroomId}/students` (POST)
 
-Tính năng hiển thị một ký hiệu mới mỗi ngày.
-**Các Endpoint còn thiếu:**
+- **Summary**: Add student to classroom
+- **Required**: `studentId`
+- **Body**:
+  ```json
+  {
+    "studentId": "1"
+  }
+  ```
 
-- `GET /daily-signs/today`: Lấy ký hiệu của ngày hôm nay
-- `GET /daily-signs/history`: Lấy lịch sử các ký hiệu trước đó
-- `POST /daily-signs/check-in`: Đánh dấu đã học ký hiệu ngày (để tính chuỗi streak)
+### `/classrooms/{classroomId}/students` (DELETE)
 
-### 4. Thông báo (`src/features/notifications`, `src/data/notificationsData.ts`)
+- **Summary**: Remove student from classroom
+- **Required**: `studentId`
+- **Body**:
+  ```json
+  {
+    "studentId": "1"
+  }
+  ```
 
-Hệ thống cảnh báo và cập nhật cho người dùng.
-**Các Endpoint còn thiếu:**
+## 5. Lessons
 
-- `GET /notifications`: Lấy thông báo của người dùng
-- `PUT /notifications/:id/read`: Đánh dấu thông báo đã đọc
-- `PUT /notifications/read-all`: Đánh dấu tất cả đã đọc
+### `/lessons` (POST)
 
-### 5. Từ điển (Nâng cao) (`src/features/dictionary`)
+- **Summary**: Create a new lesson
+- **Required**: `lesson_name`, `topic_id`, `classroom_id`
+- **Body**:
+  ```json
+  {
+    "lesson_name": "Bài học 1: Chữ cái",
+    "description": "Học về các chữ cái cơ bản",
+    "topic_id": 1,
+    "classroom_id": 1,
+    "order_number": 1,
+    "image_url": "https://example.com/image.jpg",
+    "video_url": "https://example.com/video.mp4",
+    "duration_minutes": 45,
+    "difficulty_level": "BEGINNER",
+    "vocabulary_count": 10,
+    "is_active": 1
+  }
+  ```
 
-Mặc dù `vocabularies` đã tồn tại trong `teaching-management`, từ điển công khai có thể cần tìm kiếm tối ưu hơn.
-**Nhu cầu tiềm năng:**
+### `/lessons/{lesson_id}` (PUT)
 
-- `GET /dictionary/search?q=`: Tìm kiếm từ điển công khai (có thể sử dụng endpoint `vocabularies` nhưng cần cho phép truy cập public hoặc xác thực tối thiểu).
+- **Summary**: Update lesson
+- **Required**: True
+- **Body**:
+  ```json
+  {
+    "lesson_name": "string",
+    "description": "string",
+    "image_url": "string",
+    "video_url": "string",
+    "duration_minutes": 0,
+    "difficulty_level": "BEGINNER",
+    "vocabulary_count": 0,
+    "is_active": 0
+  }
+  ```
 
-### 6. Cài đặt hệ thống / Cấu hình
+### `/lessons/topic/{topic_id}/reorder` (PUT)
 
-- `GET /settings`: Lấy cài đặt toàn hệ thống (ví dụ: chế độ bảo trì, cờ tính năng - feature flags)
+- **Summary**: Reorder lessons in a topic
+- **Required**: `lessons`
+- **Body**:
+  ```json
+  {
+    "lessons": [
+      {
+        "lesson_id": 0,
+        "order_number": 0
+      }
+    ]
+  }
+  ```
 
-## 3. Khuyến nghị
+## 6. Vocabularies
 
-1.  **Triển khai Game Routes:** Tạo một tính năng `games` mới trong BE để xử lý logic trò chơi và tính điểm.
-2.  **Tách biệt Tự học và Lớp học:** Làm rõ xem `teaching-management` có bao gồm các khóa học công khai không hay cần một module `courses` riêng.
-3.  **Thêm Thông báo:** Triển khai hệ thống thông báo tiêu chuẩn.
-4.  **Nội dung hàng ngày:** Thêm scheduler đơn giản hoặc endpoint cho Daily Signs.
+### `/vocabularies` (POST)
+
+- **Summary**: Create a new vocabulary
+- **Required**: `content`, `topic_id`
+- **Body**:
+  ```json
+  {
+    "content": "Xin chào",
+    "description": "Nghĩa là hello/goodbye",
+    "topic_id": 1,
+    "classroom_id": 1,
+    "vocabulary_type": "WORD",
+    "images_url": "https://example.com/image.jpg",
+    "videos_url": "https://example.com/video.mp4",
+    "note": "Note about pronunciation",
+    "is_private": 0,
+    "is_active": 1
+  }
+  ```
+
+### `/vocabularies/{vocabulary_id}` (PUT)
+
+- **Summary**: Update vocabulary
+- **Required**: True
+- **Body**:
+  ```json
+  {
+    "content": "string",
+    "description": "string",
+    "images_url": "string",
+    "videos_url": "string",
+    "note": "string",
+    "vocabulary_type": "WORD",
+    "is_private": 0,
+    "is_active": 0
+  }
+  ```
+
+## 7. Topics
+
+### `/topics` (POST)
+
+- **Summary**: Create new topic
+- **Required**: `name`
+- **Body**:
+  ```json
+  {
+    "name": "Basic Vocabulary",
+    "classroom_id": 1,
+    "image_location": "https://example.com/image.jpg",
+    "description": "Introduction to basic vocabulary",
+    "creator_id": 1,
+    "is_common": false
+  }
+  ```
+
+### `/topics/{topic_id}` (PUT)
+
+- **Summary**: Update topic
+- **Required**: True
+- **Body**:
+  ```json
+  {
+    "name": "string",
+    "classroom_id": 0,
+    "image_location": "string",
+    "description": "string",
+    "creator_id": 0,
+    "is_common": false
+  }
+  ```
+
+## 8. Questions
+
+### `/questions` (POST)
+
+- **Summary**: Create new question
+- **Required**: `content`
+- **Body**:
+  ```json
+  {
+    "content": "What is the sign for \"hello\"?",
+    "explanation": "The sign for hello involves waving your hand from left to right",
+    "class_room_id": 1,
+    "image_location": "https://example.com/question-image.jpg",
+    "video_location": "https://example.com/question-video.mp4",
+    "created_by": 1
+  }
+  ```
+
+### `/questions/{question_id}` (PUT)
+
+- **Summary**: Update question
+- **Required**: True
+- **Body**:
+  ```json
+  {
+    "content": "string",
+    "explanation": "string",
+    "class_room_id": 0,
+    "image_location": "string",
+    "video_location": "string",
+    "created_by": 0
+  }
+  ```
+
+## 9. Exams
+
+### `/exams` (POST)
+
+- **Summary**: Create new exam
+- **Required**: `name`
+- **Body**:
+  ```json
+  {
+    "name": "Sign Language Test Week 1",
+    "description": "Test on basic sign language vocabulary and grammar",
+    "exam_type": "MULTIPLE_CHOICE",
+    "class_room_id": 1,
+    "created_by": 1,
+    "duration_minutes": 60,
+    "total_points": 100,
+    "passing_score": 50
+  }
+  ```
+
+### `/exams/{exam_id}` (PUT)
+
+- **Summary**: Update exam
+- **Required**: True
+- **Body**:
+  ```json
+  {
+    "name": "string",
+    "description": "string",
+    "exam_type": "MULTIPLE_CHOICE",
+    "class_room_id": 0,
+    "duration_minutes": 0,
+    "total_points": 0,
+    "passing_score": 0,
+    "is_active": true
+  }
+  ```
+
+### `/exams/{exam_id}/submit` (POST)
+
+- **Summary**: Submit exam
+- **Required**: `student_id`
+- **Body**:
+  ```json
+  {
+    "student_id": 0,
+    "score": 0,
+    "answers": {},
+    "time_spent": 0
+  }
+  ```
+
+## 10. Student Learning Tracking
+
+### `/users/students/tracking/view-lesson` (POST)
+
+- **Summary**: Record student lesson view
+- **Required**: `studentId`, `lessonId`
+- **Body**:
+  ```json
+  {
+    "studentId": "1",
+    "lessonId": "10"
+  }
+  ```
+
+### `/users/students/tracking/view-vocabulary` (POST)
+
+- **Summary**: Record student vocabulary view
+- **Required**: `studentId`, `vocabularyId`
+- **Body**:
+  ```json
+  {
+    "studentId": "1",
+    "vocabularyId": "20"
+  }
+  ```

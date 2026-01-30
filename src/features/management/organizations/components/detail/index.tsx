@@ -37,6 +37,153 @@ import {
 } from "@/shared/hooks/useOrganizations";
 import { message } from "antd";
 import { roleLabels, roleColors, UserItem } from "@/services/userService";
+import {
+  Pagination,
+  usePagination,
+} from "@/shared/components/common/Pagination";
+
+// --- Sub-component for User Table ---
+const UserListTable = ({
+  users,
+  emptyMessage,
+}: {
+  users: UserItem[];
+  emptyMessage: string;
+}) => {
+  const router = useRouter();
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems,
+    setCurrentPage,
+    itemsPerPage,
+    totalItems,
+  } = usePagination(users || [], 10);
+
+  if (!users || users.length === 0) {
+    return (
+      <div className="p-12 text-center text-gray-500 bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
+        <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+        <p>{emptyMessage}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full table-fixed">
+          <thead className="bg-gray-50 border-b border-gray-100">
+            <tr>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[40%]">
+                Người dùng
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[20%]">
+                Vai trò
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[20%]">
+                Trạng thái
+              </th>
+              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 w-[20%]">
+                Thao tác
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {paginatedItems.map((user) => (
+              <tr
+                key={user.id}
+                className="hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={() => router.push(`/users/${user.id}`)}
+              >
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="w-10 h-10 min-w-[40px] rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold overflow-hidden border border-gray-100 shadow-sm">
+                      {user.avatar ? (
+                        <img
+                          src={user.avatar}
+                          alt={user.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        (user.name || "U").charAt(0)
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p
+                        className="font-medium text-gray-900 truncate"
+                        title={user.name}
+                      >
+                        {user.name}
+                      </p>
+                      <p
+                        className="text-sm text-gray-500 truncate"
+                        title={user.email}
+                      >
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <span
+                    className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                      roleColors[user.role] || "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {roleLabels[user.role] || user.role}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  {user.status === "active" ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <UserCheck size={14} />
+                      Hoạt động
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                      <UserX size={14} />
+                      Không hoạt động
+                    </span>
+                  )}
+                </td>
+                <td className="px-6 py-4">
+                  <div
+                    className="flex items-center justify-end gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/users/${user.id}`);
+                      }}
+                      title="Xem chi tiết"
+                    >
+                      <Edit size={18} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {totalItems > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          itemsPerPage={itemsPerPage}
+          totalItems={totalItems}
+          filteredItems={totalItems}
+          itemName="người dùng"
+          onPageChange={setCurrentPage}
+        />
+      )}
+    </div>
+  );
+};
 
 export function OrganizationDetail() {
   const params = useParams();
@@ -160,132 +307,6 @@ export function OrganizationDetail() {
   const statusInfo =
     organizationStatusConfig[currentOrganization.status] ||
     organizationStatusConfig.inactive;
-
-  // --- Sub-component for User Table ---
-  const UserListTable = ({
-    users,
-    emptyMessage,
-  }: {
-    users: UserItem[];
-    emptyMessage: string;
-  }) => {
-    const router = useRouter();
-
-    if (!users || users.length === 0) {
-      return (
-        <div className="p-12 text-center text-gray-500 bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
-          <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <p>{emptyMessage}</p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full table-fixed">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[40%]">
-                  Người dùng
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[20%]">
-                  Vai trò
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[20%]">
-                  Trạng thái
-                </th>
-                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 w-[20%]">
-                  Thao tác
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-gray-50 transition-colors cursor-pointer"
-                  onClick={() => router.push(`/users/${user.id}`)}
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <div className="w-10 h-10 min-w-[40px] rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold overflow-hidden border border-gray-100 shadow-sm">
-                        {user.avatar ? (
-                          <img
-                            src={user.avatar}
-                            alt={user.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          (user.name || "U").charAt(0)
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p
-                          className="font-medium text-gray-900 truncate"
-                          title={user.name}
-                        >
-                          {user.name}
-                        </p>
-                        <p
-                          className="text-sm text-gray-500 truncate"
-                          title={user.email}
-                        >
-                          {user.email}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                        roleColors[user.role] || "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {roleLabels[user.role] || user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {user.status === "active" ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        <UserCheck size={14} />
-                        Hoạt động
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                        <UserX size={14} />
-                        Không hoạt động
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div
-                      className="flex items-center justify-end gap-2"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(`/users/${user.id}`);
-                        }}
-                        title="Xem chi tiết"
-                      >
-                        <Edit size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="px-6 py-4 bg-gray-50 text-right text-sm text-gray-500">
-          Tổng số: {users.length} người dùng
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

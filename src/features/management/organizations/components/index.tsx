@@ -613,6 +613,18 @@ export function OrganizationsManagement() {
             </div>
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-sm font-semibold text-gray-700">
+                Mô tả <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="description"
+                placeholder="Mô tả "
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                required
+              />
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-semibold text-gray-700">
                 Địa chỉ chi tiết <span className="text-red-500">*</span>
               </label>
               <input
@@ -681,6 +693,18 @@ export function OrganizationsManagement() {
                 type="email"
                 name="email"
                 placeholder="organization@vietsign.edu.vn"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                required
+              />
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-semibold text-gray-700">
+                Quản trị viên cơ sở <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name=""
+                placeholder="quản trị viên cơ sở"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
                 required
               />
