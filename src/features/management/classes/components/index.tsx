@@ -84,6 +84,27 @@ export function ClassesManagement() {
     t.name?.toLowerCase().includes(teacherSearch.toLowerCase()),
   );
 
+  // Determine if current user is a teacher
+  const isUserTeacher =
+    user?.role === "TEACHER" ||
+    user?.role?.role === "TEACHER" ||
+    user?.code === "TEACHER";
+
+  // Auto-fill organization for teachers
+  useEffect(() => {
+    if (isUserTeacher && user) {
+      const userOrgId =
+        user.organizationId || (user as any).organization_id || "";
+      if (userOrgId) {
+        setFormData((prev) => ({
+          ...prev,
+          organizationId: String(userOrgId),
+          teacherId: user.id || (user as any).user_id || "",
+        }));
+      }
+    }
+  }, [user, isUserTeacher, isModalOpen]); // Run when modal opens too
+
   // Load teachers when organization is selected
   const handleOrganizationChange = async (orgId: string) => {
     setFormData({ ...formData, organizationId: orgId, teacherId: "" });
@@ -115,6 +136,7 @@ export function ClassesManagement() {
     setTeacherSearch(teacher.name);
     setShowTeacherSuggestions(false);
   };
+  // ... existing loadData useEffect ...
 
   useEffect(() => {
     const loadData = async () => {
@@ -510,9 +532,11 @@ export function ClassesManagement() {
 
               // If user is TEACHER, auto-assign teacherId to self
               const isTeacher =
-                user?.role?.role === "TEACHER" || user?.code === "TEACHER";
+                user?.role === "TEACHER" ||
+                user?.role?.role === "TEACHER" ||
+                user?.code === "TEACHER";
               const teacherIdToSubmit = isTeacher
-                ? user?.id
+                ? user?.id || (user as any)?.user_id
                 : Number(formData.teacherId);
 
               const payload = {
@@ -617,7 +641,15 @@ export function ClassesManagement() {
               >
                 <option value="">Chọn cơ sở (Trường)</option>
                 {facilities
-                  .filter((facility) => facility.type === "SCHOOL")
+                  .filter((facility) => {
+                    if (facility.type !== "SCHOOL") return false;
+                    if (isUserTeacher) {
+                      const userOrgId =
+                        user?.organizationId || (user as any)?.organization_id;
+                      return Number(facility.id) === Number(userOrgId);
+                    }
+                    return true;
+                  })
                   .map((facility) => (
                     <option key={facility.id} value={facility.id}>
                       {facility.name}
@@ -627,7 +659,9 @@ export function ClassesManagement() {
             </div>
 
             {/* Chỉ hiện dropdown chọn giáo viên nếu không phải là giáo viên */}
-            {user?.role?.role !== "TEACHER" && user?.code !== "TEACHER" ? (
+            {user?.role !== "TEACHER" &&
+            user?.role?.role !== "TEACHER" &&
+            user?.code !== "TEACHER" ? (
               <div className="space-y-1.5 relative">
                 <label className="text-sm font-semibold text-gray-700">
                   Giáo viên phụ trách <span className="text-red-500">*</span>

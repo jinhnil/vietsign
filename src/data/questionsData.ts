@@ -3,7 +3,7 @@
 
 import { mockUsers, getUserById, type UserItem } from "./usersData";
 import { mockOrganizations, getOrganizationById } from "./organizationsData";
-import { mockClasses, gradeLevels, type GradeLevel } from "./classesData";
+import { gradeLevels, type GradeLevel } from "./classesData";
 
 // ==================== INTERFACES ====================
 
