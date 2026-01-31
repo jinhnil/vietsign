@@ -141,16 +141,21 @@ export const QuizTextToVideoStep: React.FC<StepProps> = ({
   step,
   onComplete,
 }) => {
+  // State quản lý: ID của đáp án đang chọn, trạng thái đã nộp bài, và kết quả đúng/sai
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
 
+  // Xử lý nộp bài kiểm tra
   const handleSubmit = () => {
     if (selectedId === null) return;
     const selectedOption = step.options.find((o: any) => o.id === selectedId);
     const correct = selectedOption?.isCorrect || false;
+
     setSubmitted(true);
     setIsCorrect(correct);
+
+    // Nếu đúng, tự động chuyển step sau 1.2s
     if (correct && onComplete) setTimeout(onComplete, 1200);
   };
 
@@ -247,6 +252,7 @@ export const QuizVideoToTextStep: React.FC<StepProps> = ({
   step,
   onComplete,
 }) => {
+  // State tương tự QuizTextToVideoStep
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
@@ -255,6 +261,7 @@ export const QuizVideoToTextStep: React.FC<StepProps> = ({
     if (selectedId === null) return;
     const selectedOption = step.options.find((o: any) => o.id === selectedId);
     const correct = selectedOption?.isCorrect || false;
+
     setSubmitted(true);
     setIsCorrect(correct);
     if (correct && onComplete) setTimeout(onComplete, 1200);
@@ -344,17 +351,24 @@ export const QuizVideoToTextStep: React.FC<StepProps> = ({
 
 // --- QuizInputStep ---
 export const QuizInputStep: React.FC<StepProps> = ({ step, onComplete }) => {
+  // State quản lý: nội dung nhập liệu, trạng thái nộp bài, và kết quả
   const [input, setInput] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
 
+  // Xử lý nộp bài khi nhấn nút hoặc Enter
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!input.trim()) return;
+
+    // So sánh input với đáp án đúng (không phân biệt hoa thường)
     const correct =
       input.trim().toLowerCase() === step.correctAnswer?.toLowerCase();
+
     setSubmitted(true);
     setIsCorrect(correct);
+
+    // Chuyển step nếu đúng
     if (correct && onComplete) setTimeout(onComplete, 1200);
   };
 
@@ -432,22 +446,28 @@ export const MatchVideoToTextStep: React.FC<StepProps> = ({
   step,
   onComplete,
 }) => {
+  // State lưu trữ các cặp đã nối (key: ID video, value: Index của text)
   const [matches, setMatches] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
+
+  // Video đang được chọn để chờ nối
   const [selectedVideo, setSelectedVideo] = useState<number | null>(null);
   const pairs = step.matchPairs || [];
 
+  // Xử lý khi chọn video
   const handleVideoClick = (videoId: number) => {
     if (submitted) return;
     setSelectedVideo(videoId);
   };
 
+  // Xử lý khi chọn text để nối với video đã chọn
   const handleTextClick = (textIdx: number) => {
     if (submitted || selectedVideo === null) return;
     setMatches((prev) => ({ ...prev, [selectedVideo]: textIdx }));
     setSelectedVideo(null);
   };
 
+  // Kiểm tra kết quả
   const checkAnswers = () => {
     setSubmitted(true);
     const allCorrect = pairs.every(
@@ -456,6 +476,7 @@ export const MatchVideoToTextStep: React.FC<StepProps> = ({
     if (allCorrect && onComplete) setTimeout(onComplete, 1500);
   };
 
+  // Helper kiểm tra xem một cặp nối có đúng hay không (sau khi submit)
   const isCorrectMatch = (videoId: number, textIdx: number) => {
     const pair = pairs.find((p: any) => p.id === videoId);
     const pairIdx = pairs.indexOf(pair);
@@ -559,10 +580,10 @@ export const MatchVideoToTextStep: React.FC<StepProps> = ({
 // --- FlipCardStep ---
 export const FlipCardStep: React.FC<StepProps> = ({ step, onComplete }) => {
   const cards = step.flipCards || [];
-  const [flipped, setFlipped] = useState<number[]>([]);
-  const [matched, setMatched] = useState<number[]>([]);
+  const [flipped, setFlipped] = useState<number[]>([]); // Danh sách index các thẻ đang lật (tối đa 2)
+  const [matched, setMatched] = useState<number[]>([]); // Danh sách index các thẻ đã ghép đúng
 
-  // Create pairs: video cards and text cards
+  // Tạo và xáo trộn danh sách thẻ (gồm thẻ video và thẻ chữ)
   const allCards = React.useMemo(() => {
     return [
       ...cards.map((c: any, i: number) => ({
@@ -580,7 +601,9 @@ export const FlipCardStep: React.FC<StepProps> = ({ step, onComplete }) => {
     ].sort(() => Math.random() - 0.5);
   }, []);
 
+  // Xử lý khi lật thẻ
   const handleFlip = (cardIdx: number) => {
+    // Chặn nếu đang lật 2 thẻ, thẻ đã ghép, hoặc thẻ đó đang lật
     if (
       flipped.length === 2 ||
       matched.includes(cardIdx) ||
@@ -591,18 +614,23 @@ export const FlipCardStep: React.FC<StepProps> = ({ step, onComplete }) => {
     const newFlipped = [...flipped, cardIdx];
     setFlipped(newFlipped);
 
+    // Nếu đã lật đủ 2 thẻ, kiểm tra kết quả
     if (newFlipped.length === 2) {
       const [first, second] = newFlipped;
       const card1 = allCards[first];
       const card2 = allCards[second];
 
+      // Nếu cùng matchId (cùng cặp) nhưng khác loại (video vs text) -> Đúng
       if (card1.matchId === card2.matchId && card1.type !== card2.type) {
         setMatched((prev) => [...prev, first, second]);
         setFlipped([]);
+
+        // Kiểm tra hoàn thành toàn bộ
         if (matched.length + 2 === allCards.length && onComplete) {
           setTimeout(onComplete, 1000);
         }
       } else {
+        // Nếu sai, lật úp lại sau 1s
         setTimeout(() => setFlipped([]), 1000);
       }
     }
@@ -614,14 +642,14 @@ export const FlipCardStep: React.FC<StepProps> = ({ step, onComplete }) => {
         Lật thẻ để tìm cặp video - từ tương ứng:
       </p>
 
-      <div className="grid grid-cols-4 gap-3 max-w-[560px] mx-auto">
+      <div className="grid grid-cols-3 gap-6 max-w-[800px] mx-auto">
         {allCards.map((card, idx) => {
           const isFlipped = flipped.includes(idx) || matched.includes(idx);
           return (
             <div
               key={idx}
               onClick={() => handleFlip(idx)}
-              className="w-32 h-24 cursor-pointer"
+              className="w-56 h-40 cursor-pointer"
             >
               {isFlipped ? (
                 <div

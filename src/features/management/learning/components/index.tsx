@@ -5,7 +5,6 @@ import {
   Search,
   Plus,
   Users,
-  Calendar,
   Clock,
   Filter,
   Edit,
@@ -14,31 +13,23 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { learnCategories, LearnItem } from "@/data/learnData";
+import {
+  selfLearnCourses,
+  SelfLearnCourse,
+  getAllSelfLearnCourses,
+} from "@/data/selfLearnData";
 import { removeVietnameseTones } from "@/shared/utils/text";
-import { Pagination, usePagination } from "@/shared/components/common/Pagination";
+import {
+  Pagination,
+  usePagination,
+} from "@/shared/components/common/Pagination";
 import { Modal } from "@/shared/components/common/Modal";
 import { ConfirmModal } from "@/shared/components/common/ConfirmModal";
 
 const ITEMS_PER_PAGE = 6;
 
-// Flatten all items from categories
-function getAllLearningItems(): LearnItem[] {
-  return learnCategories.flatMap((category) =>
-    category.items.map((item) => ({
-      ...item,
-      categoryTitle: category.title,
-      colorClass: category.colorClass,
-      textClass: category.textClass,
-    }))
-  );
-}
-
 // Status config for learning
-const learningStatusConfig: Record<
-  string,
-  { label: string; color: string }
-> = {
+const learningStatusConfig: Record<string, { label: string; color: string }> = {
   "not-started": {
     label: "Chưa bắt đầu",
     color: "bg-gray-100 text-gray-700",
@@ -56,31 +47,28 @@ const learningStatusConfig: Record<
 export function LearningManagement() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterCategory, setFilterCategory] = useState("all");
   const [filterLevel, setFilterLevel] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // State for learning items
-  const [learnings, setLearnings] = useState<LearnItem[]>([]);
+  const [learnings, setLearnings] = useState<SelfLearnCourse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // State for delete modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [learningToDelete, setLearningToDelete] = useState<LearnItem | null>(
-    null
-  );
+  const [learningToDelete, setLearningToDelete] =
+    useState<SelfLearnCourse | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(false);
       try {
-        // Load learning items from learnCategories
-        const allItems = getAllLearningItems();
+        // Load learning items from selfLearnData
+        const allItems = getAllSelfLearnCourses();
         setLearnings(allItems);
       } catch (error) {
         console.error("Failed to load learning data", error);
-        const allItems = getAllLearningItems();
-        setLearnings(allItems);
+        setLearnings([]);
       }
     };
     loadData();
@@ -88,7 +76,7 @@ export function LearningManagement() {
 
   // Get unique levels
   const uniqueLevels = Array.from(
-    new Set(learnings.map((item) => item.level).filter(Boolean))
+    new Set(learnings.map((item) => item.level).filter(Boolean)),
   );
 
   // Filter logic
@@ -96,14 +84,11 @@ export function LearningManagement() {
     const normalizedQuery = removeVietnameseTones(searchQuery);
     const matchesSearch =
       removeVietnameseTones(item.title).includes(normalizedQuery) ||
-      removeVietnameseTones(item.subtitle).includes(normalizedQuery) ||
-      removeVietnameseTones(item.categoryTitle || "").includes(normalizedQuery);
+      removeVietnameseTones(item.subtitle).includes(normalizedQuery);
 
-    const matchesCategory =
-      filterCategory === "all" || item.categoryTitle === filterCategory;
     const matchesLevel = filterLevel === "all" || item.level === filterLevel;
 
-    return matchesSearch && matchesCategory && matchesLevel;
+    return matchesSearch && matchesLevel;
   });
 
   const {
@@ -122,18 +107,18 @@ export function LearningManagement() {
   };
 
   // Open detail page
-  const openDetailPage = (learning: LearnItem) => {
+  const openDetailPage = (learning: SelfLearnCourse) => {
     router.push(`/learning-management/${learning.id}`);
   };
 
   // Open edit page
-  const openEditPage = (learning: LearnItem, e: React.MouseEvent) => {
+  const openEditPage = (learning: SelfLearnCourse, e: React.MouseEvent) => {
     e.stopPropagation();
     router.push(`/learning-management/${learning.id}`);
   };
 
   // Open delete modal
-  const openDeleteModal = (learning: LearnItem, e: React.MouseEvent) => {
+  const openDeleteModal = (learning: SelfLearnCourse, e: React.MouseEvent) => {
     e.stopPropagation();
     setLearningToDelete(learning);
     setIsDeleteModalOpen(true);
@@ -177,26 +162,11 @@ export function LearningManagement() {
             />
             <input
               type="text"
-              placeholder="Tìm kiếm khóa học, chủ đề hoặc nội dung..."
+              placeholder="Tìm kiếm khóa học..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500"
             />
-          </div>
-          <div className="flex items-center gap-2">
-            <Filter size={20} className="text-gray-400" />
-            <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-4 py-2.5 border border-gray-200 rounded-xl outline-none bg-white"
-            >
-              <option value="all">Tất cả chủ đề</option>
-              {learnCategories.map((cat) => (
-                <option key={cat.id} value={cat.title}>
-                  {cat.title}
-                </option>
-              ))}
-            </select>
           </div>
           <div className="flex items-center gap-2">
             <Filter size={20} className="text-gray-400" />
@@ -259,23 +229,17 @@ export function LearningManagement() {
                         {learning.subtitle}
                       </p>
                       <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
-                          {learning.categoryTitle}
-                        </span>
                         {learning.level && (
-                          <>
-                            <span className="text-gray-300">•</span>
-                            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-700">
-                              {learning.level}
-                            </span>
-                          </>
+                          <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-700">
+                            {learning.level}
+                          </span>
                         )}
                       </div>
                       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                        {learning.lessons && (
+                        {learning.totalLessons && (
                           <div className="flex items-center gap-1.5">
                             <BookOpen size={16} className="text-gray-400" />
-                            <span>{learning.lessons} bài học</span>
+                            <span>{learning.totalLessons} bài học</span>
                           </div>
                         )}
                         {learning.duration && (
@@ -284,21 +248,10 @@ export function LearningManagement() {
                             <span>{learning.duration}</span>
                           </div>
                         )}
-                        {learning.students && (
-                          <div className="flex items-center gap-1.5">
-                            <Users size={16} className="text-gray-400" />
-                            <span>{learning.students} học viên</span>
-                          </div>
-                        )}
-                        {learning.rating && (
-                          <div className="flex items-center gap-1.5">
-                            <Star
-                              size={16}
-                              className="text-yellow-400 fill-yellow-400"
-                            />
-                            <span>{learning.rating.toFixed(1)}/5</span>
-                          </div>
-                        )}
+                        {/* 
+                            Note: 'students' and 'rating' are not in SelfLearnCourse interface currently.
+                            I will comment them out or remove them.
+                         */}
                       </div>
                     </div>
                   </div>
@@ -326,8 +279,9 @@ export function LearningManagement() {
                           strokeWidth="6"
                           fill="none"
                           strokeLinecap="round"
-                          strokeDasharray={`${((learning.progress || 0) / 100) * 175.9
-                            } 175.9`}
+                          strokeDasharray={`${
+                            ((learning.progress || 0) / 100) * 175.9
+                          } 175.9`}
                         />
                       </svg>
                       <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold">
@@ -416,22 +370,7 @@ export function LearningManagement() {
                 required
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">
-                Chủ đề <span className="text-red-500">*</span>
-              </label>
-              <select
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
-                required
-              >
-                <option value="">Chọn chủ đề</option>
-                {learnCategories.map((cat) => (
-                  <option key={cat.id} value={cat.title}>
-                    {cat.title}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Category selection removed as it's not in selfLearnData */}
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-gray-700">
                 Cấp độ <span className="text-red-500">*</span>
@@ -444,7 +383,6 @@ export function LearningManagement() {
                 <option value="Cơ bản">Cơ bản</option>
                 <option value="Trung bình">Trung bình</option>
                 <option value="Nâng cao">Nâng cao</option>
-                <option value="Chuyên sâu">Chuyên sâu</option>
               </select>
             </div>
             <div className="space-y-1.5">

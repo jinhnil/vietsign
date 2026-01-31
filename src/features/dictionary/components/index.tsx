@@ -291,7 +291,7 @@ export const Dictionary: React.FC = () => {
               item ? (
                 <Link
                   key={item.id}
-                  href={`/dictionary/${item.id}`}
+                  href={`/vocabularies/${item.id}`}
                   className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden relative cursor-pointer"
                 >
                   {/* Content */}

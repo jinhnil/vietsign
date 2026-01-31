@@ -5,44 +5,40 @@
  * Fallback về mock data khi API không khả dụng.
  */
 
-import OrganizationModel from "@/domain/entities/Organization";
-import {
-  mockOrganizations,
-  OrganizationItem,
-  organizationStatusConfig,
-} from "@/data/organizationsData";
+import OrganizationModel, {
+  OrganizationManagerModel,
+} from "@/domain/entities/Organization";
+import { type OrganizationItem } from "@/data/organizationsData";
 import { fetchUsersByFacility } from "./userService";
 
 // Re-export types và constants
-export { organizationStatusConfig } from "@/data/organizationsData";
 export type { OrganizationItem } from "@/data/organizationsData";
-
-// Flag để toggle giữa API và mock data
-const USE_API = true;
 
 /**
  * Convert API organization to OrganizationItem format
  */
 function convertApiToOrganizationItem(apiOrg: any): OrganizationItem {
+  // Extract ID with fallbacks for common naming conventions
+  // Backend uses 'organization_id' as primary key
+  const id =
+    apiOrg.id ??
+    apiOrg.organization_id ??
+    apiOrg.ID ??
+    apiOrg._id ??
+    apiOrg.org_id;
+
   return {
-    id: apiOrg.id,
-    name: apiOrg.name,
-    streetAddress: apiOrg.street_address || apiOrg.streetAddress || "",
-    wardCode: apiOrg.ward_code || apiOrg.wardCode || 0,
-    provinceCode: apiOrg.province_code || apiOrg.provinceCode || 0,
-    phone: apiOrg.phone || "",
-    email: apiOrg.email || "",
-    managerId: apiOrg.manager_id || apiOrg.managerId || 0,
-    studentCount: apiOrg.student_count || apiOrg.studentCount || 0,
-    teacherCount: apiOrg.teacher_count || apiOrg.teacherCount || 0,
-    managers: apiOrg.managers || [],
-    teachers: apiOrg.teachers || [],
-    students: apiOrg.students || [],
-    status: apiOrg.status || "active",
-    description: apiOrg.description,
-    openingHours: apiOrg.opening_hours || apiOrg.openingHours,
-    createdAt: apiOrg.created_at || apiOrg.createdAt,
-    updatedAt: apiOrg.updated_at || apiOrg.updatedAt,
+    id: Number(id),
+    name: apiOrg.name || apiOrg.Name || "",
+    type: apiOrg.type || apiOrg.Type || "SCHOOL",
+    parentId: apiOrg.parent_id ?? apiOrg.parentId ?? apiOrg.ParentID ?? null,
+    street: apiOrg.address || apiOrg.street || apiOrg.Address || "", // Try 'address' first as backend changed
+    ward: Number(apiOrg.ward || 0),
+    city: Number(apiOrg.city || 0),
+    phone: apiOrg.phone || apiOrg.Phone || "",
+    email: apiOrg.email || apiOrg.Email || "",
+    createdAt: apiOrg.created_at || apiOrg.createdAt || apiOrg.CreatedAt || "",
+    updatedAt: apiOrg.updated_at || apiOrg.updatedAt || apiOrg.UpdatedAt || "",
   };
 }
 
@@ -52,25 +48,43 @@ function convertApiToOrganizationItem(apiOrg: any): OrganizationItem {
 export async function fetchAllOrganizations(
   query?: any,
 ): Promise<OrganizationItem[]> {
-  if (!USE_API) {
-    return mockOrganizations;
-  }
-
   try {
     const response = await OrganizationModel.getAll(query);
-    if (response && Array.isArray(response)) {
-      return response.map(convertApiToOrganizationItem);
+
+    // Handle different response structures: [item, ...], { data: [...] }, { organizations: [...] }
+    let rawList: any[] = [];
+    if (Array.isArray(response)) {
+      rawList = response;
+    } else if (response && Array.isArray(response.data)) {
+      rawList = response.data;
+    } else if (response && Array.isArray(response.organizations)) {
+      rawList = response.organizations;
+    } else if (response && typeof response === "object") {
+      // If it's a single object, maybe it's the data we want? (Unlikely for getAll, but safe)
+      if (response.id || response.ID || response._id) rawList = [response];
     }
-    if (response?.organizations && Array.isArray(response.organizations)) {
-      return response.organizations.map(convertApiToOrganizationItem);
+
+    if (rawList.length > 0) {
+      const mapped = rawList
+        .map(convertApiToOrganizationItem)
+        .filter((item, index) => {
+          if (!item.id || isNaN(item.id)) {
+            console.warn(
+              `Organization item at index ${index} from API is missing a valid ID and will be filtered out:`,
+              rawList[index],
+            );
+            return false;
+          }
+          return true;
+        });
+
+      return mapped;
     }
-    return mockOrganizations;
+
+    return [];
   } catch (error) {
-    console.error(
-      "Error fetching organizations from API, falling back to mock data:",
-      error,
-    );
-    return mockOrganizations;
+    console.error("Error fetching organizations from API:", error);
+    return [];
   }
 }
 
@@ -80,33 +94,35 @@ export async function fetchAllOrganizations(
 export async function fetchOrganizationById(
   id: number,
 ): Promise<OrganizationItem | undefined> {
-  if (!USE_API) {
-    return mockOrganizations.find((o) => o.id === id);
-  }
-
   try {
     const response = await OrganizationModel.getById(id);
     const data = response?.organization || response;
     if (data) {
-      const orgItem = convertApiToOrganizationItem(data);
-      // Enrich with users (managers, teachers, students)
-      try {
-        const users = await fetchUsersByFacility(id);
-        orgItem.managers = users.filter((u) => u.role === "FACILITY_MANAGER");
-        orgItem.teachers = users.filter((u) => u.role === "TEACHER");
-        orgItem.students = users.filter((u) => u.role === "STUDENT");
-        orgItem.teacherCount = orgItem.teachers.length;
-        orgItem.studentCount = orgItem.students.length;
-      } catch (e) {
-        console.warn("Failed to fetch users for organization enrichment", e);
-      }
-      return orgItem;
+      return convertApiToOrganizationItem(data);
     }
     return undefined;
   } catch (error) {
     console.error(`Error fetching organization ${id} from API:`, error);
-    return mockOrganizations.find((o) => o.id === id);
+    return undefined;
   }
+}
+
+/**
+ * Helper to convert OrganizationItem to API payload
+ */
+function convertItemToApiPayload(data: Partial<OrganizationItem>): any {
+  const payload: any = {
+    name: data.name,
+    type: data.type || "SCHOOL", // Use provided type or default to SCHOOL
+    parent_id: data.parentId ?? null, // Parent department ID for schools
+    address: data.street, // Backend expects 'address' field
+    city: String(data.city), // Backend expects string
+    ward: String(data.ward), // Backend expects string
+    phone: data.phone,
+    email: data.email,
+  };
+
+  return payload;
 }
 
 /**
@@ -116,7 +132,8 @@ export async function createOrganization(
   data: Partial<OrganizationItem>,
 ): Promise<OrganizationItem | null> {
   try {
-    const response = await OrganizationModel.create(data);
+    const payload = convertItemToApiPayload(data);
+    const response = await OrganizationModel.create(payload);
     if (response) {
       return convertApiToOrganizationItem(response);
     }
@@ -135,7 +152,8 @@ export async function updateOrganization(
   data: Partial<OrganizationItem>,
 ): Promise<OrganizationItem | null> {
   try {
-    const response = await OrganizationModel.update(id, data);
+    const payload = convertItemToApiPayload(data);
+    const response = await OrganizationModel.update(id, payload);
     if (response) {
       return convertApiToOrganizationItem(response);
     }
@@ -159,25 +177,54 @@ export async function deleteOrganization(id: number): Promise<boolean> {
   }
 }
 
-// Sync functions for backward compatibility (use mock data)
+// Backward compatibility aliases (for facilities)
+// These should ideally be refactored to use async hooks, but we keep them as empty for now to avoid breaking imports
 export function getOrganizationById(id: number): OrganizationItem | undefined {
-  return mockOrganizations.find((o) => o.id === id);
+  return undefined;
 }
 
 export function getActiveOrganizations(): OrganizationItem[] {
-  return mockOrganizations.filter((o) => o.status === "active");
+  return [];
 }
 
 export function getOrganizationsByProvince(
-  provinceCode: number,
+  cityCode: number,
 ): OrganizationItem[] {
-  return mockOrganizations.filter((o) => o.provinceCode === provinceCode);
+  return [];
 }
 
-// Backward compatibility aliases (for facilities)
 export const getFacilityById = getOrganizationById;
 export const getActiveFacilities = getActiveOrganizations;
 export const getFacilitiesByProvince = getOrganizationsByProvince;
 
-// Export mock data
-export { mockOrganizations, mockOrganizations as mockFacilities };
+/**
+ * Gán quản lý cho tổ chức
+ */
+export async function assignOrganizationManager(data: {
+  organization_id: number;
+  user_id: number;
+  role_in_org?: string;
+  is_primary?: boolean;
+}): Promise<any> {
+  try {
+    return await OrganizationManagerModel.assign(data);
+  } catch (error) {
+    console.error("Error assigning organization manager:", error);
+    throw error;
+  }
+}
+
+/**
+ * Hủy quyền quản lý tổ chức
+ */
+export async function revokeOrganizationManager(data: {
+  organization_id: number;
+  user_id: number;
+}): Promise<any> {
+  try {
+    return await OrganizationManagerModel.revoke(data);
+  } catch (error) {
+    console.error("Error revoking organization manager:", error);
+    throw error;
+  }
+}

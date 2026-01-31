@@ -116,8 +116,19 @@ class UserModelClass extends Base {
   };
 
   // POST /user/create - Tạo user mới (Admin only)
+  // Note: Backend seems to use specific endpoints for Teacher/Student
   createUser = async (data: Partial<User>): Promise<any> => {
     const res = await this.apiPost("/create", data);
+    return res.data;
+  };
+
+  createTeacher = async (data: any): Promise<any> => {
+    const res = await this.apiPost("/teachers", data); // /users/teachers
+    return res.data;
+  };
+
+  createStudent = async (data: any): Promise<any> => {
+    const res = await this.apiPost("/students", data); // /users/students
     return res.data;
   };
 
@@ -151,44 +162,6 @@ class UserModelClass extends Base {
   // PUT /user/:userId/change-role - Thay đổi role (Admin only)
   changeUserRole = async (userId: number, roleCode: string): Promise<any> => {
     const res = await this.apiPut(`/${userId}/change-role`, { role: roleCode });
-    return res.data;
-  };
-
-  // ==================== ACCOUNT APPROVAL ====================
-
-  // GET /user/pending - Danh sách tài khoản chờ phê duyệt
-  getPendingUsers = async (query?: any): Promise<any> => {
-    const res = await this.apiGet("/pending", query);
-    return res.data;
-  };
-
-  // GET /user/approval-stats - Thống kê phê duyệt
-  getApprovalStats = async (): Promise<any> => {
-    const res = await this.apiGet("/approval-stats");
-    return res.data;
-  };
-
-  // PUT /user/:userId/approve - Phê duyệt tài khoản
-  approveUser = async (userId: number): Promise<any> => {
-    const res = await this.apiPut(`/${userId}/approve`, {});
-    return res.data;
-  };
-
-  // PUT /user/:userId/reject - Từ chối tài khoản
-  rejectUser = async (userId: number, reason?: string): Promise<any> => {
-    const res = await this.apiPut(`/${userId}/reject`, { reason });
-    return res.data;
-  };
-
-  // POST /user/bulk-approve - Phê duyệt nhiều tài khoản
-  bulkApproveUsers = async (userIds: number[]): Promise<any> => {
-    const res = await this.apiPost("/bulk-approve", { userIds });
-    return res.data;
-  };
-
-  // GET /user/:userId/approval-history - Lịch sử phê duyệt
-  getUserApprovalHistory = async (userId: number): Promise<any> => {
-    const res = await this.apiGet(`/${userId}/approval-history`);
     return res.data;
   };
 }

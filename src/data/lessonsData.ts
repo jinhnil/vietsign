@@ -6,7 +6,13 @@ export type StepType =
   | "sentence" // Cấu trúc câu - video + thẻ từ
   | "quiz-text-to-video" // Nhìn chữ chọn video (3a)
   | "quiz-video-to-text" // Nhìn video chọn đáp án (3b)
-  | "quiz-input"; // Tự gõ đáp án (3c)
+  | "quiz-input" // Tự gõ đáp án (3c)
+  // New types
+  | "practice-video" // Xem video và quay video thực hành
+  | "practice-matrix" // Ma trận thẻ -> xem -> thực hành
+  | "match-video-image" // Nối video - hình ảnh
+  | "match-video-word" // Nối video - từ
+  | "drag-drop-video-word"; // Kéo thả từ vào ô video
 
 // Step item
 export interface StepItem {
@@ -39,6 +45,32 @@ export interface StepItem {
   }[];
   correctAnswer?: string; // For quiz-input type
   hint?: string;
+
+  // For new types
+  // Practice Matrix Items
+  matrixItems?: {
+    id: number;
+    label: string; // e.g. "Card 1" or image
+    videoUrl: string;
+    word: string;
+    imageUrl?: string;
+  }[];
+
+  // Match Items (Video-Image or Video-Word)
+  matchPairs?: {
+    id: number;
+    videoUrl: string;
+    targetUrl?: string; // Image URL
+    targetText?: string; // Word
+  }[];
+
+  // Drag Drop Items
+  dragDropItems?: {
+    id: number;
+    videoUrl: string;
+    correctWord: string;
+  }[];
+  availableWords?: string[]; // List of words to drag
 }
 
 // Lesson item - contains multiple steps
@@ -53,17 +85,25 @@ export interface LessonItem {
   stepsCount: number;
 }
 
-export interface ExamItem {
-  id: number;
-  classId: number;
-  title: string;
-  description: string;
-  duration: number;
-  totalQuestions: number;
-  dueDate: string;
-  status: "pending" | "completed" | "expired";
-  score?: number;
-}
+import { getExamsByClass, ExamItem } from "./examsData";
+export type { ExamItem };
+
+// ... (keep DocumentItem)
+
+// ...
+
+// Get exams by class ID
+export const getExamsByClassId = (
+  classId: number,
+): (ExamItem & { studentStatus: string; score?: number })[] => {
+  const exams = getExamsByClass(classId);
+  return exams.map((exam) => ({
+    ...exam,
+    studentStatus: Math.random() > 0.5 ? "completed" : "pending",
+    score:
+      Math.random() > 0.5 ? 70 + Math.floor(Math.random() * 30) : undefined,
+  }));
+};
 
 export interface DocumentItem {
   id: number;
@@ -102,7 +142,7 @@ const vocabularyWords = [
 // Generate steps for a lesson
 const generateStepsForLesson = (
   lessonId: number,
-  lessonOrder: number
+  lessonOrder: number,
 ): StepItem[] => {
   const steps: StepItem[] = [];
   let stepOrder = 1;
@@ -213,6 +253,100 @@ const generateStepsForLesson = (
     hint: quizVocab.word.charAt(0) + "...",
   });
 
+  // Add Practice Video Step
+  steps.push({
+    id: lessonId * 100 + stepOrder,
+    lessonId,
+    title: "Luyện tập: Quay video ký hiệu",
+    type: "practice-video",
+    order: stepOrder++,
+    completed: false,
+    word: quizVocab.word,
+    videoUrl: quizVocab.videoUrl,
+    description: `Hãy xem video mẫu và thực hành ký hiệu từ "${quizVocab.word}"`,
+  });
+
+  // Add Practice Matrix Step (6-8 items)
+  const matrixItems = vocabularyWords
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 8)
+    .map((v, idx) => ({
+      id: idx + 1,
+      label: v.word,
+      videoUrl: v.videoUrl,
+      word: v.word,
+      imageUrl: `https://ui-avatars.com/api/?name=${v.word}&background=random&size=200`, // Mock image
+    }));
+
+  steps.push({
+    id: lessonId * 100 + stepOrder,
+    lessonId,
+    title: "Luyện tập: Ma trận ký hiệu",
+    type: "practice-matrix",
+    order: stepOrder++,
+    completed: false,
+    matrixItems: matrixItems,
+    description: "Chọn một thẻ để xem video và thực hành lại.",
+  });
+
+  // Add Match Video - Image Step
+  const matchPairsImage = vocabularyWords.slice(0, 4).map((v, idx) => ({
+    id: idx + 1,
+    videoUrl: v.videoUrl,
+    targetUrl: `https://ui-avatars.com/api/?name=${v.word}&background=0D8ABC&color=fff&size=200`, // Mock image
+    targetText: v.word,
+  }));
+
+  steps.push({
+    id: lessonId * 100 + stepOrder,
+    lessonId,
+    title: "Nối: Video - Hình ảnh",
+    type: "match-video-image",
+    order: stepOrder++,
+    completed: false,
+    matchPairs: matchPairsImage,
+  });
+
+  // Add Match Video - Word Step
+  const matchPairsWord = vocabularyWords.slice(2, 6).map((v, idx) => ({
+    id: idx + 1,
+    videoUrl: v.videoUrl,
+    targetText: v.word,
+  }));
+
+  steps.push({
+    id: lessonId * 100 + stepOrder,
+    lessonId,
+    title: "Nối: Video - Từ vựng",
+    type: "match-video-word",
+    order: stepOrder++,
+    completed: false,
+    matchPairs: matchPairsWord,
+  });
+
+  // Add Drag Drop Video - Word Step (6 boxes)
+  const dragDropItems = vocabularyWords
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 6)
+    .map((v, idx) => ({
+      id: idx + 1,
+      videoUrl: v.videoUrl,
+      correctWord: v.word,
+    }));
+
+  steps.push({
+    id: lessonId * 100 + stepOrder,
+    lessonId,
+    title: "Kéo thả: Ghép từ vào video",
+    type: "drag-drop-video-word",
+    order: stepOrder++,
+    completed: false,
+    dragDropItems: dragDropItems,
+    availableWords: dragDropItems
+      .map((i) => i.correctWord)
+      .sort(() => Math.random() - 0.5),
+  });
+
   return steps;
 };
 
@@ -268,40 +402,7 @@ export const generateLessonsForClass = (classId: number): LessonItem[] => {
   });
 };
 
-// Generate mock exams for a class
-export const generateExamsForClass = (classId: number): ExamItem[] => {
-  const examTypes = [
-    {
-      title: "Kiểm tra 15 phút - Chủ đề Chào hỏi",
-      questions: 10,
-      duration: 15,
-    },
-    { title: "Kiểm tra giữa kỳ", questions: 25, duration: 45 },
-    {
-      title: "Kiểm tra 15 phút - Chủ đề Gia đình",
-      questions: 10,
-      duration: 15,
-    },
-    { title: "Thi cuối kỳ", questions: 40, duration: 60 },
-  ];
-
-  return examTypes.map((exam, index) => ({
-    id: classId * 100 + index + 1,
-    classId,
-    title: exam.title,
-    description: `Bài kiểm tra đánh giá năng lực học viên`,
-    duration: exam.duration,
-    totalQuestions: exam.questions,
-    dueDate: new Date(
-      Date.now() + (index - 1) * 7 * 24 * 60 * 60 * 1000
-    ).toLocaleDateString("vi-VN"),
-    status:
-      index < 2
-        ? "completed"
-        : ("pending" as "pending" | "completed" | "expired"),
-    score: index < 2 ? 75 + Math.floor(Math.random() * 25) : undefined,
-  }));
-};
+// Legacy exam generation removed - using examsData instead
 
 // Generate mock documents for a class
 export const generateDocumentsForClass = (classId: number): DocumentItem[] => {
@@ -329,7 +430,7 @@ export const generateDocumentsForClass = (classId: number): DocumentItem[] => {
     size: doc.size,
     url: "#",
     uploadedAt: new Date(
-      Date.now() - index * 3 * 24 * 60 * 60 * 1000
+      Date.now() - index * 3 * 24 * 60 * 60 * 1000,
     ).toLocaleDateString("vi-VN"),
   }));
 };
@@ -370,9 +471,10 @@ export const getStepById = (stepId: number): StepItem | undefined => {
 };
 
 // Get exams by class ID
-export const getExamsByClassId = (classId: number): ExamItem[] => {
-  return generateExamsForClass(classId);
-};
+// Removed duplicate implementation
+// export const getExamsByClassId = (classId: number): ExamItem[] => {
+//   return generateExamsForClass(classId);
+// };
 
 // Get documents by class ID
 export const getDocumentsByClassId = (classId: number): DocumentItem[] => {

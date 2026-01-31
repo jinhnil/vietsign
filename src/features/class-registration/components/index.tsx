@@ -46,8 +46,8 @@ export function ClassRegistrationManagement() {
         const enrichedClasses = allClasses.map((c) => ({
           ...c,
           teacherName: teacherMap[c.teacherId] || "Không xác định",
-          facilityName: c.facilityId
-            ? facilityMap[c.facilityId] || "Không xác định"
+          facilityName: c.organizationId
+            ? facilityMap[c.organizationId] || "Không xác định"
             : "Online",
           registered: false, // Default to false as we don't have user registration API yet
         }));
@@ -78,8 +78,8 @@ export function ClassRegistrationManagement() {
       prev.map((cls) =>
         cls.id === id
           ? { ...cls, registered: true, students: cls.students + 1 }
-          : cls
-      )
+          : cls,
+      ),
     );
     // Optionally show success toast
   };

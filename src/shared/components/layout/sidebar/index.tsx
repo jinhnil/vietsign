@@ -111,15 +111,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       icon: <Users size={22} />,
       label: "Quản lý người dùng",
-      path: "/users",
+      path: "/users-management",
       allowedRoles: ["ADMIN", "FACILITY_MANAGER", "TEST"],
     },
-    {
-      icon: <Shield size={22} />,
-      label: "Quản lý phân quyền",
-      path: "/permissions",
-      allowedRoles: ["ADMIN", "TEST"],
-    },
+    // {
+    //   icon: <Shield size={22} />,
+    //   label: "Quản lý phân quyền",
+    //   path: "/permissions",
+    //   allowedRoles: ["ADMIN", "TEST"],
+    // },
     {
       icon: <Building size={22} />,
       label: "Quản lý tổ chức",
@@ -192,7 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       icon: <BookOpen size={22} />,
       label: "Từ điển",
-      path: "/dictionary",
+      path: "/vocabularies",
       allowedRoles: [
         "ADMIN",
         "FACILITY_MANAGER",

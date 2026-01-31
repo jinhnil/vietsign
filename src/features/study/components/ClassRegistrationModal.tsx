@@ -48,16 +48,16 @@ export const ClassRegistrationModal: React.FC<ClassRegistrationModalProps> = ({
     }
   };
 
-  const getFacilityName = (facilityId: number | null) => {
-    if (facilityId === null) return "Online";
-    const facility = mockOrganizations.find((f) => f.id === facilityId);
+  const getFacilityName = (organizationId: number | null) => {
+    if (organizationId === null) return "Online";
+    const facility = mockOrganizations.find((f) => f.id === organizationId);
     return facility ? facility.name : "Không xác định";
   };
 
   const filteredClasses = classes.filter(
     (c) =>
       c.status === "upcoming" &&
-      c.name.toLowerCase().includes(searchTerm.toLowerCase())
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   if (!isOpen) return null;
@@ -137,7 +137,7 @@ export const ClassRegistrationModal: React.FC<ClassRegistrationModalProps> = ({
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin size={16} className="text-gray-400" />
-                      <span>{getFacilityName(cls.facilityId)}</span>
+                      <span>{getFacilityName(cls.organizationId)}</span>
                     </div>
                   </div>
 

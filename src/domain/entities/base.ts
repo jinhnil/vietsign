@@ -28,8 +28,12 @@ export class Base {
     return response;
   }
 
-  protected async apiDelete(path: string = "", params?: any) {
-    const response = await http.delete(this.getUrl(path), { params });
+  protected async apiDelete(path: string = "", params?: any, data?: any) {
+    const config: any = { params };
+    if (data) {
+      config.data = data;
+    }
+    const response = await http.delete(this.getUrl(path), config);
     return response;
   }
 

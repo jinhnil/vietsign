@@ -1,41 +1,106 @@
 import ClassModel from "@/domain/entities/Class";
-import { mockClasses, ClassItem } from "@/data/classesData";
-
-const USE_API = true;
+import { ClassItem } from "@/data/classesData";
 
 export async function fetchAllClasses(query?: any): Promise<ClassItem[]> {
-  if (!USE_API) return mockClasses;
-
   try {
     const response = await ClassModel.getAllClasses(query);
+    // Backend returns { data: [...], page, limit, total }
     const data = response.data || response;
-    return Array.isArray(data) ? data : mockClasses;
+
+    // Handle different response structures
+    let items: any[] = [];
+    if (Array.isArray(data)) {
+      items = data;
+    } else if (data.data && Array.isArray(data.data)) {
+      items = data.data;
+    } else if (data.classes && Array.isArray(data.classes)) {
+      items = data.classes;
+    }
+
+    // Map items - Backend now returns proper camelCase format
+    return items.map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      teacherId: item.teacherId,
+      organizationId: item.organizationId,
+      schedule: item.schedule,
+      status: item.status, // Return raw status (APPROVED, PENDING, etc.)
+      students: item.students || 0,
+      maxStudents: item.maxStudents,
+      startDate: item.startDate,
+      endDate: item.endDate,
+      classLevel: item.classLevel,
+      code: item.classCode,
+      thumbnail: item.thumbnailPath,
+    }));
   } catch (error) {
     console.error("Error fetching classes:", error);
-    return mockClasses;
+    return [];
   }
 }
 
 export async function fetchClassById(
-  id: number
+  id: number,
 ): Promise<ClassItem | undefined> {
-  if (!USE_API) return mockClasses.find((c) => c.id === id);
-
   try {
     const response = await ClassModel.getClassById(id);
-    return (response.data || response) as ClassItem;
+    // Backend returns directly the object or wrapped in data
+    const item = response.data || response;
+
+    if (!item) return undefined;
+
+    return {
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      teacherId: item.teacherId,
+      organizationId: item.organizationId,
+      schedule: item.schedule,
+      status: item.status, // Return raw status
+      students: item.students || 0,
+      maxStudents: item.maxStudents,
+      startDate: item.startDate,
+      endDate: item.endDate,
+      classLevel: item.classLevel,
+      code: item.classCode,
+      thumbnail: item.thumbnailPath,
+    };
   } catch (error) {
     console.error("Error fetching class:", error);
-    return mockClasses.find((c) => c.id === id);
+    return undefined;
   }
 }
 
+/**
+ * Helper to convert ClassItem to API payload
+ */
+function convertItemToApiPayload(data: any): any {
+  return {
+    name: data.name,
+    description: data.description,
+    classCode: data.classCode,
+    classLevel: data.gradeLevel || data.classLevel,
+    teacherId: data.teacherId,
+    organizationId: data.organizationId,
+    thumbnailPath: data.thumbnailPath,
+    status: data.status === "ongoing" ? "ACTIVE" : "INACTIVE",
+    maxStudents: Number(data.maxStudents),
+    schedule: data.schedule,
+    startDate: data.startDate,
+    endDate: data.endDate,
+  };
+}
+
 export async function createClass(data: any) {
-  return await ClassModel.createClass(data);
+  const payload = convertItemToApiPayload(data);
+  console.log("[createClass] Sending payload:", payload);
+  return await ClassModel.createClass(payload);
 }
 
 export async function updateClass(id: number, data: any) {
-  return await ClassModel.updateClass(id, data);
+  const payload = convertItemToApiPayload(data);
+  return await ClassModel.updateClass(id, payload);
 }
 
 export async function deleteClass(id: number) {

@@ -44,7 +44,7 @@ export const DictionaryDetail: React.FC = () => {
       {/* Top Navigation & Breadcrumbs */}
       <div className="flex items-center justify-between">
         <button
-          onClick={() => router.push(`/dictionary`)}
+          onClick={() => router.push(`/vocabularies`)}
           className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-white rounded-xl transition-all font-medium border border-transparent hover:border-gray-200 hover:shadow-sm group"
         >
           <ArrowLeft
@@ -59,7 +59,7 @@ export const DictionaryDetail: React.FC = () => {
             Trang chủ
           </Link>
           <span>/</span>
-          <Link href="/dictionary" className="hover:text-primary-600">
+          <Link href="/vocabularies" className="hover:text-primary-600">
             Từ điển
           </Link>
           <span>/</span>
@@ -142,7 +142,7 @@ export const DictionaryDetail: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8">
         {prevItem ? (
           <Link
-            href={`/dictionary/${prevItem.id}`}
+            href={`/vocabularies/${prevItem.id}`}
             className="group relative overflow-hidden bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:border-primary-200 transition-all duration-300"
           >
             <div className="relative z-10 flex items-center gap-6">
@@ -169,7 +169,7 @@ export const DictionaryDetail: React.FC = () => {
 
         {nextItem ? (
           <Link
-            href={`/dictionary/${nextItem.id}`}
+            href={`/vocabularies/${nextItem.id}`}
             className="group relative overflow-hidden bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:border-primary-200 transition-all duration-300 text-right"
           >
             <div className="relative z-10 flex items-center justify-end gap-6">

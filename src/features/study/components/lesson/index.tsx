@@ -12,7 +12,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { mockClasses, getClassById } from "@/data/classesData";
+import { fetchClassById } from "@/services/classService";
 import {
   getLessonById,
   getStepsByLessonId,
@@ -67,8 +67,7 @@ export function LessonDetail() {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        const foundClass =
-          getClassById(classId) || mockClasses.find((c) => c.id === classId);
+        const foundClass = await fetchClassById(classId);
         setClassItem(foundClass);
 
         const foundLesson = getLessonById(lessonId);
@@ -127,7 +126,7 @@ export function LessonDetail() {
           <span>Quay lại khóa học</span>
         </button>
         <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">
-          {classItem.level || "CƠ BẢN"}
+          {classItem.classLevel || "CƠ BẢN"}
         </span>
       </div>
 

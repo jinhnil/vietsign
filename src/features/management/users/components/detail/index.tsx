@@ -78,12 +78,27 @@ export function UserManagementDetail() {
           await changeUserRole(user.id, editForm.role);
         }
 
+        // Check if isDeleted (status) changed
+        if (
+          editForm.isDeleted !== undefined &&
+          editForm.isDeleted !== user.isDeleted
+        ) {
+          if (editForm.isDeleted) {
+            await deleteUser(user.id);
+          } else {
+            await restoreUser(user.id);
+          }
+        }
+
         const updateData: Partial<UserItem> = { ...editForm };
         delete updateData.role; // Handle role change separately
+        delete updateData.isDeleted; // Handle status change separately
 
         await updateUser(user.id, {
           ...updateData,
-          facilityId: editForm.facilityId ? Number(editForm.facilityId) : null,
+          organizationId: editForm.organizationId
+            ? Number(editForm.organizationId)
+            : null,
         });
         await loadUser();
         setIsEditing(false);
@@ -95,9 +110,17 @@ export function UserManagementDetail() {
 
   const handleDelete = async () => {
     if (user) {
+      if (id === 0) {
+        // Assuming 'message' is a global or imported object, otherwise this will cause an error.
+        // For now, I'll comment it out or replace with a console log to ensure syntax correctness.
+        // message.info("Không tìm thấy người dùng");
+        console.info("Không tìm thấy người dùng (ID is 0)");
+        router.push("/users-management");
+        return;
+      }
       try {
         await deleteUser(user.id);
-        router.push("/users");
+        router.push("/users-management");
       } catch (error) {
         console.error("Failed to delete user", error);
       }
@@ -145,7 +168,7 @@ export function UserManagementDetail() {
           Không tìm thấy người dùng
         </h2>
         <button
-          onClick={() => router.push("/users")}
+          onClick={() => router.push("/users-management")}
           className="px-6 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
         >
           Quay lại danh sách
@@ -159,7 +182,7 @@ export function UserManagementDetail() {
       {/* Header */}
       <div className="flex items-center">
         <button
-          onClick={() => router.push("/users")}
+          onClick={() => router.push("/users-management")}
           className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-white rounded-xl transition-all font-medium border border-transparent hover:border-gray-200 hover:shadow-sm group"
         >
           <ArrowLeft
@@ -292,40 +315,55 @@ export function UserManagementDetail() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Cơ sở
-              </label>
-              {isEditing ? (
-                <select
-                  value={editForm.facilityId || ""}
-                  onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      facilityId: e.target.value
-                        ? Number(e.target.value)
-                        : undefined,
-                    })
-                  }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
-                >
-                  <option value="">Tất cả / Không có</option>
-                  {mockFacilities.map((facility) => (
-                    <option key={facility.id} value={facility.id}>
-                      {facility.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
-                  <Building size={18} className="text-gray-400" />
-                  {user.facilityId
-                    ? getFacilityById(user.facilityId)?.name ||
-                      `Cơ sở #${user.facilityId}`
-                    : "Tất cả"}
-                </p>
-              )}
-            </div>
+            {(isEditing ||
+              user.parentOrganizationName ||
+              user.organizationName ||
+              user.organizationId) && (
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">
+                  Cơ sở / Đơn vị
+                </label>
+                {isEditing ? (
+                  <select
+                    value={editForm.organizationId || ""}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        organizationId: e.target.value
+                          ? Number(e.target.value)
+                          : undefined,
+                      })
+                    }
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
+                  >
+                    <option value="">Chọn cơ sở...</option>
+                    {mockFacilities.map((facility) => (
+                      <option key={facility.id} value={facility.id}>
+                        {facility.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
+                    <Building size={18} className="text-gray-400" />
+                    {(() => {
+                      const parts = [];
+                      if (user.parentOrganizationName)
+                        parts.push(user.parentOrganizationName);
+                      if (user.organizationName)
+                        parts.push(user.organizationName);
+
+                      if (parts.length > 0) return parts.join(" > ");
+
+                      return user.organizationId
+                        ? getFacilityById(user.organizationId)?.name ||
+                            `Cơ sở #${user.organizationId}`
+                        : "";
+                    })()}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">
@@ -333,9 +371,12 @@ export function UserManagementDetail() {
               </label>
               {isEditing ? (
                 <select
-                  value={editForm.status || ""}
+                  value={editForm.isDeleted ? "inactive" : "active"}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, status: e.target.value })
+                    setEditForm({
+                      ...editForm,
+                      isDeleted: e.target.value === "inactive",
+                    })
                   }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
                 >
@@ -344,7 +385,7 @@ export function UserManagementDetail() {
                 </select>
               ) : (
                 <p className="px-4 py-3 bg-gray-50 rounded-xl">
-                  {user.status === "active" ? (
+                  {!user.isDeleted ? (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       <UserCheck size={14} />
                       Hoạt động
@@ -403,7 +444,7 @@ export function UserManagementDetail() {
                 <Lock size={18} />
                 Reset Password
               </button>
-              {user.status !== "active" && (
+              {user.isDeleted && (
                 <button
                   onClick={() => setIsRestoreModalOpen(true)}
                   className="px-6 py-2.5 border border-green-200 text-green-700 bg-green-50 rounded-xl hover:bg-green-100 transition-colors font-medium flex items-center gap-2"

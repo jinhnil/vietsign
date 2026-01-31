@@ -13,7 +13,7 @@ import {
   Send,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { mockClasses, getClassById } from "@/data/classesData";
+import { fetchClassById } from "@/services/classService";
 import {
   getLessonById,
   getStepsByLessonId,
@@ -29,6 +29,11 @@ import { SentenceStep } from "./SentenceStep";
 import { QuizTextToVideoStep } from "./QuizTextToVideoStep";
 import { QuizVideoToTextStep } from "./QuizVideoToTextStep";
 import { QuizInputStep } from "./QuizInputStep";
+// New Step Components
+import { PracticeVideoStep } from "./PracticeVideoStep";
+import { PracticeMatrixStep } from "./PracticeMatrixStep";
+import { MatchStep } from "./MatchStep";
+import { DragDropVideoWordStep } from "./DragDropVideoWordStep";
 
 export function StepDetail() {
   const params = useParams();
@@ -47,8 +52,7 @@ export function StepDetail() {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        const foundClass =
-          getClassById(classId) || mockClasses.find((c) => c.id === classId);
+        const foundClass = await fetchClassById(classId);
         setClassItem(foundClass);
 
         const foundLesson = getLessonById(lessonId);
@@ -127,6 +131,20 @@ export function StepDetail() {
             onComplete={() => nextStep && navigateToStep(nextStep)}
           />
         );
+      case "practice-video":
+        return (
+          <PracticeVideoStep
+            step={currentStep}
+            onComplete={() => nextStep && navigateToStep(nextStep)}
+          />
+        );
+      case "practice-matrix":
+        return <PracticeMatrixStep step={currentStep} />;
+      case "match-video-image":
+      case "match-video-word":
+        return <MatchStep step={currentStep} />;
+      case "drag-drop-video-word":
+        return <DragDropVideoWordStep step={currentStep} />;
       default:
         return <VocabularyStep step={currentStep} />;
     }
@@ -145,7 +163,7 @@ export function StepDetail() {
       const nextLessonSteps = getStepsByLessonId(nextLesson.id);
       if (nextLessonSteps.length > 0) {
         router.push(
-          `/study/${classId}/${nextLesson.id}/${nextLessonSteps[0].id}`
+          `/study/${classId}/${nextLesson.id}/${nextLessonSteps[0].id}`,
         );
       } else {
         router.push(`/study/${classId}/${nextLesson.id}`);

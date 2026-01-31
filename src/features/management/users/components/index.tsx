@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getFacilityById, mockFacilities } from "@/data";
+import { useOrganizations } from "@/shared/hooks/useOrganizations";
 import {
   UserItem,
   fetchAllUsers,
@@ -21,7 +21,10 @@ import {
   roleLabels,
   roleColors,
 } from "@/services/userService";
-import { Pagination, usePagination } from "@/shared/components/common/Pagination";
+import {
+  Pagination,
+  usePagination,
+} from "@/shared/components/common/Pagination";
 import { Modal } from "@/shared/components/common/Modal";
 import { ConfirmModal } from "@/shared/components/common/ConfirmModal";
 
@@ -42,7 +45,35 @@ export function UsersManagement() {
     password: "",
     phoneNumber: "",
     role: "USER",
-    facilityId: "",
+    organizationId: "",
+  });
+
+  // State xử lý autocomplete Organization (Sở & Trường)
+  const { data: allOrganizations = [] } = useOrganizations();
+
+  const [deptInput, setDeptInput] = useState("");
+  const [schoolInput, setSchoolInput] = useState("");
+
+  const [showDeptSuggestions, setShowDeptSuggestions] = useState(false);
+  const [showSchoolSuggestions, setShowSchoolSuggestions] = useState(false);
+
+  const [selectedDeptId, setSelectedDeptId] = useState("");
+  const [orgError, setOrgError] = useState("");
+
+  // Derived lists
+  const departments = allOrganizations.filter((o) => o.type === "DEPARTMENT");
+  const schools = allOrganizations.filter((o) => o.type === "SCHOOL");
+
+  const filteredDepts = departments.filter((d) =>
+    d.name.toLowerCase().includes(deptInput.toLowerCase()),
+  );
+
+  const filteredSchools = schools.filter((s) => {
+    const matchName = s.name.toLowerCase().includes(schoolInput.toLowerCase());
+    const matchDept = selectedDeptId
+      ? Number(s.parentId) === Number(selectedDeptId)
+      : true;
+    return matchName && matchDept;
   });
 
   // State để quản lý dữ liệu
@@ -155,10 +186,32 @@ export function UsersManagement() {
   // Xử lý tạo mới
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setOrgError("");
+
+    // Validate logic
+    const requiresOrg = ["TEACHER", "STUDENT", "FACILITY_MANAGER"].includes(
+      formData.role,
+    );
+
+    // Nếu nhập text mà chưa chọn ID -> Báo lỗi (User experience)
+    // Nhưng user yêu cầu: "nếu không chọn sở mà nhập luôn trường -> list all".
+    // "có thể thêm sau" -> cho phép để trống.
+
+    // Logic: Nếu đã nhập tên trường mà chưa có ID => Cảnh báo (vì text ko match ID nào)
+    // Trừ khi text rỗng.
+    if (schoolInput && !formData.organizationId) {
+      setOrgError(
+        "Vui lòng chọn trường học từ danh sách (hoặc để trống nếu chưa xác định).",
+      );
+      return;
+    }
+
     try {
       await createUser({
         ...formData,
-        facilityId: formData.facilityId ? Number(formData.facilityId) : null,
+        organizationId: formData.organizationId
+          ? Number(formData.organizationId)
+          : null,
       });
       // Try to go to first page to see new user or reload current?
       // Usually reload current
@@ -171,15 +224,20 @@ export function UsersManagement() {
         password: "",
         phoneNumber: "",
         role: "USER",
-        facilityId: "",
+        organizationId: "",
       });
+      // Reset custom inputs
+      setDeptInput("");
+      setSchoolInput("");
+      setSelectedDeptId("");
+      setOrgError("");
     } catch (error) {
       console.error("Failed to create user", error);
     }
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -277,7 +335,9 @@ export function UsersManagement() {
                     <tr
                       key={user.id}
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
-                      onClick={() => openDetailPage(user)}
+                      onClick={() =>
+                        router.push(`/users-management/${user.id}`)
+                      }
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3 overflow-hidden">
@@ -318,13 +378,15 @@ export function UsersManagement() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {user.facilityId
-                          ? getFacilityById(user.facilityId)?.name ||
-                            `Cơ sở #${user.facilityId}`
-                          : "Tất cả"}
+                        {user.organizationId
+                          ? allOrganizations.find(
+                              (o) =>
+                                String(o.id) === String(user.organizationId),
+                            )?.name || `Cơ sở #${user.organizationId}`
+                          : "Không thuộc cơ sở nào"}
                       </td>
                       <td className="px-6 py-4">
-                        {user.status === "active" ? (
+                        {!user.isDeleted ? (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             <UserCheck size={14} />
                             Hoạt động
@@ -342,13 +404,6 @@ export function UsersManagement() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <button
-                            className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                            onClick={(e) => openEditPage(user, e)}
-                            title="Chỉnh sửa"
-                          >
-                            <Edit size={18} />
-                          </button>
-                          <button
                             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             onClick={(e) => openDeleteModal(user, e)}
                             title="Xóa"
@@ -358,7 +413,7 @@ export function UsersManagement() {
                         </div>
                       </td>
                     </tr>
-                  ) : null
+                  ) : null,
                 )
               )}
             </tbody>
@@ -394,8 +449,8 @@ export function UsersManagement() {
         onClose={() => setIsModalOpen(false)}
         title="Thêm người dùng mới"
       >
-        <form className="space-y-4" onSubmit={handleCreate}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form className="flex flex-col h-[550px]" onSubmit={handleCreate}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 content-start overflow-y-auto pr-2 pb-32">
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-gray-700">
                 Họ và tên <span className="text-red-500">*</span>
@@ -462,33 +517,163 @@ export function UsersManagement() {
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
                 required
               >
-                {Object.entries(roleLabels).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
+                {Object.entries(roleLabels)
+                  .filter(([key]) => key !== "ADMIN" && key !== "SUPER_ADMIN")
+                  .map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
               </select>
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">
-                Cơ sở (nếu có)
-              </label>
-              <select
-                name="facilityId"
-                value={formData.facilityId}
-                onChange={handleChange}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
-              >
-                <option value="">Tất cả / Không có</option>
-                {mockFacilities.map((facility) => (
-                  <option key={facility.id} value={facility.id}>
-                    {facility.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Container có margin bottom lớn khi mở dropdown để không bị che */}
+            {/* Logic hiển thị Organization Input dựa trên Role */}
+            {formData.role !== "ADMIN" && formData.role !== "USER" && (
+              <>
+                {/* Chọn Sở Giáo Dục */}
+                <div className="space-y-1.5 relative">
+                  <label className="text-sm font-semibold text-gray-700">
+                    Sở Giáo dục (Cấp Tỉnh/Thành phố)
+                  </label>
+                  <input
+                    type="text"
+                    value={deptInput}
+                    onChange={(e) => {
+                      setDeptInput(e.target.value);
+                      setSelectedDeptId(""); // Reset Dept selection forces re-filter schools
+                      setShowDeptSuggestions(true);
+                      setOrgError("");
+                    }}
+                    onFocus={() => setShowDeptSuggestions(true)}
+                    onBlur={() =>
+                      setTimeout(() => setShowDeptSuggestions(false), 200)
+                    }
+                    placeholder="Nhập và chọn Sở Giáo dục..."
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                  />
+
+                  {showDeptSuggestions && (
+                    <div className="absolute z-50 mt-1 left-0 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                      {filteredDepts.length > 0 ? (
+                        filteredDepts.map((dept) => (
+                          <div
+                            key={dept.id}
+                            className="px-4 py-2.5 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-none"
+                            onClick={() => {
+                              setSelectedDeptId(String(dept.id));
+                              setDeptInput(dept.name);
+                              // Reset school selection to prevent mismatch
+                              setSchoolInput("");
+                              setFormData((prev) => ({
+                                ...prev,
+                                organizationId: "",
+                              }));
+                              setShowDeptSuggestions(false);
+                              setOrgError("");
+                            }}
+                          >
+                            {dept.name}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                          Không tìm thấy Sở phù hợp
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Chọn Trường học */}
+                <div
+                  className={`space-y-1.5 relative ${showSchoolSuggestions ? "mb-48" : ""}`}
+                >
+                  <label className="text-sm font-semibold text-gray-700">
+                    {formData.role === "FACILITY_MANAGER"
+                      ? "Cơ sở vật chất (Trường/Trung tâm)"
+                      : "Trường học"}
+                  </label>
+                  <input
+                    type="text"
+                    value={schoolInput}
+                    onChange={(e) => {
+                      setSchoolInput(e.target.value);
+                      setFormData((prev) => ({ ...prev, organizationId: "" }));
+                      setShowSchoolSuggestions(true);
+                      setOrgError("");
+                    }}
+                    onFocus={() => setShowSchoolSuggestions(true)}
+                    onBlur={() =>
+                      setTimeout(() => setShowSchoolSuggestions(false), 200)
+                    }
+                    placeholder={
+                      selectedDeptId
+                        ? "Chọn trường thuộc Sở..."
+                        : "Nhập tên trường (tìm tất cả)..."
+                    }
+                    className={`w-full px-4 py-2.5 border ${
+                      orgError ? "border-red-500" : "border-gray-200"
+                    } rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all`}
+                  />
+                  {orgError && (
+                    <p className="text-xs text-red-500">{orgError}</p>
+                  )}
+
+                  {showSchoolSuggestions && (
+                    <div className="absolute z-50 mt-1 left-0 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                      {filteredSchools.length > 0 ? (
+                        filteredSchools.map((school) => (
+                          <div
+                            key={school.id}
+                            className="px-4 py-2.5 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 border-b border-gray-50 last:border-none"
+                            onClick={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                organizationId: String(school.id),
+                              }));
+                              setSchoolInput(school.name);
+                              setShowSchoolSuggestions(false);
+                              setOrgError("");
+
+                              // Auto-fill dept if found
+                              if (school.parentId) {
+                                const parentDept = departments.find(
+                                  (d) =>
+                                    String(d.id) === String(school.parentId),
+                                );
+                                if (parentDept) {
+                                  setDeptInput(parentDept.name);
+                                  setSelectedDeptId(String(parentDept.id));
+                                }
+                              }
+                            }}
+                          >
+                            {school.name}
+                            {/* Show parent name info if global search */}
+                            {!selectedDeptId && school.parentId && (
+                              <span className="block text-xs text-gray-400 mt-0.5">
+                                {
+                                  departments.find(
+                                    (d) =>
+                                      String(d.id) === String(school.parentId),
+                                  )?.name
+                                }
+                              </span>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                          Không tìm thấy trường phù hợp
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
-          <div className="flex gap-3 mt-6">
+          <div className="flex gap-3 mt-auto pt-4 border-t border-gray-100">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
@@ -500,7 +685,7 @@ export function UsersManagement() {
               type="submit"
               className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm"
             >
-              Lưu
+              Thêm
             </button>
           </div>
         </form>

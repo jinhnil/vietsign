@@ -481,3 +481,42 @@ Tài liệu này tổng hợp chi tiết cấu trúc `requestBody` cho tất c�
     "vocabularyId": "20"
   }
   ```
+
+---
+
+## 11. Frontend Integration Notes
+
+Ghi chú về trạng thái tích hợp giữa Frontend và các API Backend.
+
+### Đã tích hợp
+
+| API               | Frontend Service      | Mapping đã thực hiện                                                                           |
+| ----------------- | --------------------- | ---------------------------------------------------------------------------------------------- |
+| `/auth/login`     | `authService`         | ✅ Hoàn chỉnh.                                                                                 |
+| `/auth/register`  | `authService`         | ✅ Hoàn chỉnh.                                                                                 |
+| `/users/profile`  | `userService`         | ✅ Map `avatar_location` -> `avatar`, `phone_number` -> `phone`, `is_deleted` -> `isDeleted`.  |
+| `/users/teachers` | `userService`         | ✅ Map `phone` -> `phoneNumber`, `organizationId` -> `school_id`, `is_deleted` -> `isDeleted`. |
+| `/users/students` | `userService`         | ✅ Map `phone` -> `phoneNumber`, `is_deleted` -> `isDeleted`.                                  |
+| `/organizations`  | `organizationService` | ✅ Cơ bản hoạt động. Cần map `provinceCode`/`wardCode` -> `city`/`ward` tên chuỗi.             |
+
+### Chưa tích hợp / Cần cập nhật
+
+| API                      | Ghi chú                                                                                             |
+| ------------------------ | --------------------------------------------------------------------------------------------------- |
+| `/classrooms`            | Frontend gọi `/classes`. Cần map sang `/classrooms`.                                                |
+| `/vocabularies`          | Frontend gọi `/dictionary`. Cần map sang `/vocabularies` và đổi tham số `q` -> `content`.           |
+| `/organization-managers` | Trang Phân quyền (`/permissions`) đã ẩn. Chờ kích hoạt lại và tích hợp API này.                     |
+| `/lessons` (POST/PUT)    | Field mapping cần: `name` -> `lesson_name`, `classId` -> `classroom_id`, `order` -> `order_number`. |
+
+### Dữ liệu Local (Không dùng BE API)
+
+| Module           | Đường dẫn              | Dữ liệu nguồn      | Ghi chú                                                      |
+| ---------------- | ---------------------- | ------------------ | ------------------------------------------------------------ |
+| Tự học           | `/learn`               | `selfLearnData.ts` | Dành cho user tự do, không cần đăng nhập.                    |
+| Quản lý khóa học | `/learning-management` | `selfLearnData.ts` | Admin CRUD khóa học, bài học, bước học. Chỉ lưu local state. |
+
+### Thay đổi UI gần đây
+
+- **User Management List**: Đã xóa nút Edit inline. Chỉ còn nút Delete. Click row để vào detail page.
+- **User Detail Delete Redirect**: Fix redirect về `/users-management` thay vì `/users`.
+- **Learning Management Detail**: Thêm đầy đủ CRUD cho bài học và bước học. Các nút chỉ hiện khi ở chế độ "Chỉnh sửa thông tin".

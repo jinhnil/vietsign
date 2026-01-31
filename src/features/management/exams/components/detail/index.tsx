@@ -16,13 +16,9 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { mockExams, ExamItem, examStatusConfig } from "@/data";
-import {
-  fetchExamById,
-  updateExam,
-  deleteExam,
-} from "@/services/examService";
+import { fetchExamById, updateExam, deleteExam } from "@/services/examService";
 import { fetchAllClasses } from "@/services/classService";
-import { mockClasses } from "@/data/classesData"; // Keep for type or fallback
+
 import { ConfirmModal } from "@/shared/components/common/ConfirmModal";
 
 export function ExamManagementDetail() {

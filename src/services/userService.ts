@@ -28,13 +28,18 @@ function convertApiUserToUserItem(apiUser: any): UserItem {
     name: apiUser.name,
     email: apiUser.email,
     role: apiUser.code || "USER",
-    status: apiUser.is_deleted ? "inactive" : "active",
-    avatar: apiUser.avatar_url,
+    isDeleted:
+      typeof apiUser.is_deleted === "boolean"
+        ? apiUser.is_deleted
+        : apiUser.status === "inactive",
+    avatar: apiUser.avatar_location || apiUser.avatar_url,
     phone: apiUser.phone_number,
     createdAt: apiUser.created_date
       ? new Date(apiUser.created_date).toLocaleDateString("vi-VN")
       : new Date().toLocaleDateString("vi-VN"),
-    facilityId: apiUser.facility_id,
+    organizationId: apiUser.organization_id || apiUser.facility_id,
+    organizationName: apiUser.organization_name,
+    parentOrganizationName: apiUser.parent_organization_name,
   };
 }
 
@@ -55,7 +60,7 @@ export async function fetchAllUsers(query?: any): Promise<UserListResponse> {
     const apiQuery = {
       ...query,
       q: query?.search,
-      school_id: query?.facilityId, // Map facilityId to school_id
+      organization_id: query?.organizationId, // Map organizationId to organization_id for backend
     };
 
     let response;
@@ -64,6 +69,7 @@ export async function fetchAllUsers(query?: any): Promise<UserListResponse> {
     } else if (query?.role === "STUDENT") {
       response = await UserModel.getStudents(apiQuery);
     } else {
+      // Use generic /users endpoint which now exists in backend
       response = await UserModel.getAllUsers(apiQuery);
     }
 
@@ -71,20 +77,16 @@ export async function fetchAllUsers(query?: any): Promise<UserListResponse> {
 
     if (response.users && Array.isArray(response.users)) {
       users = response.users.map(convertApiUserToUserItem);
+    } else if (response.teachers && Array.isArray(response.teachers)) {
+      users = response.teachers.map(convertApiUserToUserItem);
+    } else if (response.students && Array.isArray(response.students)) {
+      users = response.students.map(convertApiUserToUserItem);
     } else if (response.content && Array.isArray(response.content)) {
       users = response.content.map(convertApiUserToUserItem);
     } else if (response.data && Array.isArray(response.data)) {
       users = response.data.map(convertApiUserToUserItem);
     } else if (Array.isArray(response)) {
       users = response.map(convertApiUserToUserItem);
-    }
-
-    // Nếu API trả về rỗng (backend chưa có data), force dùng mock data
-    if (users.length === 0) {
-      console.warn(
-        "API returned empty user list, forcing fallback to mock data",
-      );
-      throw new Error("Empty user list from API");
     }
 
     return {
@@ -96,44 +98,12 @@ export async function fetchAllUsers(query?: any): Promise<UserListResponse> {
     };
   } catch (error) {
     console.error("Error fetching users from API", error);
-    console.warn("Using mock user data as fallback");
-
-    // Use mock data as fallback
-    let filteredUsers = [...mockUsers];
-
-    // Apply filters if provided
-    if (query?.search) {
-      const lowerQuery = query.search.toLowerCase();
-      filteredUsers = filteredUsers.filter(
-        (u) =>
-          u.name.toLowerCase().includes(lowerQuery) ||
-          u.email.toLowerCase().includes(lowerQuery),
-      );
-    }
-    if (query?.role) {
-      filteredUsers = filteredUsers.filter((u) => u.role === query.role);
-    }
-    if (query?.facilityId) {
-      filteredUsers = filteredUsers.filter(
-        (u) => u.facilityId === query.facilityId,
-      );
-    }
-    if (query?.status) {
-      filteredUsers = filteredUsers.filter((u) => u.status === query.status);
-    }
-
-    // Pagination
-    const page = query?.page || 1;
-    const limit = query?.limit || 10;
-    const startIndex = (page - 1) * limit;
-    const paginatedUsers = filteredUsers.slice(startIndex, startIndex + limit);
-
     return {
-      users: paginatedUsers,
-      total: filteredUsers.length,
-      page,
-      limit,
-      totalPages: Math.ceil(filteredUsers.length / limit),
+      users: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      totalPages: 0,
     };
   }
 }
@@ -150,15 +120,12 @@ export async function fetchUserById(id: number): Promise<UserItem | undefined> {
     return undefined;
   } catch (error) {
     console.error(`Error fetching user ${id} from API`, error);
-    console.warn(`Using mock user data for user ${id} as fallback`);
-
-    // Use mock data as fallback
-    return getMockUserById(id);
+    return undefined;
   }
 }
 
 /**
- *nếu không thành công sử dụng mock data
+ * Lấy users theo role
  */
 export async function fetchUsersByRole(role: string): Promise<UserItem[]> {
   try {
@@ -166,10 +133,7 @@ export async function fetchUsersByRole(role: string): Promise<UserItem[]> {
     return result.users;
   } catch (error) {
     console.error(`Error fetching users by role ${role}`, error);
-    console.warn(`Using mock user data for role ${role} as fallback`);
-
-    // Use mock data as fallback
-    return getMockUsersByRole(role);
+    return [];
   }
 }
 
@@ -177,12 +141,12 @@ export async function fetchUsersByRole(role: string): Promise<UserItem[]> {
  * Lấy users theo facility
  */
 export async function fetchUsersByFacility(
-  facilityId: number,
+  organizationId: number,
 ): Promise<UserItem[]> {
   try {
     const [teachersRes, studentsRes] = await Promise.all([
-      fetchAllUsers({ role: "TEACHER", facilityId }),
-      fetchAllUsers({ role: "STUDENT", facilityId }),
+      fetchAllUsers({ role: "TEACHER", organizationId }),
+      fetchAllUsers({ role: "STUDENT", organizationId }),
     ]);
     return [...teachersRes.users, ...studentsRes.users];
   } catch (error) {
@@ -199,36 +163,8 @@ export async function fetchFacilityManagers(): Promise<UserItem[]> {
 }
 
 /**
- * Lấy danh sách pending users, nếu không thành công sử dụng mock data
+ * Tạo người dùng mới
  */
-export async function fetchPendingUsers(): Promise<UserItem[]> {
-  try {
-    const response = await UserModel.getPendingUsers();
-    if (response.users && Array.isArray(response.users)) {
-      return response.users.map(convertApiUserToUserItem);
-    }
-    return [];
-  } catch (error) {
-    console.error("Error fetching pending users:", error);
-    console.warn("Using mock user data as fallback for pending users");
-
-    // Return mock users that are inactive (as mock pending users)
-    return mockUsers.filter((u) => u.status === "inactive");
-  }
-}
-
-/**
- * Lấy thống kê approval
- */
-export async function fetchApprovalStats(): Promise<any> {
-  try {
-    return await UserModel.getApprovalStats();
-  } catch (error) {
-    console.error("Error fetching approval stats:", error);
-    return { pending: 0, approved: 0, rejected: 0 };
-  }
-}
-
 /**
  * Tạo người dùng mới
  */
@@ -237,10 +173,30 @@ export async function fetchApprovalStats(): Promise<any> {
  */
 export async function createUser(data: any): Promise<any> {
   try {
-    return await UserModel.createUser(data);
+    // Map frontend data to backend payload
+    const payload: any = {
+      name: data.name,
+      email: data.email,
+      password: data.password, // Add password
+      phoneNumber: data.phone, // Map phone -> phoneNumber
+      birthDay: data.birthDay,
+      address: data.address,
+      classRoomName: data.className,
+      schoolName: data.schoolName || data.facilityName,
+      organization_id: data.organizationId, // Map to organization_id (underscore for BE)
+    };
+
+    if (data.role === "TEACHER" || payload.code === "TEACHER") {
+      return await UserModel.createTeacher(payload);
+    } else if (data.role === "STUDENT" || payload.code === "STUDENT") {
+      return await UserModel.createStudent(payload);
+    }
+
+    // Fallback for other roles or generic create if supported
+    return await UserModel.createUser(payload);
   } catch (error) {
-    console.error("API create user failed, using mock fallback", error);
-    return { success: true, message: "Mock user created", data };
+    console.error("API create user failed", error);
+    throw error;
   }
 }
 
@@ -249,10 +205,15 @@ export async function createUser(data: any): Promise<any> {
  */
 export async function updateUser(userId: number, data: any): Promise<any> {
   try {
-    return await UserModel.updateUser(userId, data);
+    const payload: any = {
+      ...data,
+      phone_number: data.phone, // Map phone -> phone_number for update
+      avatar_location: data.avatar, // Map avatar -> avatar_location
+    };
+    return await UserModel.updateUser(userId, payload);
   } catch (error) {
-    console.error("API update user failed, using mock fallback", error);
-    return { success: true, message: "Mock user updated", data };
+    console.error("API update user failed", error);
+    throw error;
   }
 }
 
@@ -263,8 +224,8 @@ export async function deleteUser(userId: number): Promise<any> {
   try {
     return await UserModel.deleteUser(userId);
   } catch (error) {
-    console.error("API delete user failed, using mock fallback", error);
-    return { success: true, message: "Mock user deleted" };
+    console.error("API delete user failed", error);
+    throw error;
   }
 }
 
@@ -275,8 +236,8 @@ export async function restoreUser(userId: number): Promise<any> {
   try {
     return await UserModel.restoreUser(userId);
   } catch (error) {
-    console.error("API restore user failed, using mock fallback", error);
-    return { success: true, message: "Mock user restored" };
+    console.error("API restore user failed", error);
+    throw error;
   }
 }
 
@@ -290,8 +251,8 @@ export async function resetPassword(
   try {
     return await UserModel.resetUserPassword(userId, newPassword);
   } catch (error) {
-    console.error("API reset password failed, using mock fallback", error);
-    return { success: true, message: "Mock password reset" };
+    console.error("API reset password failed", error);
+    throw error;
   }
 }
 
@@ -305,7 +266,7 @@ export async function changeUserRole(
   try {
     return await UserModel.changeUserRole(userId, roleCode);
   } catch (error) {
-    console.error("API change role failed, using mock fallback", error);
-    return { success: true, message: "Mock role changed" };
+    console.error("API change role failed", error);
+    throw error;
   }
 }

@@ -175,7 +175,7 @@ export const Home: React.FC = () => {
       {/* Quick Access Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Dictionary Card */}
-        <Link href="/dictionary" className="block group">
+        <Link href="/vocabularies" className="block group">
           <div className="bg-white p-5 rounded-2xl shadow-sm hover:shadow-md transition-all border border-gray-100 h-full relative">
             <div className="flex justify-between items-start mb-8">
               <div className="bg-blue-100 p-3 rounded-xl">

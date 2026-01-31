@@ -2,7 +2,7 @@ import { Base } from "./base";
 
 export class ClassModel extends Base {
   constructor() {
-    super("classes");
+    super("teaching-management/classrooms");
   }
 
   getAllClasses = async (query?: any) => {

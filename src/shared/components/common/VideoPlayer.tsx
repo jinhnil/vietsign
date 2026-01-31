@@ -174,6 +174,30 @@ export function VideoPlayer({
 
   const containerStyle = height ? { height } : { aspectRatio };
 
+  const isImage = React.useMemo(() => {
+    return videoUrl?.match(/\.(webp|png|jpg|jpeg|gif)$/i);
+  }, [videoUrl]);
+
+  if (isImage) {
+    return (
+      <div
+        className={`bg-gray-900 relative group overflow-hidden rounded-2xl flex items-center justify-center ${className}`}
+        style={containerStyle}
+      >
+        <img
+          src={videoUrl}
+          alt={title || "Minh họa"}
+          className="w-full h-full object-contain"
+        />
+        {title && (
+          <div className="absolute top-3 right-3 z-10 bg-teal-600/90 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+            <span className="text-white font-bold text-sm">{title}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       className={`bg-gray-900 relative group overflow-hidden rounded-2xl ${className}`}

@@ -102,6 +102,10 @@ const generateMockQuestions = (count: number): QuestionItem[] => {
   const teachers = mockUsers.filter((u) => u.role === "TEACHER");
   const organizations = mockOrganizations.slice(0, 5); // Use first 5 organizations
 
+  if (organizations.length === 0) {
+    return [];
+  }
+
   return Array.from({ length: count }).map((_, index) => {
     const id = index + 1;
     const isMultipleChoice = Math.random() > 0.4; // 60% multiple choice
@@ -121,14 +125,11 @@ const generateMockQuestions = (count: number): QuestionItem[] => {
       gradeLevels[Math.floor(Math.random() * gradeLevels.length)];
 
     // Optional class association
-    const orgClasses = mockClasses.filter((c) => c.facilityId === org.id);
-    const classId =
-      orgClasses.length > 0 && Math.random() > 0.5
-        ? orgClasses[Math.floor(Math.random() * orgClasses.length)].id
-        : undefined;
+    // Mock classes removed
+    const classId = undefined;
 
     // Generate allowed editors (random subset of teachers from same org)
-    const orgTeachers = teachers.filter((t) => t.facilityId === org.id);
+    const orgTeachers = teachers.filter((t) => t.organizationId === org.id);
     const allowedEditorIds = orgTeachers
       .slice(0, Math.floor(Math.random() * 3))
       .map((t) => t.id)
@@ -144,10 +145,10 @@ const generateMockQuestions = (count: number): QuestionItem[] => {
       organizationId: org.id,
       allowedEditorIds,
       createdAt: new Date(
-        Date.now() - Math.floor(Math.random() * 31536000000)
+        Date.now() - Math.floor(Math.random() * 31536000000),
       ).toISOString(),
       updatedAt: new Date(
-        Date.now() - Math.floor(Math.random() * 2592000000)
+        Date.now() - Math.floor(Math.random() * 2592000000),
       ).toISOString(),
     };
 
@@ -255,10 +256,14 @@ const generateMockQuestions = (count: number): QuestionItem[] => {
 
 const generateMockQuestionSets = (
   count: number,
-  questions: QuestionItem[]
+  questions: QuestionItem[],
 ): QuestionSetItem[] => {
   const teachers = mockUsers.filter((u) => u.role === "TEACHER");
   const organizations = mockOrganizations.slice(0, 5);
+
+  if (organizations.length === 0) {
+    return [];
+  }
 
   return Array.from({ length: count }).map((_, index) => {
     const id = index + 1;
@@ -280,16 +285,16 @@ const generateMockQuestionSets = (
 
     // Get questions from the same organization with matching type
     const orgQuestions = questions.filter(
-      (q) => q.organizationId === org.id && q.type === setType
+      (q) => q.organizationId === org.id && q.type === setType,
     );
     const numQuestions = Math.min(
       orgQuestions.length,
-      Math.floor(Math.random() * 10) + 5
+      Math.floor(Math.random() * 10) + 5,
     );
     const selectedQuestions = orgQuestions.slice(0, numQuestions);
 
     // Generate allowed editors
-    const orgTeachers = teachers.filter((t) => t.facilityId === org.id);
+    const orgTeachers = teachers.filter((t) => t.organizationId === org.id);
     const allowedEditorIds = orgTeachers
       .slice(0, Math.floor(Math.random() * 2))
       .map((t) => t.id)
@@ -310,10 +315,10 @@ const generateMockQuestionSets = (
       organizationId: org.id,
       allowedEditorIds,
       createdAt: new Date(
-        Date.now() - Math.floor(Math.random() * 31536000000)
+        Date.now() - Math.floor(Math.random() * 31536000000),
       ).toISOString(),
       updatedAt: new Date(
-        Date.now() - Math.floor(Math.random() * 2592000000)
+        Date.now() - Math.floor(Math.random() * 2592000000),
       ).toISOString(),
       category,
       gradeLevel,
@@ -326,7 +331,7 @@ const generateMockQuestionSets = (
 export const mockQuestions: QuestionItem[] = generateMockQuestions(100);
 export const mockQuestionSets: QuestionSetItem[] = generateMockQuestionSets(
   30,
-  mockQuestions
+  mockQuestions,
 );
 
 // ==================== HELPER FUNCTIONS ====================
@@ -344,7 +349,7 @@ export function getQuestionsByOrganization(orgId: number): QuestionItem[] {
 }
 
 export function getQuestionSetsByOrganization(
-  orgId: number
+  orgId: number,
 ): QuestionSetItem[] {
   return mockQuestionSets.filter((qs) => qs.organizationId === orgId);
 }
@@ -358,13 +363,13 @@ export function getQuestionSetsByCreator(creatorId: number): QuestionSetItem[] {
 }
 
 export function getQuestionsByGradeLevel(
-  gradeLevel: GradeLevel
+  gradeLevel: GradeLevel,
 ): QuestionItem[] {
   return mockQuestions.filter((q) => q.gradeLevel === gradeLevel);
 }
 
 export function getQuestionSetsByGradeLevel(
-  gradeLevel: GradeLevel
+  gradeLevel: GradeLevel,
 ): QuestionSetItem[] {
   return mockQuestionSets.filter((qs) => qs.gradeLevel === gradeLevel);
 }
@@ -382,7 +387,7 @@ export function canEditQuestion(
   question: QuestionItem,
   userId: number,
   userRole: string,
-  userOrgId?: number
+  userOrgId?: number,
 ): boolean {
   // ADMIN can edit anything
   if (userRole === "ADMIN" || userRole === "TEST") return true;
@@ -407,7 +412,7 @@ export function canEditQuestionSet(
   questionSet: QuestionSetItem,
   userId: number,
   userRole: string,
-  userOrgId?: number
+  userOrgId?: number,
 ): boolean {
   // ADMIN can edit anything
   if (userRole === "ADMIN" || userRole === "TEST") return true;
@@ -432,7 +437,7 @@ export function canEditQuestionSet(
 export function getVisibleQuestions(
   userId: number,
   userRole: string,
-  userOrgId?: number
+  userOrgId?: number,
 ): QuestionItem[] {
   // ADMIN sees all
   if (userRole === "ADMIN" || userRole === "TEST") {
@@ -450,7 +455,7 @@ export function getVisibleQuestions(
 export function getVisibleQuestionSets(
   userId: number,
   userRole: string,
-  userOrgId?: number
+  userOrgId?: number,
 ): QuestionSetItem[] {
   // ADMIN sees all
   if (userRole === "ADMIN" || userRole === "TEST") {

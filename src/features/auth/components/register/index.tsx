@@ -11,19 +11,62 @@ import { Button, Form, Input, message } from "antd";
 import { useMutation } from "@tanstack/react-query";
 import Loader from "@/shared/components/ui/Loader";
 
+import { supabase } from "@/core/lib/supabaseClient";
+
 export const Register: React.FC = () => {
   const [form] = Form.useForm();
   const router = useRouter();
 
   const registerMutation = useMutation({
-    mutationFn: (values: any) => Auth.register(values),
-    onSuccess: async (res) => {
-      console.log(res);
-      message.success("Đăng ký thành công! Vui lòng kiểm tra email để xác thực OTP.");
+    mutationFn: async (values: any) => {
+      // 1. Đăng ký với Supabase để gửi email xác thực
+      const { data: supabaseData, error: supabaseError } =
+        await supabase.auth.signUp({
+          email: values.email,
+          password: values.password,
+          options: {
+            data: {
+              full_name: values.name,
+            },
+          },
+        });
+
+      console.log("Supabase SignUp Debug:", { supabaseData, supabaseError });
+
+      if (supabaseError) {
+        // Nếu lỗi do email đã tồn tại bên Supabase hoặc lỗi khác
+        throw new Error(supabaseError.message);
+      }
+
+      // 2. Gọi backend cũ để lưu thông tin vào MySQL (nếu cần sync)
+      // Lưu ý: Backend có thể trả về 409 nếu email đã tồn tại trong MySQL
+      const backendRes = await Auth.register(values);
+      return { backendRes, supabaseData };
+    },
+    onSuccess: async ({ backendRes, supabaseData }) => {
+      console.log("Register Success:", backendRes);
+
+      if (supabaseData.session) {
+        // Trường hợp đã tắt Email Confirmation hoặc auto-confirm
+        message.success("Đăng ký thành công! Bạn có thể đăng nhập ngay.");
+      } else {
+        // Trường hợp cần xác thực email
+        message.success(
+          "Đăng ký thành công! Vui lòng kiểm tra email (hộp thư đến hoặc Spam) để xác thực tài khoản.",
+        );
+      }
       router.push("/login");
     },
     onError: (error: Error) => {
-      message.error(error.message);
+      // Xử lý thông báo lỗi thân thiện hơn
+      if (
+        error.message.includes("User already exists") ||
+        error.message.includes("409")
+      ) {
+        message.error("Email này đã được sử dụng. Vui lòng dùng email khác.");
+      } else {
+        message.error(error.message);
+      }
     },
   });
 
@@ -69,14 +112,13 @@ export const Register: React.FC = () => {
             name="email"
             rules={[
               { required: true, message: "Vui lòng nhập email!" },
-              { type: "email", message: "Email không hợp lệ!" }
+              { type: "email", message: "Email không hợp lệ!" },
             ]}
           >
             <Input
               placeholder="you@example.com"
               className="py-2"
               prefix={<MailOutlined className="text-gray-400" />}
-
             />
           </Form.Item>
 

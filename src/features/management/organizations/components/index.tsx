@@ -17,11 +17,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  organizationStatusConfig,
-  getUniqueProvinceCodes,
-  OrganizationItem,
-} from "@/data";
+import { OrganizationItem } from "@/data";
 import {
   fetchProvinces,
   fetchProvinceById,
@@ -77,35 +73,19 @@ export function OrganizationsManagement() {
   const createMutation = useCreateOrganization();
   const deleteMutation = useDeleteOrganization();
 
-  // Chuyển đổi dữ liệu từ API nếu cần thiết hoặc sử dụng trực tiếp
-  const organizations: OrganizationItem[] = Array.isArray(organizationsData)
+  // Chuyển đổi dữ liệu từ API - chỉ lấy DEPARTMENT (Sở GD)
+  const allOrganizations: OrganizationItem[] = Array.isArray(organizationsData)
     ? organizationsData
     : [];
+
+  // Chỉ hiển thị Sở Giáo dục (DEPARTMENT) trên trang danh sách
+  const departments = allOrganizations.filter(
+    (org) => org.type === "DEPARTMENT",
+  );
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [organizationToDelete, setOrganizationToDelete] =
     useState<OrganizationItem | null>(null);
-
-  // Load managers
-  useEffect(() => {
-    async function loadManagers() {
-      try {
-        // Fetch potential managers (Teachers and Admins)
-        const [teachers, admins] = await Promise.all([
-          fetchUsersByRole("TEACHER"),
-          fetchUsersByRole("ADMIN"),
-        ]);
-        const map: Record<number, string> = {};
-        // Assuming the service returns arrays of users
-        (teachers || []).forEach((u: any) => (map[u.id] = u.name));
-        (admins || []).forEach((u: any) => (map[u.id] = u.name));
-        setManagerMap(map);
-      } catch (e) {
-        console.error("Failed to load managers", e);
-      }
-    }
-    loadManagers();
-  }, []);
 
   // Lấy danh sách tỉnh/thành phố từ API
   useEffect(() => {
@@ -135,38 +115,43 @@ export function OrganizationsManagement() {
   // Lấy tên phường/xã từ API khi có danh sách tỉnh và organizations
   useEffect(() => {
     async function loadWards() {
-      if (provinces.length === 0 || organizations.length === 0) return;
+      if (provinces.length === 0 || allOrganizations.length === 0) return;
 
-      // Lấy danh sách province code từ organizations hiện có
-      const uniqueProvinceCodes = [
-        ...new Set(organizations.map((f) => f.provinceCode)),
+      // Lấy danh sách province code từ organizations hiện có, loại bỏ các giá trị không hợp lệ
+      const uniqueCityCodes: number[] = [
+        ...new Set(
+          allOrganizations
+            .map((f: OrganizationItem) => f.city)
+            .filter((city) => city && typeof city === "number" && !isNaN(city)),
+        ),
       ];
       const wardNames: Record<number, string> = {};
 
-      // Lấy thông tin phường/xã cho từng tỉnh có cơ sở
-      for (const provinceCode of uniqueProvinceCodes) {
-        try {
-          const provinceDetail = await fetchProvinceById(provinceCode);
-          if (provinceDetail && provinceDetail.communes) {
-            // Tìm ward trong danh sách communes
-            for (const commune of provinceDetail.communes) {
-              const wardCode = parseInt(commune.id);
-              // Kiểm tra xem ward này có trong danh sách cơ sở không
-              const organizationWithWard = organizations.find(
-                (f) => f.wardCode === wardCode,
-              );
-              if (organizationWithWard) {
-                wardNames[wardCode] = commune.name;
+      // Lấy thông tin phường/xã cho từng tỉnh có cơ sở song song
+      await Promise.all(
+        uniqueCityCodes.map(async (cityCode) => {
+          try {
+            const provinceDetail = await fetchProvinceById(cityCode);
+            if (provinceDetail && provinceDetail.communes) {
+              const wardsInCity = allOrganizations
+                .filter((f: OrganizationItem) => f.city === cityCode)
+                .map((f: OrganizationItem) => f.ward);
+
+              for (const commune of provinceDetail.communes) {
+                const wardCode = parseInt(commune.id);
+                if (wardsInCity.includes(wardCode)) {
+                  wardNames[wardCode] = commune.name;
+                }
               }
             }
+          } catch (error) {
+            console.error(
+              `Failed to load wards for province ${cityCode}:`,
+              error,
+            );
           }
-        } catch (error) {
-          console.error(
-            `Failed to load wards for province ${provinceCode}:`,
-            error,
-          );
-        }
-      }
+        }),
+      );
 
       setLocationNames((prev) => ({ ...prev, wards: wardNames }));
     }
@@ -188,20 +173,20 @@ export function OrganizationsManagement() {
   // Helper để tạo địa chỉ đầy đủ
   const getFullAddress = (organization: OrganizationItem): string => {
     const parts = [];
-    if (organization.streetAddress) parts.push(organization.streetAddress);
+    if (organization.street) parts.push(organization.street);
 
-    const wardName = getWardName(organization.wardCode);
+    const wardName = getWardName(organization.ward);
     if (wardName) parts.push(wardName);
 
-    const provinceName = getProvinceName(organization.provinceCode);
+    const provinceName = getProvinceName(organization.city);
     if (provinceName) parts.push(provinceName);
 
     return parts.length > 0 ? parts.join(", ") : "Chưa có địa chỉ";
   };
 
-  // Lọc cơ sở theo tìm kiếm và tỉnh/thành phố
-  const filteredOrganizations = organizations.filter((organization) => {
-    const provinceName = getProvinceName(organization.provinceCode);
+  // Lọc Sở GD theo tìm kiếm và tỉnh/thành phố
+  const filteredOrganizations = departments.filter((organization) => {
+    const provinceName = getProvinceName(organization.city);
     const fullAddress = getFullAddress(organization);
     const normalizedQuery = removeVietnameseTones(searchQuery);
     const matchesSearch =
@@ -209,7 +194,7 @@ export function OrganizationsManagement() {
       removeVietnameseTones(fullAddress).includes(normalizedQuery) ||
       removeVietnameseTones(provinceName).includes(normalizedQuery);
     const matchesProvince =
-      filterProvince === "all" || organization.provinceCode === filterProvince;
+      filterProvince === "all" || organization.city === filterProvince;
     return matchesSearch && matchesProvince;
   });
 
@@ -247,6 +232,11 @@ export function OrganizationsManagement() {
 
   // Mở trang chi tiết
   const openDetailPage = (organization: OrganizationItem) => {
+    if (!organization.id || isNaN(organization.id)) {
+      message.error("Không thể xác định mã tổ chức này.");
+      console.error("Link to detail failed: ID is missing", organization);
+      return;
+    }
     router.push(`/organizations-management/${organization.id}`);
   };
 
@@ -256,6 +246,10 @@ export function OrganizationsManagement() {
     e: React.MouseEvent,
   ) => {
     e.stopPropagation();
+    if (!organization.id || isNaN(organization.id)) {
+      message.error("Không thể xác định mã tổ chức này.");
+      return;
+    }
     router.push(`/organizations-management/${organization.id}`);
   };
 
@@ -265,6 +259,18 @@ export function OrganizationsManagement() {
     e: React.MouseEvent,
   ) => {
     e.stopPropagation();
+
+    // Kiểm tra xem Sở có trường con không
+    const childSchoolCount = allOrganizations.filter(
+      (org) => org.type === "SCHOOL" && org.parentId === organization.id,
+    ).length;
+    if (childSchoolCount > 0) {
+      message.warning(
+        `Không thể xóa Sở "${organization.name}" vì còn ${childSchoolCount} trường thuộc Sở này. Vui lòng xóa các trường trước.`,
+      );
+      return;
+    }
+
     setOrganizationToDelete(organization);
     setIsDeleteModalOpen(true);
   };
@@ -279,7 +285,12 @@ export function OrganizationsManagement() {
           setOrganizationToDelete(null);
         },
         onError: (error: any) => {
-          message.error(error.message || "Xóa thất bại");
+          const errorMessage =
+            error?.response?.data?.message ||
+            error?.message ||
+            "Xóa thất bại. Có thể tổ chức này có dữ liệu liên quan (trường con, quản lý...).";
+          message.error(errorMessage);
+          setIsDeleteModalOpen(false);
         },
       });
     }
@@ -290,22 +301,36 @@ export function OrganizationsManagement() {
     const formData = new FormData(e.currentTarget);
 
     // Thu thập dữ liệu từ form
+    const street = formData.get("street") as string;
+    const city = Number(selectedModalProvince);
+    const ward = Number(formData.get("ward"));
+
+    // Lookup names for address construction
+    const provinceObj = provinces.find((p) => p.id === city);
+    const wardObj = modalWards.find((w) => Number(w.id) === ward);
+
+    // Construct full address: Street, Ward, Province
+    const addressParts = [street];
+    if (wardObj) addressParts.push(wardObj.name);
+    if (provinceObj) addressParts.push(provinceObj.name);
+    const fullAddress = addressParts.join(", ");
+
+    // Thu thập dữ liệu từ form - Tạo Sở Giáo dục
     const newData = {
       name: formData.get("name") as string,
-      streetAddress: formData.get("streetAddress") as string,
-      provinceCode: Number(selectedModalProvince),
-      wardCode: Number(formData.get("wardCode")),
+      type: "DEPARTMENT" as const, // Trang này chỉ tạo Sở GD
+      parentId: null, // Sở không có Sở cha
+      street,
+      city, // Map to city (code)
+      ward, // Map to ward (code)
+      address: fullAddress,
       phone: formData.get("phone") as string,
       email: formData.get("email") as string,
-      status: "active", // Mặc định
-      studentCount: 0,
-      teacherCount: 0,
-      managerIds: [], // Cần logic chọn manager
     };
 
     createMutation.mutate(newData as any, {
       onSuccess: () => {
-        message.success("Thêm tổ chức mới thành công");
+        message.success("Thêm Sở Giáo dục mới thành công");
         setIsModalOpen(false);
       },
       onError: (error: any) => {
@@ -342,11 +367,11 @@ export function OrganizationsManagement() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
             <Building className="w-8 h-8 text-primary-600" />
-            Quản lý tổ chức giáo dục
+            Quản lý Sở Giáo dục
           </h1>
           <p className="text-gray-600 mt-1">
-            Quản lý các tổ chức đào tạo trong hệ thống ({organizations.length}{" "}
-            tổ chức)
+            Quản lý các Sở Giáo dục và Đào tạo trong hệ thống (
+            {departments.length} Sở)
           </p>
         </div>
         <button
@@ -357,40 +382,28 @@ export function OrganizationsManagement() {
           }}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium shadow-sm"
         >
-          <Plus size={20} /> Thêm tổ chức mới
+          <Plus size={20} /> Thêm Sở GD mới
         </button>
       </div>
 
       {/* Thống kê tổng quan */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <p className="text-sm text-gray-500">Tổng tổ chức</p>
+          <p className="text-sm text-gray-500">Tổng Sở GD</p>
           <p className="text-2xl font-bold text-gray-900">
-            {organizations.length}
+            {departments.length}
           </p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <p className="text-sm text-gray-500">Đang hoạt động</p>
+          <p className="text-sm text-gray-500">Tổng Trường</p>
           <p className="text-2xl font-bold text-green-600">
-            {organizations.filter((f) => f.status === "active").length}
-          </p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <p className="text-sm text-gray-500">Tổng học sinh</p>
-          <p className="text-2xl font-bold text-primary-600">
-            {organizations.reduce((sum, f) => sum + (f.studentCount || 0), 0)}
-          </p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <p className="text-sm text-gray-500">Tổng giáo viên</p>
-          <p className="text-2xl font-bold text-amber-600">
-            {organizations.reduce((sum, f) => sum + (f.teacherCount || 0), 0)}
+            {allOrganizations.filter((o) => o.type === "SCHOOL").length}
           </p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-500">Số tỉnh/TP</p>
           <p className="text-2xl font-bold text-purple-600">
-            {new Set(organizations.map((f) => f.provinceCode)).size}
+            {new Set(departments.map((f) => f.city)).size}
           </p>
         </div>
       </div>
@@ -424,7 +437,16 @@ export function OrganizationsManagement() {
               disabled={loadingProvinces}
             >
               <option value="all">Tất cả tỉnh/TP</option>
-              {getUniqueProvinceCodes().map((code) => (
+              {[
+                ...new Set(
+                  allOrganizations
+                    .map((f: OrganizationItem) => f.city)
+                    .filter(
+                      (city) =>
+                        city && typeof city === "number" && !isNaN(city),
+                    ),
+                ),
+              ].map((code) => (
                 <option key={code} value={code}>
                   {getProvinceName(code)}
                 </option>
@@ -446,100 +468,62 @@ export function OrganizationsManagement() {
               />
             );
 
-          const statusInfo =
-            organizationStatusConfig[organization.status] ||
-            organizationStatusConfig.inactive;
           const fullAddress = getFullAddress(organization);
-          const provinceName = getProvinceName(organization.provinceCode);
+          const provinceName = getProvinceName(organization.city);
+          const schoolCount = allOrganizations.filter(
+            (org) => org.type === "SCHOOL" && org.parentId === organization.id,
+          ).length;
 
           return (
             <div
               key={organization.id}
-              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
               onClick={() => openDetailPage(organization)}
             >
               <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors shrink-0">
+                    <Building size={24} className="text-primary-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary-600 transition-colors truncate">
                       {organization.name}
                     </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span
-                        className={`inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full ${statusInfo.color}`}
-                      >
-                        {statusInfo.label}
-                      </span>
-                      <span className="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <span className="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-100">
                         {provinceName}
+                      </span>
+                      <span className="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full bg-green-50 text-green-700 border border-green-100">
+                        {schoolCount} trường
                       </span>
                     </div>
                   </div>
                   <button
-                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg shrink-0"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <MoreVertical size={20} />
                   </button>
                 </div>
 
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-start gap-3 text-gray-600">
+                <div className="space-y-2.5">
+                  <div className="flex items-start gap-3 text-sm text-gray-600">
                     <MapPin
-                      size={18}
-                      className="text-gray-400 flex-shrink-0 mt-0.5"
+                      size={16}
+                      className="text-gray-400 shrink-0 mt-0.5"
                     />
-                    <p>{fullAddress}</p>
+                    <span className="line-clamp-1">{fullAddress}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-gray-600">
-                    <Phone size={18} className="text-gray-400" />
-                    <span>{organization.phone}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-gray-600">
-                    <Mail size={18} className="text-gray-400" />
-                    <span>{organization.email}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-100">
-                  <div className="flex items-center gap-2">
-                    <Users size={18} className="text-primary-500" />
-                    <span className="text-sm">
-                      <span className="font-semibold text-gray-900">
-                        {organization.studentCount}
-                      </span>
-                      <span className="text-gray-500"> học sinh</span>
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users size={18} className="text-green-500" />
-                    <span className="text-sm">
-                      <span className="font-semibold text-gray-900">
-                        {organization.teacherCount}
-                      </span>
-                      <span className="text-gray-500"> giáo viên</span>
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                  <div className="flex items-center gap-2">
-                    <User size={18} className="text-blue-500" />
-                    <div>
-                      <span className="text-sm text-gray-500">Quản lý: </span>
-                      <span className="text-sm font-medium text-gray-900">
-                        {organization.managers &&
-                        organization.managers.length > 0
-                          ? organization.managers.map((m) => m.name).join(", ")
-                          : "Chưa có quản lý"}
-                      </span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Phone size={16} className="text-gray-400 shrink-0" />
+                      <span className="truncate">{organization.phone}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Mail size={16} className="text-gray-400 shrink-0" />
+                      <span className="truncate">{organization.email}</span>
                     </div>
                   </div>
-                  {organization.openingHours && (
-                    <span className="text-xs text-gray-400">
-                      🕐 {organization.openingHours}
-                    </span>
-                  )}
                 </div>
               </div>
 
@@ -583,53 +567,42 @@ export function OrganizationsManagement() {
             currentPage={currentPage}
             totalPages={totalPages}
             itemsPerPage={ITEMS_PER_PAGE}
-            totalItems={organizations.length}
+            totalItems={departments.length}
             filteredItems={filteredOrganizations.length}
-            itemName="tổ chức"
+            itemName="Sở GD"
             onPageChange={setCurrentPage}
           />
         </div>
       )}
 
-      {/* Modal thêm tổ chức mới */}
+      {/* Modal thêm Sở GD mới */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Thêm tổ chức mới"
+        title="Thêm Sở Giáo dục mới"
       >
         <form className="space-y-4" onSubmit={handleCreate}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-sm font-semibold text-gray-700">
-                Tên tổ chức <span className="text-red-500">*</span>
+                Tên Sở Giáo dục <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 name="name"
-                placeholder="Nhập tên tổ chức"
+                placeholder="Ví dụ: Sở Giáo dục và Đào tạo Hà Nội"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
                 required
               />
             </div>
-            <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Mô tả <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="description"
-                placeholder="Mô tả "
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-                required
-              />
-            </div>
+
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-sm font-semibold text-gray-700">
                 Địa chỉ chi tiết <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                name="streetAddress"
+                name="street"
                 placeholder="Số nhà, tên đường..."
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
                 required
@@ -658,7 +631,7 @@ export function OrganizationsManagement() {
                 Phường / Xã <span className="text-red-500">*</span>
               </label>
               <select
-                name="wardCode"
+                name="ward"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
                 required
                 disabled={!selectedModalProvince || loadingWards}
@@ -693,18 +666,6 @@ export function OrganizationsManagement() {
                 type="email"
                 name="email"
                 placeholder="organization@vietsign.edu.vn"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-                required
-              />
-            </div>
-            <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Quản trị viên cơ sở <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name=""
-                placeholder="quản trị viên cơ sở"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
                 required
               />

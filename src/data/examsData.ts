@@ -8,7 +8,7 @@ export type ExamType = "practice" | "multiple_choice";
 export interface ExamItem {
   id: number;
   title: string;
-  classId: number; // ID lớp học (thay vì tên)
+  classId: number;
   date: string;
   time: string;
   duration: string;

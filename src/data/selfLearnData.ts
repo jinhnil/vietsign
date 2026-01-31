@@ -55,15 +55,27 @@ const vocabularyWords = [
 // All courses data
 export const selfLearnCourses: SelfLearnCourse[] = [
   {
-    id: 1,
-    title: "Làm quen với chữ cái và số",
-    subtitle: "Chữ cái, thanh điệu, số tự nhiên",
+    id: 6,
+    title: "Bảng chữ cái",
+    subtitle: "Học chữ cái qua hình ảnh",
     description:
-      "Học làm chữ cái ngón tay, dấu thanh và số theo mẫu. Bao gồm các hoạt động nối/ghép và lật thẻ tranh.",
-    colorClass: "bg-gradient-to-r from-rose-500 to-pink-600",
-    textClass: "text-rose-600",
-    totalLessons: 12,
-    duration: "5 giờ",
+      "Làm quen với bảng chữ cái ngôn ngữ ký hiệu thông qua hình ảnh minh họa.",
+    colorClass: "bg-gradient-to-r from-purple-500 to-indigo-600",
+    textClass: "text-purple-600",
+    totalLessons: 9,
+    duration: "2 giờ",
+    level: "Cơ bản",
+    progress: 0,
+  },
+  {
+    id: 7,
+    title: "Chữ số",
+    subtitle: "Học chữ số qua hình ảnh",
+    description: "Làm quen với các con số trong ngôn ngữ ký hiệu qua hình ảnh.",
+    colorClass: "bg-gradient-to-r from-orange-500 to-red-600",
+    textClass: "text-orange-600",
+    totalLessons: 3,
+    duration: "1 giờ",
     level: "Cơ bản",
     progress: 0,
   },
@@ -181,6 +193,18 @@ const lessonTitlesPerCourse: Record<number, string[]> = {
     "Bảo vệ môi trường",
     "Trái đất xanh",
   ],
+  6: [
+    "Chữ A - C",
+    "Chữ D - F",
+    "Chữ G - I",
+    "Chữ J - L",
+    "Chữ M - O",
+    "Chữ P - R",
+    "Chữ S - U",
+    "Chữ V - X",
+    "Chữ Y - Z",
+  ],
+  7: ["Số 1 - 3", "Số 4 - 6", "Số 7 - 9"],
 };
 
 // Generate steps for a self-learn lesson
@@ -190,6 +214,92 @@ const generateStepsForSelfLearnLesson = (
 ): BaseStepItem[] => {
   const steps: BaseStepItem[] = [];
   let stepOrder = 1;
+  const courseId = Math.floor(lessonId / 100);
+
+  // Define helpers for new courses
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const numbers = "123456789".split("");
+
+  // Logic for Course 6 (Alphabet) & 7 (Numbers)
+  if (courseId === 6 || courseId === 7) {
+    const isAlpha = courseId === 6;
+    const sourceArr = isAlpha ? alphabet : numbers;
+    const folder = isAlpha ? "A-Z" : "1-9";
+    const perLesson = 3;
+    const startIdx = lessonOrder * perLesson;
+    const items = sourceArr.slice(startIdx, startIdx + perLesson);
+
+    // 1. Vocabulary Steps
+    items.forEach((item) => {
+      steps.push({
+        id: lessonId * 100 + stepOrder,
+        title: `${isAlpha ? "Chữ" : "Số"}: ${item}`,
+        type: "vocabulary" as StepType,
+        order: stepOrder,
+        completed: stepOrder <= 1,
+        word: item,
+        videoUrl: `/${folder}/${item}.webp`,
+        description: `Ký hiệu cho ${isAlpha ? "chữ" : "số"} ${item}`,
+      });
+      stepOrder++;
+    });
+
+    if (items.length > 0) {
+      const quizItem = items[0];
+      const otherItems = sourceArr
+        .filter((i) => !items.includes(i))
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 3);
+
+      // 2. Quiz Image -> Text
+      steps.push({
+        id: lessonId * 100 + stepOrder,
+        title: "Trắc nghiệm: Nhìn hình đoán ý",
+        type: "quiz-video-to-text" as StepType,
+        order: stepOrder,
+        completed: false,
+        questionVideoUrl: `/${folder}/${quizItem}.webp`,
+        options: [
+          { id: 1, text: quizItem, isCorrect: true },
+          { id: 2, text: otherItems[0] || "A", isCorrect: false },
+          { id: 3, text: otherItems[1] || "B", isCorrect: false },
+          { id: 4, text: otherItems[2] || "C", isCorrect: false },
+        ].sort(() => Math.random() - 0.5),
+      });
+      stepOrder++;
+
+      // 3. Quiz Input
+      steps.push({
+        id: lessonId * 100 + stepOrder,
+        title: "Gõ đáp án",
+        type: "quiz-input" as StepType,
+        order: stepOrder,
+        completed: false,
+        questionVideoUrl: `/${folder}/${items[1] || quizItem}.webp`,
+        correctAnswer: items[1] || quizItem,
+        hint: `Nhập ${isAlpha ? "chữ cái" : "số"} bạn nhìn thấy`,
+      });
+      stepOrder++;
+
+      // 4. Flip Card (Ghép hình với chữ/số)
+      steps.push({
+        id: lessonId * 100 + stepOrder,
+        title: "Lật thẻ",
+        type: "flip-card" as StepType,
+        order: stepOrder,
+        completed: false,
+        flipCards: items.map((val) => ({
+          videoUrl: `/${folder}/${val}.webp`,
+          matchText: val,
+        })),
+      });
+      stepOrder++;
+    }
+
+    return steps;
+  }
+
+  // Default logic for courses 1-5
 
   // Get vocabulary words for this lesson
   const startIdx = (lessonOrder * 2) % vocabularyWords.length;
@@ -263,6 +373,67 @@ const generateStepsForSelfLearnLesson = (
     correctAnswer: quizVocab.word,
     hint: quizVocab.word.charAt(0) + "...",
   });
+  stepOrder++;
+
+  // Step 7: Match Video to Text (Nối từ)
+  const matchItems = vocabularyWords.slice(startIdx, startIdx + 3);
+  steps.push({
+    id: lessonId * 100 + stepOrder,
+    title: "Trò chơi: Nối từ",
+    type: "match-video-to-text" as StepType,
+    order: stepOrder,
+    completed: false,
+    matchPairs: matchItems.map((v, idx) => ({
+      id: idx + 1,
+      videoUrl: v.videoUrl,
+      matchText: v.word,
+    })),
+  });
+  stepOrder++;
+
+  // Step 8: Quiz Text to Video (Chọn video đúng)
+  steps.push({
+    id: lessonId * 100 + stepOrder,
+    title: "Kiểm tra: Chọn video đúng",
+    type: "quiz-text-to-video" as StepType,
+    order: stepOrder,
+    completed: false,
+    question: quizVocab.word,
+    options: [
+      { id: 1, videoUrl: quizVocab.videoUrl, isCorrect: true },
+      { id: 2, videoUrl: wrongOptions[0]?.videoUrl || "", isCorrect: false },
+      { id: 3, videoUrl: wrongOptions[1]?.videoUrl || "", isCorrect: false },
+      { id: 4, videoUrl: wrongOptions[2]?.videoUrl || "", isCorrect: false },
+    ].sort(() => Math.random() - 0.5),
+  });
+  stepOrder++;
+
+  // Step 9: Flip Card (Lật thẻ nhớ)
+  steps.push({
+    id: lessonId * 100 + stepOrder,
+    title: "Trò chơi: Lật thẻ",
+    type: "flip-card" as StepType,
+    order: stepOrder,
+    completed: false,
+    flipCards: matchItems.map((v) => ({
+      videoUrl: v.videoUrl,
+      matchText: v.word,
+    })),
+  });
+  stepOrder++;
+
+  // Step 10: True/False
+  const isTrue = Math.random() > 0.5;
+  steps.push({
+    id: lessonId * 100 + stepOrder,
+    title: "Kiểm tra: Đúng hay Sai?",
+    type: "true-false" as StepType,
+    order: stepOrder,
+    completed: false,
+    statementVideoUrl: quizVocab.videoUrl,
+    statement: isTrue ? quizVocab.word : wrongOptions[0]?.word || "Khác",
+    isTrue: isTrue,
+  });
 
   return steps;
 };
@@ -282,7 +453,7 @@ const generateLessonsForCourse = (courseId: number): SelfLearnLesson[] => {
       duration: "15 phút",
       order: index + 1,
       completed: index < 2, // First 2 lessons marked as completed
-      stepsCount: 6,
+      stepsCount: 10,
     });
   });
 

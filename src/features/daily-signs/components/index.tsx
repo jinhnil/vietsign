@@ -436,7 +436,7 @@ export function DailySigns() {
                 </button>
               )}
               <Link
-                href={`/dictionary/${todaySign.id}`}
+                href={`/vocabularies/${todaySign.id}`}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 text-white rounded-xl font-medium hover:bg-white/30 transition-colors"
               >
                 <BookOpen size={18} />
@@ -454,7 +454,7 @@ export function DailySigns() {
             Từ vựng liên quan
           </h3>
           <Link
-            href="/dictionary"
+            href="/vocabularies"
             className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
           >
             Xem tất cả <ChevronRight size={16} />
@@ -464,7 +464,7 @@ export function DailySigns() {
           {relatedWords.map((word) => (
             <Link
               key={word.id}
-              href={`/dictionary/${word.id}`}
+              href={`/vocabularies/${word.id}`}
               className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-lg hover:border-primary-200 transition-all cursor-pointer group"
             >
               <div className="flex items-center justify-between mb-2">
@@ -494,7 +494,7 @@ export function DailySigns() {
             Các từ gần đây
           </h3>
           <Link
-            href="/dictionary"
+            href="/vocabularies"
             className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
           >
             Xem lịch sử <ChevronRight size={16} />
@@ -505,7 +505,7 @@ export function DailySigns() {
             recentSigns.map((sign, index) => (
               <Link
                 key={sign.id}
-                href={`/dictionary/${sign.id}`}
+                href={`/vocabularies/${sign.id}`}
                 className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-lg shadow-md">

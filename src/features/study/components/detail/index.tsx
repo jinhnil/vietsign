@@ -20,14 +20,13 @@ import {
   FolderOpen,
   File,
   Link as LinkIcon,
+  Plus,
+  Pencil,
+  Trash2,
+  MoreVertical,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  mockClasses,
-  ClassItem,
-  statusConfig,
-  getClassStudents,
-} from "@/data/classesData";
+import { ClassItem, statusConfig, getClassStudents } from "@/data/classesData";
 import { fetchClassById } from "@/services/classService";
 import { fetchUserById } from "@/services/userService";
 import { mockOrganizations } from "@/data/organizationsData";
@@ -37,12 +36,15 @@ import {
   getExamsByClassId,
   getDocumentsByClassId,
   LessonItem,
-  ExamItem,
   DocumentItem,
+  ExamItem, // Ensure ExamItem is imported
 } from "@/data/lessonsData";
 import Link from "next/link";
+import { ConfirmModal } from "@/shared/components/common/ConfirmModal";
+import { toast } from "react-hot-toast";
 
 type TabType = "lessons" | "exams" | "documents" | "members";
+type DeleteType = "lesson" | "exam" | "document" | "member" | null;
 
 export function StudyDetail() {
   const params = useParams();
@@ -54,10 +56,30 @@ export function StudyDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("lessons");
 
+  // Permission state (Simulate current user is teacher for demo)
+  // In real app, check auth context -> user.id === classItem.teacherId
+  const [isTeacher, setIsTeacher] = useState(false);
+
+  // Data states
   // Data states
   const [lessons, setLessons] = useState<LessonItem[]>([]);
-  const [exams, setExams] = useState<ExamItem[]>([]);
+  const [exams, setExams] = useState<
+    (ExamItem & { studentStatus: string; score?: number })[]
+  >([]);
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
+
+  // Delete Modal State
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    type: DeleteType;
+    itemId: number | null;
+    itemName: string;
+  }>({
+    isOpen: false,
+    type: null,
+    itemId: null,
+    itemName: "",
+  });
 
   useEffect(() => {
     const loadData = async () => {
@@ -71,14 +93,11 @@ export function StudyDetail() {
             const teacher = await fetchUserById(fetchedClass.teacherId);
             setTeacherName(teacher?.name || "Không xác định");
           }
+          // Simulate: If loaded, set permissions (Assuming current user is teacher for this task)
+          setIsTeacher(true);
         } else {
-          // Fallback to mock
-          const found = mockClasses.find((c) => c.id === id);
-          setClassItem(found || null);
-          if (found) {
-            const teacher = getUserById(found.teacherId);
-            setTeacherName(teacher?.name || "Cô Nguyễn Thị Lan");
-          }
+          // Handle case where class is not found
+          setClassItem(null);
         }
 
         // Load lessons, exams, documents
@@ -87,12 +106,12 @@ export function StudyDetail() {
         setDocuments(getDocumentsByClassId(id));
       } catch (error) {
         console.error("Failed to load class", error);
-        const found = mockClasses.find((c) => c.id === id);
-        setClassItem(found || null);
-        setTeacherName("Cô Nguyễn Thị Lan");
+        setClassItem(null);
+        setTeacherName("Không xác định");
         setLessons(getLessonsByClassId(id));
         setExams(getExamsByClassId(id));
         setDocuments(getDocumentsByClassId(id));
+        // setIsTeacher(true);
       } finally {
         setIsLoading(false);
       }
@@ -100,10 +119,72 @@ export function StudyDetail() {
     loadData();
   }, [id]);
 
-  const getFacilityName = (facilityId: number | null): string => {
-    if (facilityId === null) return "Online";
-    const facility = mockOrganizations.find((f) => f.id === facilityId);
+  // Handlers
+  const handleAdd = (type: TabType) => {
+    toast.success(`Chức năng thêm ${type} (Demo)`);
+    // Router push to create page or open modal
+  };
+
+  const handleEdit = (type: TabType, itemId: number) => {
+    toast.success(`Chức năng sửa ${type} ${itemId} (Demo)`);
+  };
+
+  const handleDeleteClick = (
+    type: DeleteType,
+    itemId: number,
+    itemName: string,
+  ) => {
+    setDeleteModal({
+      isOpen: true,
+      type,
+      itemId,
+      itemName,
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    const { type, itemId } = deleteModal;
+    if (!type || !itemId) return;
+
+    // Simulate deletion
+    switch (type) {
+      case "lesson":
+        setLessons((prev) => prev.filter((i) => i.id !== itemId));
+        break;
+      case "exam":
+        setExams((prev) => prev.filter((i) => i.id !== itemId));
+        break;
+      case "document":
+        setDocuments((prev) => prev.filter((i) => i.id !== itemId));
+        break;
+      case "member":
+        // Logic to remove member (e.g., update class students list)
+        toast.success("Đã xóa thành viên khỏi lớp");
+        break;
+    }
+    toast.success("Đã xóa thành công");
+    setDeleteModal({ isOpen: false, type: null, itemId: null, itemName: "" });
+  };
+
+  const getFacilityName = (organizationId: number | null): string => {
+    if (organizationId === null) return "Online";
+    const facility = mockOrganizations.find((f) => f.id === organizationId);
     return facility?.name || "Không xác định";
+  };
+
+  const getDocIcon = (type: DocumentItem["type"]) => {
+    switch (type) {
+      case "pdf":
+        return <File className="text-red-500" size={20} />;
+      case "doc":
+        return <FileText className="text-blue-500" size={20} />;
+      case "video":
+        return <Video className="text-purple-500" size={20} />;
+      case "link":
+        return <LinkIcon className="text-green-500" size={20} />;
+      default:
+        return <File className="text-gray-500" size={20} />;
+    }
   };
 
   if (isLoading) {
@@ -161,21 +242,6 @@ export function StudyDetail() {
     },
   ];
 
-  const getDocIcon = (type: DocumentItem["type"]) => {
-    switch (type) {
-      case "pdf":
-        return <File className="text-red-500" size={20} />;
-      case "doc":
-        return <FileText className="text-blue-500" size={20} />;
-      case "video":
-        return <Video className="text-purple-500" size={20} />;
-      case "link":
-        return <LinkIcon className="text-green-500" size={20} />;
-      default:
-        return <File className="text-gray-500" size={20} />;
-    }
-  };
-
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
       {/* Navigation */}
@@ -208,10 +274,11 @@ export function StudyDetail() {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-4">
                 <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm border border-white/10">
-                  {classItem.level || "Cơ bản"}
+                  {/* classItem.level doesn't exist on type, use hardcoded or remove */}
+                  Cơ bản
                 </span>
                 <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm border border-white/10">
-                  {classItem.gradeLevel}
+                  {classItem.classLevel}
                 </span>
               </div>
               <h1 className="text-3xl font-bold mb-3 leading-tight">
@@ -229,7 +296,7 @@ export function StudyDetail() {
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin size={18} className="text-primary-200" />
-                  <span>{getFacilityName(classItem.facilityId)}</span>
+                  <span>{getFacilityName(classItem.organizationId)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar size={18} className="text-primary-200" />
@@ -247,30 +314,40 @@ export function StudyDetail() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-100 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors whitespace-nowrap ${
-                activeTab === tab.id
-                  ? "text-primary-600 border-b-2 border-primary-600 bg-primary-50/50"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              }`}
-            >
-              <tab.icon size={18} />
-              {tab.label}
-              <span
-                className={`px-2 py-0.5 rounded-full text-xs ${
+        <div className="flex border-b border-gray-100 overflow-x-auto justify-between items-center pr-4">
+          <div className="flex">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors whitespace-nowrap ${
                   activeTab === tab.id
-                    ? "bg-primary-100 text-primary-700"
-                    : "bg-gray-100 text-gray-600"
+                    ? "text-primary-600 border-b-2 border-primary-600 bg-primary-50/50"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                 }`}
               >
-                {tab.count}
-              </span>
+                <tab.icon size={18} />
+                {tab.label}
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs ${
+                    activeTab === tab.id
+                      ? "bg-primary-100 text-primary-700"
+                      : "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
+          {isTeacher && (
+            <button
+              onClick={() => handleAdd(activeTab)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition"
+            >
+              <Plus size={16} /> Thêm mới
             </button>
-          ))}
+          )}
         </div>
       </div>
 
@@ -280,10 +357,9 @@ export function StudyDetail() {
         {activeTab === "lessons" && (
           <div className="divide-y divide-gray-100">
             {lessons.map((lesson) => (
-              <Link
+              <div
                 key={lesson.id}
-                href={`/study/${classItem.id}/${lesson.id}`}
-                className="p-5 flex items-center gap-4 hover:bg-gray-50 transition-colors cursor-pointer group"
+                className="p-5 flex items-center gap-4 hover:bg-gray-50 transition-colors group"
               >
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
@@ -299,7 +375,10 @@ export function StudyDetail() {
                   )}
                 </div>
 
-                <div className="flex-1 min-w-0">
+                <Link
+                  href={`/study/${classItem.id}/${lesson.id}`}
+                  className="flex-1 min-w-0 cursor-pointer block"
+                >
                   <h3
                     className={`font-medium truncate ${
                       lesson.completed ? "text-gray-900" : "text-gray-700"
@@ -310,15 +389,35 @@ export function StudyDetail() {
                   <p className="text-sm text-gray-500 truncate">
                     {lesson.description}
                   </p>
-                </div>
+                </Link>
 
-                <div className="flex items-center gap-4">
-                  <ChevronRight
-                    size={20}
-                    className="text-gray-300 group-hover:text-primary-500 group-hover:translate-x-1 transition-all"
-                  />
+                <div className="flex items-center gap-2">
+                  {isTeacher && (
+                    <>
+                      <button
+                        onClick={() => handleEdit("lessons", lesson.id)}
+                        className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg"
+                      >
+                        <Pencil size={18} />
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleDeleteClick("lesson", lesson.id, lesson.title)
+                        }
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </>
+                  )}
+                  <Link href={`/study/${classItem.id}/${lesson.id}`}>
+                    <ChevronRight
+                      size={20}
+                      className="text-gray-300 group-hover:text-primary-500 group-hover:translate-x-1 transition-all"
+                    />
+                  </Link>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
@@ -333,11 +432,11 @@ export function StudyDetail() {
               >
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                    exam.status === "completed"
+                    exam.studentStatus === "completed"
                       ? "bg-green-100 text-green-600"
-                      : exam.status === "expired"
-                      ? "bg-red-100 text-red-600"
-                      : "bg-amber-100 text-amber-600"
+                      : exam.status === "completed" // Check general status if student status is not relevant for color
+                        ? "bg-amber-100 text-amber-600" // Ongoing/Expired logic might be different
+                        : "bg-amber-100 text-amber-600"
                   }`}
                 >
                   <ClipboardCheck size={24} />
@@ -348,18 +447,42 @@ export function StudyDetail() {
                     {exam.title}
                   </h3>
                   <p className="text-sm text-gray-500">
-                    {exam.totalQuestions} câu hỏi • {exam.duration} phút • Hạn:{" "}
-                    {exam.dueDate}
+                    {exam.questions} câu hỏi • {exam.duration} • Hạn:{" "}
+                    {exam.date}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  {exam.status === "completed" && exam.score !== undefined ? (
+                <div className="flex items-center gap-3">
+                  {isTeacher && (
+                    <>
+                      <button
+                        onClick={() => handleEdit("exams", exam.id)}
+                        className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg"
+                      >
+                        <Pencil size={18} />
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleDeleteClick("exam", exam.id, exam.title)
+                        }
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </>
+                  )}
+                  {exam.studentStatus === "completed" &&
+                  exam.score !== undefined ? (
                     <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
                       {exam.score} điểm
                     </span>
-                  ) : exam.status === "pending" ? (
-                    <button className="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors">
+                  ) : exam.studentStatus === "pending" ? (
+                    <button
+                      onClick={() =>
+                        router.push(`/study/${id}/exam/${exam.id}`)
+                      }
+                      className="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors"
+                    >
                       Làm bài
                     </button>
                   ) : (
@@ -394,9 +517,29 @@ export function StudyDetail() {
                   </p>
                 </div>
 
-                <button className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors">
-                  <Download size={20} />
-                </button>
+                <div className="flex items-center gap-2">
+                  {isTeacher && (
+                    <>
+                      <button
+                        onClick={() => handleEdit("documents", doc.id)}
+                        className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg"
+                      >
+                        <Pencil size={18} />
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleDeleteClick("document", doc.id, doc.title)
+                        }
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </>
+                  )}
+                  <button className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors">
+                    <Download size={20} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -421,6 +564,11 @@ export function StudyDetail() {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[20%]">
                       Trạng thái
                     </th>
+                    {isTeacher && (
+                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 w-[10%]">
+                        Hành động
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -464,6 +612,7 @@ export function StudyDetail() {
                           Trực tuyến
                         </span>
                       </td>
+                      {isTeacher && <td className="px-6 py-4"></td>}
                     </tr>
                   )}
 
@@ -476,7 +625,7 @@ export function StudyDetail() {
                     return (
                       <tr
                         key={student.id}
-                        className="hover:bg-gray-50 transition-colors"
+                        className="hover:bg-gray-50 transition-colors group"
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3 overflow-hidden">
@@ -522,6 +671,23 @@ export function StudyDetail() {
                             </span>
                           )}
                         </td>
+                        {isTeacher && (
+                          <td className="px-6 py-4 text-right">
+                            <button
+                              onClick={() =>
+                                handleDeleteClick(
+                                  "member",
+                                  student.id,
+                                  student.name,
+                                )
+                              }
+                              className="p-2 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                              title="Xóa học viên khỏi lớp"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
@@ -537,6 +703,24 @@ export function StudyDetail() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa"
+        message={`Bạn có chắc chắn muốn xóa ${
+          deleteModal.type === "lesson"
+            ? "bài học"
+            : deleteModal.type === "exam"
+              ? "bài kiểm tra"
+              : deleteModal.type === "document"
+                ? "tài liệu"
+                : "thành viên"
+        } "${deleteModal.itemName}" không? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa ngay"
+        cancelText="Để tôi suy nghĩ lại"
+      />
     </div>
   );
 }

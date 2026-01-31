@@ -22,7 +22,7 @@ export const Footer: React.FC = () => (
             </div>
           </div>
           <p className="text-gray-400 leading-relaxed mb-6">
-            Nền tảng học ngôn ngữ ký hiệu hàng đầu Việt Nam. Kết nối cộng đồng, 
+            Nền tảng học ngôn ngữ ký hiệu hàng đầu Việt Nam. Kết nối cộng đồng,
             xây dựng tương lai không rào cản.
           </p>
           {/* Social Links */}
@@ -51,7 +51,7 @@ export const Footer: React.FC = () => (
           <ul className="space-y-3">
             <li>
               <Link
-                href="/dictionary"
+                href="/vocabularies"
                 className="hover:text-primary-400 transition-colors flex items-center gap-2"
               >
                 📖 Từ điển ký hiệu
@@ -134,20 +134,29 @@ export const Footer: React.FC = () => (
           </h4>
           <ul className="space-y-4">
             <li className="flex items-start gap-3">
-              <MapPin size={18} className="text-primary-400 mt-1 flex-shrink-0" />
+              <MapPin
+                size={18}
+                className="text-primary-400 mt-1 flex-shrink-0"
+              />
               <span className="text-gray-400">
                 Đại học Bách khoa Hà Nội, Hai Bà Trưng, Hà Nội
               </span>
             </li>
             <li className="flex items-center gap-3">
               <Mail size={18} className="text-primary-400 flex-shrink-0" />
-              <a href="mailto:contact@vietsign.vn" className="hover:text-primary-400 transition-colors">
+              <a
+                href="mailto:contact@vietsign.vn"
+                className="hover:text-primary-400 transition-colors"
+              >
                 contact@vietsign.vn
               </a>
             </li>
             <li className="flex items-center gap-3">
               <Phone size={18} className="text-primary-400 flex-shrink-0" />
-              <a href="tel:+84123456789" className="hover:text-primary-400 transition-colors">
+              <a
+                href="tel:+84123456789"
+                className="hover:text-primary-400 transition-colors"
+              >
                 (+84) 123 456 789
               </a>
             </li>
@@ -163,10 +172,16 @@ export const Footer: React.FC = () => (
           © {new Date().getFullYear()} VietSignSchool. Đã đăng ký bản quyền.
         </p>
         <div className="flex gap-6 text-sm text-gray-500">
-          <Link href="/privacy" className="hover:text-primary-400 transition-colors">
+          <Link
+            href="/privacy"
+            className="hover:text-primary-400 transition-colors"
+          >
             Chính sách bảo mật
           </Link>
-          <Link href="/terms" className="hover:text-primary-400 transition-colors">
+          <Link
+            href="/terms"
+            className="hover:text-primary-400 transition-colors"
+          >
             Điều khoản sử dụng
           </Link>
         </div>

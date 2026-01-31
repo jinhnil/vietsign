@@ -12,21 +12,19 @@ import {
   Clock,
   User,
   Building,
-  BookOpen,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { mockClasses, ClassItem, statusConfig } from "@/data"; // Keep mockClasses for initial state type or fallback if needed, or remove if unused
+import { ClassItem, statusConfig } from "@/data";
 import {
   fetchClassById,
   updateClass,
   deleteClass,
 } from "@/services/classService";
-import { getUserById, mockUsers } from "@/data/usersData";
 import { fetchUserById, fetchUsersByRole } from "@/services/userService";
 import {
-  getOrganizationById as getFacilityById,
-  mockOrganizations as mockFacilities,
-} from "@/data/organizationsData";
+  fetchAllOrganizations,
+  OrganizationItem,
+} from "@/services/organizationService";
 import { ConfirmModal } from "@/shared/components/common/ConfirmModal";
 
 export function ClassManagementDetail() {
@@ -44,51 +42,87 @@ export function ClassManagementDetail() {
   const [teachers, setTeachers] = useState<any[]>([]);
   const [teacherName, setTeacherName] = useState<string>("Đang tải...");
 
+  // State for organizations
+  const [facilities, setFacilities] = useState<OrganizationItem[]>([]);
+  const [facilitiesMap, setFacilitiesMap] = useState<Record<number, string>>(
+    {},
+  );
+
+  // Load class and teachers
   // Load class and teachers
   useEffect(() => {
     const initData = async () => {
-      setIsLoading(true);
+      setIsLoading(true); // Start loading
+
       try {
-        // Fetch Class
+        console.log("[ClassDetail] Fetching class ID:", id);
+
+        // 1. Fetch Class Content FIRST
         const fetchedClass = await fetchClassById(id);
+        console.log("[ClassDetail] Fetched class:", fetchedClass);
+
         if (fetchedClass) {
           setClassItem(fetchedClass);
           setEditForm({ ...fetchedClass });
+          setIsLoading(false); // Valid class found -> Show UI immediately
 
-          // Fetch Teacher Name if class found
-          if (fetchedClass.teacherId) {
-            try {
-              const teacher = await fetchUserById(fetchedClass.teacherId);
-              setTeacherName(teacher?.name || "Không xác định");
-            } catch (e) {
-              setTeacherName("Không xác định");
+          // 2. Fetch Auxiliary Data (Teachers, Facilities) in background
+          try {
+            const [teachersList, facilitiesList] = await Promise.all([
+              fetchUsersByRole("TEACHER"),
+              fetchAllOrganizations(),
+            ]);
+
+            setTeachers(teachersList);
+            setFacilities(facilitiesList);
+
+            // Map facilities
+            const fMap: Record<number, string> = {};
+            facilitiesList.forEach((f: any) => {
+              fMap[f.id] = f.name;
+            });
+            setFacilitiesMap(fMap);
+
+            // Fetch Teacher Name logic
+            if (fetchedClass.teacherId) {
+              const t = teachersList.find(
+                (u: any) => u.id === fetchedClass.teacherId,
+              );
+              if (t) {
+                setTeacherName(t.name);
+              } else {
+                // Try fetch individual user if not in list
+                fetchUserById(fetchedClass.teacherId)
+                  .then((teacher) => {
+                    setTeacherName(teacher?.name || "Chi tiết gv không có");
+                  })
+                  .catch(() => setTeacherName("Lỗi lấy tên gv"));
+              }
+            } else {
+              setTeacherName("Chưa phân công");
             }
+          } catch (auxError) {
+            console.error("Failed to load auxiliary data", auxError);
           }
+        } else {
+          // Class not found
+          setIsLoading(false);
         }
-
-        // Fetch Teachers list for dropdown
-        const teachersList = await fetchUsersByRole("TEACHER");
-        setTeachers(teachersList);
       } catch (error) {
-        console.error("Failed to load class or teachers", error);
-        // Fallback to mock data logic if API fails
-        const found = mockClasses.find((c) => c.id === id);
-        if (found) {
-          setClassItem(found);
-          setEditForm({ ...found });
-          setTeacherName("Mock Teacher"); // Fallback
-        }
-      } finally {
+        console.error("Failed to load class", error);
         setIsLoading(false);
       }
     };
-    initData();
+
+    if (id) {
+      initData();
+    }
   }, [id]);
 
-  const getFacilityName = (facilityId: number | null): string => {
-    if (facilityId === null) return "Online";
-    const facility = getFacilityById(facilityId);
-    return facility?.name || "Không xác định";
+  const getFacilityName = (organizationId: number | null): string => {
+    if (organizationId === null) return "Online";
+    if (organizationId === undefined) return "Không xác định";
+    return facilitiesMap[organizationId] || `Cơ sở #${organizationId}`;
   };
 
   const handleSave = async () => {
@@ -140,8 +174,19 @@ export function ClassManagementDetail() {
     );
   }
 
-  const statusInfo = statusConfig[classItem.status];
-  const progress = (classItem.students / classItem.maxStudents) * 100;
+  const statusMap: Record<string, { label: string; color: string }> = {
+    APPROVED: { label: "Đã duyệt", color: "bg-green-100 text-green-800" },
+    PENDING: { label: "Chờ duyệt", color: "bg-yellow-100 text-yellow-800" },
+    REJECTED: { label: "từ chối", color: "bg-red-100 text-red-800" },
+    ongoing: { label: "Đang diễn ra", color: "bg-green-100 text-green-800" },
+    upcoming: { label: "Sắp diễn ra", color: "bg-blue-100 text-blue-800" },
+    completed: { label: "Đã hoàn thành", color: "bg-gray-100 text-gray-800" },
+  };
+
+  const statusInfo = statusMap[classItem.status] || {
+    label: classItem.status,
+    color: "bg-gray-100 text-gray-800",
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -174,41 +219,13 @@ export function ClassManagementDetail() {
                   <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-white/20">
                     {statusInfo.label}
                   </span>
-                  {classItem.level && (
+                  {classItem.classLevel && (
                     <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-white/20">
-                      {classItem.level}
+                      {classItem.classLevel}
                     </span>
                   )}
                 </div>
               </div>
-            </div>
-            <div className="text-center text-white">
-              <div className="w-20 h-20 relative">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle
-                    cx="40"
-                    cy="40"
-                    r="36"
-                    stroke="rgba(255,255,255,0.2)"
-                    strokeWidth="6"
-                    fill="none"
-                  />
-                  <circle
-                    cx="40"
-                    cy="40"
-                    r="36"
-                    stroke="white"
-                    strokeWidth="6"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeDasharray={`${progress * 2.26} 226`}
-                  />
-                </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-lg font-bold">
-                  {Math.round(progress)}%
-                </span>
-              </div>
-              <p className="text-xs text-white/80 mt-1">Sĩ số</p>
             </div>
           </div>
         </div>
@@ -272,19 +289,19 @@ export function ClassManagementDetail() {
               </label>
               {isEditing ? (
                 <select
-                  value={editForm.facilityId || ""}
+                  value={editForm.organizationId || ""}
                   onChange={(e) =>
                     setEditForm({
                       ...editForm,
-                      facilityId: e.target.value
+                      organizationId: e.target.value
                         ? Number(e.target.value)
-                        : null,
+                        : undefined,
                     })
                   }
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
                 >
                   <option value="">Học Online</option>
-                  {mockFacilities.map((facility) => (
+                  {facilities.map((facility) => (
                     <option key={facility.id} value={facility.id}>
                       {facility.name}
                     </option>
@@ -293,64 +310,7 @@ export function ClassManagementDetail() {
               ) : (
                 <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
                   <Building size={18} className="text-gray-400" />
-                  {getFacilityName(classItem.facilityId)}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Sĩ số hiện tại
-              </label>
-              <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
-                <Users size={18} className="text-gray-400" />
-                <span className="font-medium">
-                  {classItem.students}/{classItem.maxStudents}
-                </span>
-                <span className="text-gray-500">học sinh</span>
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Sĩ số tối đa
-              </label>
-              {isEditing ? (
-                <input
-                  type="number"
-                  value={editForm.maxStudents || ""}
-                  onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      maxStudents: Number(e.target.value),
-                    })
-                  }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-                />
-              ) : (
-                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 font-medium">
-                  {classItem.maxStudents} học sinh
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Lịch học
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={editForm.schedule || ""}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, schedule: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-                />
-              ) : (
-                <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
-                  <Clock size={18} className="text-gray-400" />
-                  {classItem.schedule}
+                  {getFacilityName(classItem.organizationId)}
                 </p>
               )}
             </div>
@@ -383,26 +343,6 @@ export function ClassManagementDetail() {
                   </span>
                 </p>
               )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Ngày bắt đầu
-              </label>
-              <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
-                <Calendar size={18} className="text-gray-400" />
-                {classItem.startDate}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Ngày kết thúc
-              </label>
-              <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
-                <Calendar size={18} className="text-gray-400" />
-                {classItem.endDate}
-              </p>
             </div>
 
             {(classItem.description || isEditing) && (

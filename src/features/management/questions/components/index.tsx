@@ -53,7 +53,9 @@ export function QuestionsManagement() {
   const user = useSelector((state: any) => state.admin.user);
   const userId = user?.id ? Number(user.id) : 0;
   const userRole = user?.code || "USER";
-  const userOrgId = user?.facilityId ? Number(user.facilityId) : undefined;
+  const userOrgId = user?.organizationId
+    ? Number(user.organizationId)
+    : undefined;
 
   const [viewMode, setViewMode] = useState<ViewMode>("questions");
   const [searchQuery, setSearchQuery] = useState("");

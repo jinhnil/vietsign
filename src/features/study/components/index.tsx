@@ -10,7 +10,7 @@ import {
   User,
   BookOpen,
 } from "lucide-react";
-import { mockClasses, ClassItem } from "@/data/classesData";
+import { ClassItem } from "@/data/classesData";
 import { fetchAllClasses } from "@/services/classService";
 import { fetchUsersByRole } from "@/services/userService";
 import { mockOrganizations } from "@/data/organizationsData";
@@ -19,9 +19,9 @@ import Link from "next/link";
 import { ClassRegistrationModal } from "./ClassRegistrationModal";
 
 // Helper to get facility name
-const getFacilityName = (facilityId: number | null) => {
-  if (facilityId === null) return "Online";
-  const facility = mockOrganizations.find((f) => f.id === facilityId);
+const getFacilityName = (organizationId: number | null) => {
+  if (organizationId === null) return "Online";
+  const facility = mockOrganizations.find((f) => f.id === organizationId);
   return facility ? facility.name : "Không xác định";
 };
 
@@ -55,10 +55,8 @@ export const Study: React.FC = () => {
         setTeachersMap(map);
       } catch (error) {
         console.error("Failed to load classes", error);
-        // Fallback to mock logic if API fails completely
-        const myClassIds = [1, 5, 11, 3];
-        const myClasses = mockClasses.filter((c) => myClassIds.includes(c.id));
-        setRegisteredClasses(myClasses);
+        // Fallback or empty logic if API fails
+        setRegisteredClasses([]);
       } finally {
         setIsLoading(false);
       }
@@ -115,7 +113,7 @@ export const Study: React.FC = () => {
                   <span
                     className={`inline-flex px-3 py-1 rounded-full text-xs font-medium bg-white/20 text-white backdrop-blur-sm border border-white/10`}
                   >
-                    {cls.level || "Cơ bản"}
+                    {cls.classLevel || "Cơ bản"}
                   </span>
                 </div>
                 <div className="absolute bottom-6 left-6">
@@ -143,7 +141,7 @@ export const Study: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin size={16} className="text-primary-500" />
-                    <span>{getFacilityName(cls.facilityId)}</span>
+                    <span>{getFacilityName(cls.organizationId)}</span>
                   </div>
                 </div>
 

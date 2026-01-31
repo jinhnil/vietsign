@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Constants
-const BASE_URL = "https://provinces.open-api.vn/api"; // Defaulting to base API, user mentioned v2 but typically structure is /p/, /d/, /w/ under /api/
+const BASE_URL = "https://provinces.open-api.vn/api/v2"; // Updated to v2 API as requested
 
 // Direct API Types
 export interface ApiProvince {
@@ -11,6 +11,7 @@ export interface ApiProvince {
   codename: string;
   phone_code: number;
   districts: ApiDistrict[];
+  wards?: ApiWard[];
 }
 
 export interface ApiDistrict {
@@ -70,15 +71,30 @@ export async function fetchProvincesOnly(): Promise<ApiProvince[]> {
   }
 }
 
-// Fetch full province details (depth 3 for districts and wards)
+// Fetch full province details (depth 2 for wards in v2)
 export async function fetchProvinceDetails(
   code: number,
 ): Promise<ApiProvince | null> {
+  if (!code || isNaN(code)) {
+    console.error(
+      "Invalid province code provided to fetchProvinceDetails:",
+      code,
+    );
+    return null;
+  }
+
   try {
-    const response = await axios.get(`${BASE_URL}/p/${code}?depth=3`);
+    // V2 uses depth=2 to get wards. V2 does not have districts layer for provinces.
+    const response = await axios.get(`${BASE_URL}/p/${code}?depth=2`);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching province ${code}:`, error);
+    if (axios.isAxiosError(error) && !error.response) {
+      console.error(
+        `Network Error fetching province ${code}. Check your connection or API availability.`,
+      );
+    } else {
+      console.error(`Error fetching province ${code}:`, error);
+    }
     return null;
   }
 }
@@ -101,7 +117,7 @@ export async function fetchProvinces(): Promise<Province[]> {
   return mappedProvinces;
 }
 
-// Get province by ID with full details (depth 3)
+// Get province by ID with full details (depth 2)
 export async function fetchProvinceById(id: number): Promise<Province | null> {
   if (provinceDetailsCache[id]) return provinceDetailsCache[id];
 
@@ -109,20 +125,34 @@ export async function fetchProvinceById(id: number): Promise<Province | null> {
   if (!apiProvince) return null;
 
   // Map Districts and Wards
-  const districts: District[] = (apiProvince.districts || []).map((d) => ({
-    id: String(d.code),
-    name: d.name,
-    type: d.division_type,
-    communes: (d.wards || []).map((w) => ({
+  // Check if we have districts (V1) or wards directly (V2)
+  let districts: District[] = [];
+  let allCommunes: Commune[] = [];
+
+  if (apiProvince.districts && apiProvince.districts.length > 0) {
+    // V1 Structure with Districts
+    districts = apiProvince.districts.map((d) => ({
+      id: String(d.code),
+      name: d.name,
+      type: d.division_type,
+      communes: (d.wards || []).map((w) => ({
+        id: String(w.code),
+        name: w.name,
+        type: w.division_type,
+        districtId: String(d.code),
+      })),
+    }));
+    allCommunes = districts.flatMap((d) => d.communes || []);
+  } else if (apiProvince.wards && apiProvince.wards.length > 0) {
+    // V2 Structure with direct Wards
+    allCommunes = apiProvince.wards.map((w) => ({
       id: String(w.code),
       name: w.name,
       type: w.division_type,
-      districtId: String(d.code),
-    })),
-  }));
-
-  // Flatten wards for 'communes' property if needed for backward compatibility
-  const allCommunes: Commune[] = districts.flatMap((d) => d.communes || []);
+      districtId: String(apiProvince.code), // Use province code as districtId proxy if needed
+    }));
+    // We leave districts empty as V2 flattens this
+  }
 
   const mappedProvince: Province = {
     id: apiProvince.code,
