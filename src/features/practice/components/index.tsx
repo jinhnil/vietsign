@@ -18,6 +18,7 @@ export * from "./AiPractice";
 export * from "./SentencePractice";
 export * from "./SpellingPractice";
 export * from "./WordPractice";
+import PracticeData from "./PracticeData";
 
 // Sample sentences count
 const sampleSentencesCount = 10;
@@ -36,7 +37,8 @@ export function PracticeModeSelection() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
+      <PracticeData />
+      {/* 
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center justify-center gap-3 mb-4">
           <Hand className="w-10 h-10 text-primary-600" />
@@ -48,9 +50,7 @@ export function PracticeModeSelection() {
         </p>
       </div>
 
-      {/* Mode cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        {/* Word Practice */}
         <Link
           href="/practice/word"
           className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl hover:border-primary-300 transition-all cursor-pointer group"
@@ -71,7 +71,6 @@ export function PracticeModeSelection() {
           </div>
         </Link>
 
-        {/* Sentence Practice */}
         <Link
           href="/practice/sentence"
           className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl hover:border-primary-300 transition-all cursor-pointer group"
@@ -91,8 +90,6 @@ export function PracticeModeSelection() {
             <ChevronRight className="w-5 h-5 ml-auto group-hover:translate-x-1 transition-transform" />
           </div>
         </Link>
-
-        {/* Spelling Practice */}
         <Link
           href="/practice/spelling"
           className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl hover:border-primary-300 transition-all cursor-pointer group"
@@ -113,7 +110,6 @@ export function PracticeModeSelection() {
           </div>
         </Link>
 
-        {/* AI Practice */}
         <Link
           href="/practice/ai"
           className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl hover:border-primary-300 transition-all cursor-pointer group relative overflow-hidden"
@@ -137,7 +133,8 @@ export function PracticeModeSelection() {
             <ChevronRight className="w-5 h-5 ml-auto group-hover:translate-x-1 transition-transform" />
           </div>
         </Link>
-      </div>
+      </div> 
+      */}
     </div>
   );
 }

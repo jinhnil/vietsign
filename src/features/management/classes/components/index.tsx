@@ -62,15 +62,17 @@ export function ClassesManagement() {
     {},
   );
 
+  const [isUploading, setIsUploading] = useState(false);
+
   // State for new class form
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    classCode: "",
+    code: "",
     classLevel: "1",
     teacherId: "",
     organizationId: "",
-    thumbnailPath: "/images/class-default.jpg",
+    thumbnail: "/images/class-default.jpg",
   });
 
   // Teachers for selected organization in form
@@ -301,12 +303,24 @@ export function ClassesManagement() {
   };
 
   // Xử lý xóa (Frontend only update for now, ideally call API)
-  const handleDelete = () => {
-    // Note: Should call deleteClass API here
+  const handleDelete = async () => {
     if (classToDelete) {
-      setClasses((prev) => prev.filter((c) => c.id !== classToDelete.id));
-      setIsDeleteModalOpen(false);
-      setClassToDelete(null);
+      try {
+        setIsLoading(true);
+        await import("@/services/classService").then((mod) =>
+          mod.deleteClass(classToDelete.id),
+        );
+        // Refresh list
+        setClasses((prev) => prev.filter((c) => c.id !== classToDelete.id));
+        alert("Xóa lớp học thành công");
+      } catch (error) {
+        console.error("Failed to delete class:", error);
+        alert("Đã xảy ra lỗi khi xóa lớp học");
+      } finally {
+        setIsLoading(false);
+        setIsDeleteModalOpen(false);
+        setClassToDelete(null);
+      }
     }
   };
 
@@ -386,103 +400,142 @@ export function ClassesManagement() {
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="text-center py-20 text-gray-500">
-          Đang tải dữ liệu...
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {paddedItems.map((cls, index) => {
-            if (!cls)
-              return (
-                <div
-                  key={`empty-${index}`}
-                  className="h-[162px]"
-                  aria-hidden="true"
-                />
-              );
-
-            const teacherName = getTeacherName(cls.teacherId);
-            const facilityName = getFacilityName(cls.organizationId);
-
-            return (
-              <div
-                key={cls.id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => openDetailPage(cls)}
-              >
-                <div className="flex flex-col md:flex-row md:items-center gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-xl">
-                        {cls.name.split(" ").pop()}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-900">
-                            {cls.name}
-                          </h3>
-                          <span
-                            className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                              statusConfig[cls.status]?.color ||
-                              "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {statusConfig[cls.status]?.label || "Khác"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                          <Building size={14} className="text-gray-400" />
-                          <span>{facilityName}</span>
-                          {cls.classLevel && (
-                            <>
-                              <span className="text-gray-300">•</span>
-                              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
-                                {cls.classLevel}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-1.5">
-                            <User size={16} className="text-gray-400" />
-                            <span>GV: {teacherName}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Users size={16} className="text-gray-400" />
-                            <span>{cls.students || 0} học sinh</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    className="flex items-center gap-4"
-                    onClick={(e) => e.stopPropagation()}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full table-fixed">
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[25%]">
+                  Lớp học
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[20%]">
+                  Giáo viên
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[20%]">
+                  Cơ sở
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[10%]">
+                  Học sinh
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-[15%]">
+                  Trạng thái
+                </th>
+                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 w-[10%]">
+                  Thao tác
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {isLoading ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-12 text-center text-gray-500"
                   >
-                    <div className="flex gap-1">
-                      <button
-                        className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                        onClick={(e) => openEditPage(cls, e)}
-                        title="Chỉnh sửa"
-                      >
-                        <Edit size={18} />
-                      </button>
-                      <button
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        onClick={(e) => openDeleteModal(cls, e)}
-                        title="Xóa"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                    Đang tải dữ liệu...
+                  </td>
+                </tr>
+              ) : (
+                paginatedItems.map((cls) => {
+                  const teacherName = getTeacherName(cls.teacherId);
+                  const facilityName = getFacilityName(cls.organizationId);
+                  const statusInfo = statusConfig[cls.status] || {
+                    label: "Khác",
+                    color: "bg-gray-100 text-gray-800",
+                  };
+
+                  return (
+                    <tr
+                      key={cls.id}
+                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                      onClick={() => openDetailPage(cls)}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <div className="w-10 h-10 min-w-[40px] rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-sm shadow-sm overflow-hidden border border-gray-100">
+                            {cls.thumbnail &&
+                            cls.thumbnail !== "/images/class-default.jpg" ? (
+                              <img
+                                src={
+                                  cls.thumbnail.startsWith("http") ||
+                                  cls.thumbnail.startsWith("/")
+                                    ? cls.thumbnail
+                                    : `${process.env.NEXT_PUBLIC_API_URL}${cls.thumbnail}`
+                                }
+                                alt={cls.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              cls.name.split(" ").pop()
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p
+                              className="font-medium text-gray-900 truncate"
+                              title={cls.name}
+                            >
+                              {cls.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              #{cls.code || cls.id}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <User size={14} className="text-gray-400" />
+                          <span className="truncate">{teacherName}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Building size={14} className="text-gray-400" />
+                          <span className="truncate">{facilityName}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Users size={14} className="text-gray-400" />
+                          <span>{cls.students || 0}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
+                        >
+                          {statusInfo.label}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div
+                          className="flex items-center justify-end gap-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                            onClick={(e) => openEditPage(cls, e)}
+                            title="Chỉnh sửa"
+                          >
+                            <Edit size={18} />
+                          </button>
+                          <button
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            onClick={(e) => openDeleteModal(cls, e)}
+                            title="Xóa"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
 
       {filteredClasses.length === 0 && !isLoading ? (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
@@ -560,11 +613,11 @@ export function ClassesManagement() {
               setFormData({
                 name: "",
                 description: "",
-                classCode: "",
+                code: "",
                 classLevel: "1",
                 teacherId: "",
                 organizationId: "",
-                thumbnailPath: "/images/class-default.jpg",
+                thumbnail: "/images/class-default.jpg",
               });
               alert("Tạo lớp học thành công!");
             } catch (error) {
@@ -576,6 +629,88 @@ export function ClassesManagement() {
           }}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Image Upload Section */}
+            <div className="md:col-span-2 flex flex-col items-center justify-center mb-4">
+              <div
+                className="relative w-full h-48 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center overflow-hidden hover:border-primary-500 transition-colors cursor-pointer group"
+                onClick={() =>
+                  document.getElementById("class-image-upload")?.click()
+                }
+              >
+                {formData.thumbnail &&
+                formData.thumbnail !== "/images/class-default.jpg" ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={
+                        formData.thumbnail.startsWith("http") ||
+                        formData.thumbnail.startsWith("/")
+                          ? formData.thumbnail
+                          : `${process.env.NEXT_PUBLIC_API_URL}${formData.thumbnail}`
+                      }
+                      alt="Class Thumbnail"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <p className="text-white font-medium flex items-center gap-2">
+                        <Edit size={20} /> Thay đổi ảnh
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center text-gray-500 group-hover:text-primary-600 transition-colors">
+                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary-50">
+                      {isUploading ? (
+                        <Clock className="animate-spin text-primary-600" />
+                      ) : (
+                        <Users className="text-gray-400 group-hover:text-primary-600" />
+                      )}
+                    </div>
+                    <p className="font-medium">Tải ảnh bìa lớp học</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Nhấp để chọn ảnh (JPG, PNG)
+                    </p>
+                  </div>
+                )}
+                {isUploading && (
+                  <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+                    <div className="flex flex-col items-center text-primary-600">
+                      <Clock className="w-8 h-8 animate-spin mb-2" />
+                      <span className="text-sm font-medium">
+                        Đang tải ảnh...
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <input
+                id="class-image-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    try {
+                      setIsUploading(true);
+                      const { uploadFile } =
+                        await import("@/services/uploadService");
+                      const path = await uploadFile(e.target.files[0]);
+                      // Normalize path: if backend returns relative path, ensure it's usable
+                      // Backend returns /uploads/filename.ext
+                      // If we use NEXT_PUBLIC_API_URL, we should store it as is or full URL?
+                      // Storing relative is better if API_URL changes.
+                      setFormData({ ...formData, thumbnail: path });
+                    } catch (err) {
+                      console.error("Upload failed", err);
+                      alert("Tải ảnh thất bại");
+                    } finally {
+                      setIsUploading(false);
+                    }
+                  }
+                }}
+              />
+            </div>
+
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-sm font-semibold text-gray-700">
                 Tên lớp học <span className="text-red-500">*</span>
@@ -599,9 +734,9 @@ export function ClassesManagement() {
               <input
                 type="text"
                 placeholder="Ví dụ: CLASS001"
-                value={formData.classCode}
+                value={formData.code}
                 onChange={(e) =>
-                  setFormData({ ...formData, classCode: e.target.value })
+                  setFormData({ ...formData, code: e.target.value })
                 }
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all"
                 required

@@ -9,30 +9,45 @@ import {
   X,
   Calendar,
   Clock,
-  Users,
-  FileText,
   BookOpen,
   CheckCircle2,
+  Plus,
+  Layers,
+  FileText,
+  Users,
 } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import { mockExams, ExamItem, examStatusConfig } from "@/data";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { ExamItem, examStatusConfig } from "@/data/examsData";
 import { fetchExamById, updateExam, deleteExam } from "@/services/examService";
 import { fetchAllClasses } from "@/services/classService";
+import {
+  fetchTopicsByClassroom,
+  fetchVocabulariesByTopic,
+  TopicItem,
+} from "@/services/topicService";
 
 import { ConfirmModal } from "@/shared/components/common/ConfirmModal";
+import { ModalChooseQuestions } from "../ModalChooseQuestions";
+import { QuestionItem } from "@/data/questionsData";
 
 export function ExamManagementDetail() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const id = Number(params.id);
   const [exam, setExam] = useState<ExamItem | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(
+    searchParams.get("edit") === "true",
+  );
   const [editForm, setEditForm] = useState<Partial<ExamItem>>({});
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isChooseModalOpen, setIsChooseModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [classesMap, setClassesMap] = useState<Record<number, string>>({});
   const [classesList, setClassesList] = useState<any[]>([]);
+  const [topics, setTopics] = useState<TopicItem[]>([]);
+  const [vocabMap, setVocMap] = useState<Record<number, any[]>>({});
 
   useEffect(() => {
     const loadData = async () => {
@@ -44,8 +59,22 @@ export function ExamManagementDetail() {
         ]);
 
         if (fetchedExam) {
-          setExam(fetchedExam);
-          setEditForm({ ...fetchedExam });
+          // Data is already normalized by the service
+          const mappedExam: ExamItem = {
+            ...fetchedExam,
+            date: new Date(
+              fetchedExam.createdAt || new Date(),
+            ).toLocaleDateString("vi-VN"),
+            time: new Date(
+              fetchedExam.createdAt || new Date(),
+            ).toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            students: fetchedExam.students || 0,
+          };
+          setExam(mappedExam);
+          setEditForm({ ...mappedExam });
         }
 
         setClassesList(classesData);
@@ -56,18 +85,36 @@ export function ExamManagementDetail() {
         setClassesMap(map);
       } catch (error) {
         console.error("Failed to load exam or classes", error);
-        // Fallback
-        const found = mockExams.find((e) => e.id === id);
-        if (found) {
-          setExam(found);
-          setEditForm({ ...found });
-        }
       } finally {
         setIsLoading(false);
       }
     };
     loadData();
   }, [id]);
+
+  useEffect(() => {
+    if (isEditing && (editForm.classId || exam?.classId)) {
+      loadTopics(Number(editForm.classId || exam?.classId));
+    }
+  }, [isEditing, editForm.classId, exam?.classId]);
+
+  const loadTopics = async (cid: number) => {
+    const data = await fetchTopicsByClassroom(cid);
+    setTopics(data);
+
+    // Also load vocabularies for existing practice questions
+    if (editForm.practiceQuestions) {
+      editForm.practiceQuestions.forEach((pq) => {
+        if (pq.topicId) loadVocabs(Number(pq.topicId));
+      });
+    }
+  };
+
+  const loadVocabs = async (tid: number) => {
+    if (vocabMap[tid]) return;
+    const data = await fetchVocabulariesByTopic(tid);
+    setVocMap((prev) => ({ ...prev, [tid]: data }));
+  };
 
   const getClassName = (classId: number): string => {
     return classesMap[classId] || "Không xác định";
@@ -81,7 +128,19 @@ export function ExamManagementDetail() {
         setExam(updatedItem);
         setIsEditing(false);
 
-        await updateExam(exam.id, editForm);
+        // Map back to backend fields
+        await updateExam(exam.id, {
+          name: editForm.title,
+          description: editForm.description,
+          exam_type: editForm.type,
+          class_room_id: editForm.classId,
+          duration_minutes: parseInt(editForm.duration || "60"),
+          total_points: editForm.questions,
+          passing_score: editForm.passingScore,
+          is_active: editForm.status === "ongoing",
+          practice_questions: editForm.practiceQuestions,
+          question_ids: editForm.questionIds,
+        });
       } catch (error) {
         console.error("Failed to update exam", error);
       }
@@ -97,6 +156,25 @@ export function ExamManagementDetail() {
         console.error("Failed to delete exam", error);
       }
     }
+  };
+
+  const handleQuestionsSelected = (questions: QuestionItem[]) => {
+    setEditForm({
+      ...editForm,
+      questionIds: questions.map((q) => q.id),
+      questionsList: questions,
+      questions: questions.length, // Update score/question count display
+    });
+  };
+
+  const removeQuestion = (id: number) => {
+    const newList = (editForm.questionsList || []).filter((q) => q.id !== id);
+    setEditForm({
+      ...editForm,
+      questionIds: newList.map((q) => q.id),
+      questionsList: newList,
+      questions: newList.length,
+    });
   };
 
   if (!exam) {
@@ -121,7 +199,8 @@ export function ExamManagementDetail() {
     );
   }
 
-  const statusInfo = examStatusConfig[exam.status];
+  const statusInfo =
+    examStatusConfig[exam.status] || examStatusConfig["ongoing"];
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -165,7 +244,7 @@ export function ExamManagementDetail() {
             <div className="flex gap-6 text-white text-center">
               <div>
                 <p className="text-3xl font-bold">{exam.questions}</p>
-                <p className="text-xs text-white/80">Câu hỏi</p>
+                <p className="text-xs text-white/80">Điểm</p>
               </div>
               <div>
                 <p className="text-3xl font-bold">{exam.students}</p>
@@ -297,7 +376,7 @@ export function ExamManagementDetail() {
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">
-                Số câu hỏi
+                Tổng điểm
               </label>
               {isEditing ? (
                 <input
@@ -314,7 +393,7 @@ export function ExamManagementDetail() {
               ) : (
                 <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
                   <FileText size={18} className="text-gray-400" />
-                  {exam.questions} câu
+                  {exam.questions}
                 </p>
               )}
             </div>
@@ -338,7 +417,7 @@ export function ExamManagementDetail() {
               ) : (
                 <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 flex items-center gap-2">
                   <CheckCircle2 size={18} className="text-gray-400" />
-                  {exam.passingScore}%
+                  {exam.passingScore}
                 </p>
               )}
             </div>
@@ -398,14 +477,197 @@ export function ExamManagementDetail() {
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 transition-all resize-none"
                   />
                 ) : (
-                  <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">
-                    {exam.description}
+                  <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900 line-clamp-3">
+                    {exam.description || "Không có mô tả"}
                   </p>
                 )}
               </div>
             )}
           </div>
         </div>
+
+        {/* Exam Content Section (Questions / Practice) */}
+        <div className="px-8 pb-8 space-y-4">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Layers size={20} className="text-primary-600" />
+              Nội dung bài thi{" "}
+              {exam.examType === "PRACTICE" ? "(Thực hành)" : "(Trắc nghiệm)"}
+            </h3>
+            {isEditing && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (
+                    exam.examType === "PRACTICE" ||
+                    editForm.examType === "PRACTICE"
+                  ) {
+                    const current = editForm.practiceQuestions || [];
+                    setEditForm({
+                      ...editForm,
+                      practiceQuestions: [
+                        ...current,
+                        { content: "", topicId: "", vocabularyId: "" },
+                      ],
+                    });
+                  } else {
+                    setIsChooseModalOpen(true);
+                  }
+                }}
+                className="text-sm text-primary-600 font-bold hover:underline flex items-center gap-1"
+              >
+                <Plus size={16} />{" "}
+                {exam.examType === "PRACTICE" ||
+                editForm.examType === "PRACTICE"
+                  ? "Thêm câu hỏi"
+                  : "Thay đổi câu hỏi"}
+              </button>
+            )}
+          </div>
+
+          {exam.examType === "PRACTICE" || editForm.examType === "PRACTICE" ? (
+            <div className="space-y-4">
+              {(isEditing
+                ? editForm.practiceQuestions || []
+                : exam.practiceQuestions || []
+              ).map((q: any, idx: number) => (
+                <div
+                  key={idx}
+                  className={`p-4 rounded-2xl border transition-all ${isEditing ? "bg-gray-50/50 border-gray-100 relative group" : "bg-white border-gray-100 shadow-sm"}`}
+                >
+                  {isEditing ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <input
+                        placeholder="Nội dung câu hỏi..."
+                        value={q.content}
+                        onChange={(e) => {
+                          const list = [...(editForm.practiceQuestions || [])];
+                          list[idx].content = e.target.value;
+                          setEditForm({ ...editForm, practiceQuestions: list });
+                        }}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary-500 md:col-span-2"
+                      />
+                      <select
+                        value={q.topicId}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const list = [...(editForm.practiceQuestions || [])];
+                          list[idx].topicId = val;
+                          setEditForm({ ...editForm, practiceQuestions: list });
+                          if (val) loadVocabs(Number(val));
+                        }}
+                        className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white"
+                      >
+                        <option value="">Chọn chủ đề</option>
+                        {topics.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.name}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={q.vocabularyId}
+                        onChange={(e) => {
+                          const list = [...(editForm.practiceQuestions || [])];
+                          list[idx].vocabularyId = e.target.value;
+                          setEditForm({ ...editForm, practiceQuestions: list });
+                        }}
+                        className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white"
+                        disabled={!q.topicId}
+                      >
+                        <option value="">Chọn từ vựng</option>
+                        {(vocabMap[Number(q.topicId)] || []).map((v) => (
+                          <option key={v.id} value={v.id}>
+                            {v.word}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <p className="font-semibold text-gray-900">
+                          Câu {idx + 1}: {q.content}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Chủ đề: {q.topic_name || "Mặc định"} • Từ vựng:{" "}
+                          {q.vocabulary_content || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {isEditing &&
+                    (editForm.practiceQuestions?.length || 0) > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const list = (
+                            editForm.practiceQuestions || []
+                          ).filter((_: any, i: number) => i !== idx);
+                          setEditForm({ ...editForm, practiceQuestions: list });
+                        }}
+                        className="absolute -right-2 -top-2 w-7 h-7 bg-white border border-red-100 text-red-500 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                </div>
+              ))}
+              {isEditing && (editForm.practiceQuestions?.length || 0) === 0 && (
+                <div className="py-8 text-center text-gray-400 italic">
+                  Chưa có câu hỏi thực hành
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(isEditing
+                ? editForm.questionsList || []
+                : exam.questionsList || []
+              ).map((q: any, idx: number) => (
+                <div
+                  key={idx}
+                  className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm flex items-center gap-3 relative group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center font-bold">
+                    {idx + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {q.content}
+                    </p>
+                    <p className="text-[10px] text-gray-500">
+                      {q.question_type || "Trắc nghiệm"}
+                    </p>
+                  </div>
+                  {isEditing && (
+                    <button
+                      onClick={() => removeQuestion(q.id)}
+                      className="absolute -right-2 -top-2 w-7 h-7 bg-white border border-red-100 text-red-500 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              {((isEditing
+                ? editForm.questionsList?.length
+                : exam.questionsList?.length) || 0) === 0 && (
+                <div className="md:col-span-2 py-8 text-center text-gray-400 italic">
+                  Danh sách câu hỏi đang được cập nhật
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <ModalChooseQuestions
+          isOpen={isChooseModalOpen}
+          onClose={() => setIsChooseModalOpen(false)}
+          onConfirm={handleQuestionsSelected}
+          classId={editForm.classId || exam.classId}
+          initialSelectedIds={editForm.questionIds || exam.questionIds}
+        />
 
         {/* Footer Actions */}
         <div className="px-8 py-6 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">

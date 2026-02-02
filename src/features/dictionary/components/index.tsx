@@ -15,11 +15,7 @@ import {
   ArrowDownAZ,
   X,
 } from "lucide-react";
-import {
-  dictionaryItems,
-  categories,
-  DictionaryItem,
-} from "@/data/dictionaryData";
+import { DictionaryItem } from "@/data/dictionaryData";
 import { fetchAllWords } from "@/services/dictionaryService";
 import {
   Pagination,
@@ -28,6 +24,20 @@ import {
 import Link from "next/link";
 
 const ITEMS_PER_PAGE = 12;
+
+const VOCAB_TYPE_LABELS: Record<string, string> = {
+  all: "Tất cả",
+  WORD: "Từ đơn",
+  SENTENCE: "Câu",
+  PARAGRAPH: "Đoạn văn",
+};
+
+const VOCAB_TYPES = [
+  { id: "all", label: "Tất cả" },
+  { id: "WORD", label: "Từ đơn" },
+  { id: "SENTENCE", label: "Câu" },
+  { id: "PARAGRAPH", label: "Đoạn văn" },
+];
 
 import { removeVietnameseTones } from "@/shared/utils/text";
 
@@ -60,7 +70,7 @@ export const Dictionary: React.FC = () => {
         }
       } catch (error) {
         console.error("Failed to load dictionary items", error);
-        setItems(dictionaryItems);
+        setItems([]);
       } finally {
         setIsLoading(false);
       }
@@ -108,25 +118,13 @@ export const Dictionary: React.FC = () => {
   // Lọc và sắp xếp
   const filteredItems = items
     .filter((item) => {
-      const categoryMap: { [key: string]: string } = {
-        alphabet: "Chữ cái",
-        numbers: "Số đếm",
-        greetings: "Chào hỏi",
-        family: "Gia đình",
-        education: "Giáo dục",
-        daily: "Đời sống",
-        time: "Thời gian",
-        emotion: "Cảm xúc",
-        location: "Địa điểm",
-      };
-
-      const matchesCategory =
-        activeTab === "all" || item.category === categoryMap[activeTab];
+      const matchesType =
+        activeTab === "all" || item.vocabularyType === activeTab;
       const normalizedQuery = removeVietnameseTones(searchQuery);
       const normalizedWord = removeVietnameseTones(item.word);
       const matchesSearch = normalizedWord.includes(normalizedQuery);
 
-      return matchesCategory && matchesSearch;
+      return matchesType && matchesSearch;
     })
     .sort((a, b) => {
       const wordA = removeVietnameseTones(a.word);
@@ -208,7 +206,7 @@ export const Dictionary: React.FC = () => {
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap items-center gap-3">
-        {categories.map((cat) => (
+        {VOCAB_TYPES.map((cat) => (
           <button
             key={cat.id}
             onClick={() => {
@@ -299,7 +297,8 @@ export const Dictionary: React.FC = () => {
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider mb-1">
-                          {item.category}
+                          {VOCAB_TYPE_LABELS[item.vocabularyType || "WORD"] ||
+                            item.vocabularyType}
                         </p>
                         <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                           {item.word}

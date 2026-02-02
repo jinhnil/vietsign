@@ -1,20 +1,32 @@
 import DictionaryModel from "@/domain/entities/Dictionary";
-import { dictionaryItems, DictionaryItem } from "@/data/dictionaryData";
-
-const USE_API = true;
+import { DictionaryItem } from "@/data/dictionaryData";
 
 /**
  * Convert API response to DictionaryItem
  */
 function convertApiToDictionaryItem(item: any): DictionaryItem {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_ROOT_NODE ||
+    process.env.NEXT_PUBLIC_API_ROOT ||
+    "http://localhost:5000";
+
+  const getFullUrl = (path?: string) => {
+    if (!path) return undefined;
+    if (path.startsWith("http")) return path;
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    return `${baseUrl}${cleanPath}`;
+  };
+
   return {
-    id: item.id,
+    id: item.id || item.vocabulary_id,
     word: item.content || item.word,
-    category: item.category || "General", // Map category if available or default
-    videoUrl: item.videos_url || item.videoUrl,
-    imageUrl: item.images_url || item.imageUrl,
+    category: item.topic_name || item.category || "Chưa phân loại",
+    videoUrl: getFullUrl(item.videos_path || item.videoUrl),
+    imageUrl: getFullUrl(item.images_path || item.imageUrl),
     views: item.view_count || item.views || 0,
-    status: item.is_active ? "published" : "draft",
+    status: item.status === "APPROVED" ? "published" : "draft",
+    description: item.meaning || item.description,
+    vocabularyType: item.vocabulary_type || item.vocabularyType || "WORD",
   };
 }
 
@@ -23,86 +35,86 @@ function convertApiToDictionaryItem(item: any): DictionaryItem {
  */
 function convertItemToApiPayload(data: any): any {
   return {
-    content: data.word, // Map word -> content
-    description: data.description || "",
-    topic_id: data.topicId || 1, // Default topic if not provided
-    vocabulary_type: "WORD", // Default type
-    images_url: data.imageUrl, // Map imageUrl -> images_url
-    videos_url: data.videoUrl, // Map videoUrl -> videos_url
-    is_private: data.isPrivate ? 1 : 0,
-    is_active: data.status === "published" ? 1 : 0,
+    content: data.word,
+    description: data.description || data.meaning || "",
+    topic_id: data.topic_id || data.topicId || null,
+    classroom_id: data.class_room_id || data.classId || null,
+    vocabulary_type: data.vocabularyType || data.vocabulary_type || "WORD",
+    images_path: data.imageUrl,
+    videos_path: data.videoUrl,
+    status: data.status === "published" ? "APPROVED" : "PENDING",
   };
 }
 
 export const fetchAllWords = async (query?: any): Promise<DictionaryItem[]> => {
-  if (USE_API) {
-    try {
-      // Map frontend query 'q' to backend 'content' if needed (handled in Entity now)
-      const res = await DictionaryModel.getAllWords(query);
-      if (Array.isArray(res)) return res.map(convertApiToDictionaryItem);
-      if (res?.data && Array.isArray(res.data))
-        return res.data.map(convertApiToDictionaryItem);
-      return [];
-    } catch (error) {
-      console.error("Error fetching words:", error);
-      // Fallback to mock
-    }
+  try {
+    // Map frontend query 'q' to backend 'content' if needed (handled in Entity now)
+    const res = await DictionaryModel.getAllWords(query);
+    if (Array.isArray(res)) return res.map(convertApiToDictionaryItem);
+    if (res?.data && Array.isArray(res.data))
+      return res.data.map(convertApiToDictionaryItem);
+    return [];
+  } catch (error) {
+    return [];
   }
-
-  // Simulate API call (Mock)
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(dictionaryItems);
-    }, 500);
-  });
 };
 
 export const fetchWordById = async (
   id: number,
 ): Promise<DictionaryItem | undefined> => {
-  if (USE_API) {
-    try {
-      const res = await DictionaryModel.getWordById(id);
-      return convertApiToDictionaryItem(res);
-    } catch (error) {
-      console.error(`Error fetching word ${id}:`, error);
-      // Fallback
-    }
+  try {
+    const res = await DictionaryModel.getWordById(id);
+    const data = res?.data || res;
+    return convertApiToDictionaryItem(data);
+  } catch (error) {
+    return undefined;
   }
-
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const item = dictionaryItems.find((w) => w.id === id);
-      resolve(item);
-    }, 300);
-  });
 };
 
 export const createWord = async (data: any): Promise<DictionaryItem | null> => {
-  if (USE_API) {
+  try {
     const payload = convertItemToApiPayload(data);
     const res = await DictionaryModel.createWord(payload);
-    return convertApiToDictionaryItem(res);
+    const resultData = res?.data || res;
+    return convertApiToDictionaryItem(resultData);
+  } catch (error) {
+    console.error("Error creating word:", error);
+    throw error;
   }
-  return null;
+};
+
+export const createMultipleWords = async (data: any[]): Promise<boolean> => {
+  try {
+    const payload = data.map(convertItemToApiPayload);
+    await DictionaryModel.createMultipleWords(payload);
+    return true;
+  } catch (error) {
+    console.error("Error creating multiple words:", error);
+    throw error;
+  }
 };
 
 export const updateWord = async (
   id: number,
   data: any,
 ): Promise<DictionaryItem | null> => {
-  if (USE_API) {
+  try {
     const payload = convertItemToApiPayload(data);
     const res = await DictionaryModel.updateWord(id, payload);
-    return convertApiToDictionaryItem(res);
+    const resultData = res?.data || res;
+    return convertApiToDictionaryItem(resultData);
+  } catch (error) {
+    console.error(`Error updating word ${id}:`, error);
+    throw error;
   }
-  return null;
 };
 
 export const deleteWord = async (id: number): Promise<boolean> => {
-  if (USE_API) {
+  try {
     await DictionaryModel.deleteWord(id);
     return true;
+  } catch (error) {
+    console.error(`Error deleting word ${id}:`, error);
+    throw error;
   }
-  return false;
 };

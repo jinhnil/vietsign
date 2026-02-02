@@ -2,7 +2,7 @@ import { Base } from "./base";
 
 export class ExamModel extends Base {
   constructor() {
-    super("exams");
+    super("teaching-management/exams");
   }
 
   getAllExams = async (query?: any) => {
@@ -32,6 +32,11 @@ export class ExamModel extends Base {
 
   submitExam = async (id: number, answers: any) => {
     const res = await this.apiPost(`/${id}/submit`, answers);
+    return res.data;
+  };
+
+  getExamsByClassroom = async (classroomId: number) => {
+    const res = await this.apiGet(`/classroom/${classroomId}`);
     return res.data;
   };
 }

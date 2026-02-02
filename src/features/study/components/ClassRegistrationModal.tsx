@@ -115,10 +115,10 @@ export const ClassRegistrationModal: React.FC<ClassRegistrationModalProps> = ({
                 >
                   <div className="flex justify-between items-start mb-3">
                     <span className="inline-block px-2.5 py-1 bg-primary-50 text-primary-700 text-xs font-semibold rounded-lg">
-                      {cls.level || "Cơ bản"}
+                      {cls.classLevel || "Cơ bản"}
                     </span>
                     <span className="text-sm font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
-                      {cls.schedule.split(" - ")[1]}
+                      {cls.schedule?.split(" - ")[1] || "N/A"}
                     </span>
                   </div>
 
@@ -133,7 +133,9 @@ export const ClassRegistrationModal: React.FC<ClassRegistrationModalProps> = ({
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar size={16} className="text-gray-400" />
-                      <span>{cls.schedule.split(" - ")[0]}</span>
+                      <span>
+                        {cls.schedule?.split(" - ")[0] || "Chưa có lịch"}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin size={16} className="text-gray-400" />

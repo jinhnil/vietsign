@@ -79,11 +79,11 @@ function convertItemToApiPayload(data: any): any {
   return {
     name: data.name,
     description: data.description,
-    classCode: data.classCode || data.code,
+    classCode: data.code || data.classCode,
     classLevel: data.gradeLevel || data.classLevel,
     teacherId: data.teacherId,
     organizationId: data.organizationId,
-    thumbnailPath: data.thumbnailPath,
+    thumbnailPath: data.thumbnail || data.thumbnailPath,
     // Map status: ongoing -> ACTIVE (which BE maps to APPROVED), others -> pass as is or map if needed
     // Backend expects: ACTIVE/ongoing -> APPROVED, REJECTED -> REJECTED, others -> PENDING (default in create)
     // We'll pass the raw status for other cases so backend update can store "upcoming" or "completed" if allowed

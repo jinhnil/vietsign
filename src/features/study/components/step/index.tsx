@@ -24,16 +24,19 @@ import {
 } from "@/data/lessonsData";
 
 // Step type components
-import { VocabularyStep } from "./VocabularyStep";
-import { SentenceStep } from "./SentenceStep";
-import { QuizTextToVideoStep } from "./QuizTextToVideoStep";
-import { QuizVideoToTextStep } from "./QuizVideoToTextStep";
-import { QuizInputStep } from "./QuizInputStep";
-// New Step Components
-import { PracticeVideoStep } from "./PracticeVideoStep";
-import { PracticeMatrixStep } from "./PracticeMatrixStep";
-import { MatchStep } from "./MatchStep";
-import { DragDropVideoWordStep } from "./DragDropVideoWordStep";
+import {
+  VocabularyStep,
+  SentenceStep,
+  QuizTextToVideoStep,
+  QuizVideoToTextStep,
+  QuizInputStep,
+  PracticeVideoStep,
+  PracticeMatrixStep,
+  MatchStep,
+  DragDropVideoWordStep,
+  MatchHorizontalStep,
+  QuizChoiceStep,
+} from "@/shared/components/common/step";
 
 export function StepDetail() {
   const params = useParams();
@@ -145,6 +148,15 @@ export function StepDetail() {
         return <MatchStep step={currentStep} />;
       case "drag-drop-video-word":
         return <DragDropVideoWordStep step={currentStep} />;
+      case "match-horizontal":
+        return <MatchHorizontalStep step={currentStep} />;
+      case "quiz-choice":
+        return (
+          <QuizChoiceStep
+            step={currentStep}
+            onComplete={() => nextStep && navigateToStep(nextStep)}
+          />
+        );
       default:
         return <VocabularyStep step={currentStep} />;
     }

@@ -2,7 +2,7 @@ import { Base } from "./base";
 
 export class DictionaryModel extends Base {
   constructor() {
-    super("vocabularies");
+    super("teaching-management/vocabularies");
   }
 
   getAllWords = async (query?: any) => {
@@ -22,6 +22,11 @@ export class DictionaryModel extends Base {
 
   createWord = async (data: any) => {
     const res = await this.apiPost("", data);
+    return res.data;
+  };
+
+  createMultipleWords = async (data: any[]) => {
+    const res = await this.apiPost("/list", data);
     return res.data;
   };
 

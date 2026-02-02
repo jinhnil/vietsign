@@ -250,7 +250,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: <BookOpenCheck size={22} />,
       label: "Lớp học của tôi",
       path: "/study",
-      allowedRoles: ["STUDENT", "TEST"],
+      allowedRoles: ["ADMIN", "TEACHER", "STUDENT", "TEST"],
     },
 
     // === TRANG BỔ SUNG ===

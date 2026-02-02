@@ -1,22 +1,10 @@
 import { Metadata } from "next";
 import { DashboardLayout } from "@/shared/components/layout";
 import { DictionaryManagementDetail } from "@/features/management/dictionary";
-import { dictionaryItems } from "@/data";
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}): Promise<Metadata> {
-  const { id: idParam } = await params;
-  const id = Number(idParam);
-  const item = dictionaryItems.find((i) => i.id === id);
-
-  return {
-    title: `Chi tiết: ${item?.word || "Từ"} - Quản lý từ điển - VietSignSchool`,
-    description: `Chi tiết và chỉnh sửa từ vựng: ${item?.word}`,
-  };
-}
+export const metadata: Metadata = {
+  title: "Chi tiết từ điển - Quản lý từ điển - VietSignSchool",
+  description: "Chi tiết và chỉnh sửa từ vựng",
+};
 
 export default function DictionaryManagementDetailPage() {
   return (

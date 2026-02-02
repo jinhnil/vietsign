@@ -1,28 +1,82 @@
 "use client";
 
 import React from "react";
-import { ArrowLeft, Star, Share2, ArrowRight } from "lucide-react";
+import {
+  ArrowLeft,
+  Star,
+  ArrowRight,
+  Image,
+  Video,
+  Share2,
+} from "lucide-react";
 import Link from "next/link";
-import { dictionaryItems } from "@/data";
 import { useParams, useRouter } from "next/navigation";
 import { VideoPlayer } from "@/shared/components/common";
+import { DictionaryItem } from "@/data/dictionaryData";
+import { fetchWordById, fetchAllWords } from "@/services/dictionaryService";
+import { Loader2 } from "lucide-react";
+
+const VOCAB_TYPE_LABELS: Record<string, string> = {
+  all: "Tất cả",
+  WORD: "Từ đơn",
+  SENTENCE: "Câu",
+  PARAGRAPH: "Đoạn văn",
+};
 
 export const DictionaryDetail: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const id = Number(params.id);
 
-  const item = dictionaryItems.find((i) => i.id === id);
+  const [item, setItem] = React.useState<DictionaryItem | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [mediaType, setMediaType] = React.useState<"video" | "image">("video");
+  const [allWords, setAllWords] = React.useState<DictionaryItem[]>([]);
+
+  React.useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const [data, wordsList] = await Promise.all([
+          fetchWordById(id),
+          fetchAllWords(),
+        ]);
+        setItem(data || null);
+        setAllWords(wordsList || []);
+      } catch (error) {
+        console.error("Failed to load dictionary item:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) {
+      loadData();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-40">
+        <Loader2 className="w-12 h-12 animate-spin text-primary-600" />
+      </div>
+    );
+  }
 
   if (!item) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+      <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+          <Share2 className="text-gray-300" size={40} />
+        </div>
+        <h2 className="text-3xl font-black text-gray-900 mb-4 tracking-tight">
           Không tìm thấy từ này
         </h2>
+        <p className="text-gray-500 mb-8 max-w-md mx-auto">
+          Từ vựng bạn tìm kiếm không tồn tại hoặc đã bị xóa khỏi hệ thống.
+        </p>
         <button
-          onClick={() => router.back()}
-          className="px-6 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
+          onClick={() => router.push("/vocabularies")}
+          className="px-8 py-3.5 bg-primary-600 text-white rounded-2xl hover:bg-primary-700 transition-all font-bold shadow-xl shadow-primary-600/20 active:scale-95"
         >
           Quay lại từ điển
         </button>
@@ -30,14 +84,18 @@ export const DictionaryDetail: React.FC = () => {
     );
   }
 
-  // Lấy các từ liên quan (cùng category)
-  const relatedItems = dictionaryItems
-    .filter((i) => i.category === item.category && i.id !== item.id)
+  // Tìm vị trí của từ hiện tại trong danh sách
+  const currentIndex = allWords.findIndex((w) => w.id === id);
+
+  // Lấy từ liên quan (cùng loại)
+  const relatedItems = allWords
+    .filter((i) => i.vocabularyType === item.vocabularyType && i.id !== item.id)
     .slice(0, 3);
 
-  // Lấy từ trước và sau dựa trên ID
-  const prevItem = dictionaryItems.find((i) => i.id === id - 1);
-  const nextItem = dictionaryItems.find((i) => i.id === id + 1);
+  // Lấy từ trước và sau
+  const prevItem = currentIndex > 0 ? allWords[currentIndex - 1] : null;
+  const nextItem =
+    currentIndex < allWords.length - 1 ? allWords[currentIndex + 1] : null;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -71,10 +129,10 @@ export const DictionaryDetail: React.FC = () => {
       <div className="bg-white rounded-[40px] shadow-2xl border border-gray-100 overflow-hidden">
         <div className="flex flex-col lg:flex-row">
           {/* Media Section: 3/4 Width */}
-          <div className="lg:w-3/4">
-            {item.videoUrl ? (
+          <div className="lg:w-3/4 bg-gray-900">
+            {mediaType === "video" && item.videoUrl ? (
               <VideoPlayer
-                key={item.id}
+                key={`video-${item.id}`}
                 videoUrl={item.videoUrl}
                 title={item.word}
                 autoPlay={true}
@@ -84,17 +142,30 @@ export const DictionaryDetail: React.FC = () => {
                 className="rounded-none lg:rounded-l-[40px]"
               />
             ) : item.imageUrl ? (
-              <div className="w-full h-[600px] flex items-center justify-center bg-gray-100">
+              <div className="w-full h-[600px] flex items-center justify-center bg-gray-100 relative group/img">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={item.imageUrl}
                   alt={item.word}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain transition-transform duration-700 group-hover/img:scale-105"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity"></div>
               </div>
+            ) : item.videoUrl ? (
+              <VideoPlayer
+                key={`video-fallback-${item.id}`}
+                videoUrl={item.videoUrl}
+                title={item.word}
+                autoPlay={true}
+                loop={true}
+                showControls={true}
+                height="600px"
+                className="rounded-none lg:rounded-l-[40px]"
+              />
             ) : (
               <div className="w-full h-[600px] flex items-center justify-center text-gray-400 font-medium bg-gray-900">
                 <div className="text-center">
+                  <Video size={48} className="mx-auto mb-4 opacity-20" />
                   <p>Không có video hoặc hình ảnh minh họa</p>
                 </div>
               </div>
@@ -106,17 +177,21 @@ export const DictionaryDetail: React.FC = () => {
             <div className="space-y-10 relative z-10">
               <div className="space-y-6">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary-700 rounded-lg text-[10px] font-black uppercase tracking-[0.2em]">
-                  {item.category}
+                  {VOCAB_TYPE_LABELS[item.vocabularyType || "WORD"] ||
+                    item.vocabularyType}
                 </div>
 
                 <div>
+                  <p className="text-sm text-gray-400 font-medium leading-relaxed">
+                    Đây là{" "}
+                    {VOCAB_TYPE_LABELS[
+                      item.vocabularyType || "WORD"
+                    ]?.toLowerCase() || item.vocabularyType}{" "}
+                    trong danh mục từ điển học liệu ngôn ngữ ký hiệu.
+                  </p>
                   <h1 className="text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-tight mb-2 italic">
                     {item.word}
                   </h1>
-                  <p className="text-sm text-gray-400 font-medium leading-relaxed">
-                    Từ vựng phổ biến trong bộ ngôn ngữ ký hiệu chủ đề{" "}
-                    {item.category}.
-                  </p>
                 </div>
               </div>
             </div>
@@ -126,9 +201,29 @@ export const DictionaryDetail: React.FC = () => {
                 <Star size={20} className="fill-current" />
                 <span>Yêu thích</span>
               </button>
-              <button className="w-full flex items-center justify-center gap-3 py-4 text-gray-400 hover:text-gray-900 transition-all font-bold text-sm">
-                <Share2 size={20} />
-                <span>Chia sẻ từ này</span>
+              <button
+                onClick={() =>
+                  setMediaType(mediaType === "video" ? "image" : "video")
+                }
+                className="w-full flex items-center justify-center gap-3 py-4 text-gray-400 hover:text-primary-600 transition-all font-bold text-sm bg-gray-50 hover:bg-primary-50 rounded-2xl group/toggle"
+              >
+                {mediaType === "video" ? (
+                  <>
+                    <Image
+                      size={20}
+                      className="group-hover/toggle:scale-110 transition-transform"
+                    />
+                    <span>Xem ảnh minh họa</span>
+                  </>
+                ) : (
+                  <>
+                    <Video
+                      size={20}
+                      className="group-hover/toggle:scale-110 transition-transform"
+                    />
+                    <span>Xem video ký hiệu</span>
+                  </>
+                )}
               </button>
             </div>
 

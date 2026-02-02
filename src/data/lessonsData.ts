@@ -12,7 +12,9 @@ export type StepType =
   | "practice-matrix" // Ma trận thẻ -> xem -> thực hành
   | "match-video-image" // Nối video - hình ảnh
   | "match-video-word" // Nối video - từ
-  | "drag-drop-video-word"; // Kéo thả từ vào ô video
+  | "drag-drop-video-word" // Kéo thả từ vào ô video
+  | "match-horizontal" // Nối từ theo hàng ngang 3 video
+  | "quiz-choice"; // Chọn video tương ứng (có nút bấm riêng)
 
 // Step item
 export interface StepItem {
@@ -345,6 +347,54 @@ const generateStepsForLesson = (
     availableWords: dragDropItems
       .map((i) => i.correctWord)
       .sort(() => Math.random() - 0.5),
+  });
+  stepOrder++;
+
+  // Add Match Horizontal Step (3 items)
+  const matchHorizontalItems = vocabularyWords.slice(1, 4).map((v, idx) => ({
+    id: idx + 1,
+    videoUrl: v.videoUrl,
+    targetText: v.word,
+  }));
+
+  steps.push({
+    id: lessonId * 100 + stepOrder,
+    lessonId,
+    title: "Thực hành: Nối từ (Hàng ngang)",
+    type: "match-horizontal",
+    order: stepOrder++,
+    completed: false,
+    matchPairs: matchHorizontalItems,
+  });
+  stepOrder++;
+
+  // Add Quiz Choice Step (Pick video with button)
+  steps.push({
+    id: lessonId * 100 + stepOrder,
+    lessonId,
+    title: "Kiểm tra: Chọn video đúng",
+    type: "quiz-choice",
+    order: stepOrder++,
+    completed: false,
+    question: quizVocab.word,
+    options: [
+      { id: 1, videoUrl: quizVocab.videoUrl, isCorrect: true },
+      {
+        id: 2,
+        videoUrl: wrongOptions[0]?.videoUrl || quizVocab.videoUrl,
+        isCorrect: false,
+      },
+      {
+        id: 3,
+        videoUrl: wrongOptions[1]?.videoUrl || quizVocab.videoUrl,
+        isCorrect: false,
+      },
+      {
+        id: 4,
+        videoUrl: wrongOptions[2]?.videoUrl || quizVocab.videoUrl,
+        isCorrect: false,
+      },
+    ].sort(() => Math.random() - 0.5),
   });
 
   return steps;
